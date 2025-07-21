@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Next.js Fullstack App",
-  description: "Aplicación fullstack con Next.js, JavaScript y Bootstrap",
+  title: "MapaClientes - Sistema de Gestión Logística",
+  description: "Sistema integral de gestión de clientes, camiones, repartos y entregas con Next.js, React Bootstrap y SQLite",
 };
 
 export default function RootLayout({ children }) {

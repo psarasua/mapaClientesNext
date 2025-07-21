@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { healthApi, handleApiError } from '../lib/api';
+import { Card, Badge, Button, Spinner, Alert, Row, Col } from 'react-bootstrap';
+import { healthApi, handleApiError } from '../../lib/api';
 
 export default function ApiStatus() {
   const [status, setStatus] = useState(null);
@@ -42,21 +43,28 @@ export default function ApiStatus() {
   };
 
   return (
-    <div className="card border-0 shadow-sm mb-4">
-      <div className="card-body">
+    <Card className="border-0 shadow-sm mb-4">
+      <Card.Body>
         <div className="d-flex justify-content-between align-items-center mb-3">
-          <h5 className="card-title mb-0">
+          <Card.Title className="mb-0">
             <i className="bi bi-activity me-2"></i>
             Estado de la API
-          </h5>
-          <button
+          </Card.Title>
+          <Button
             onClick={checkApiHealth}
-            className="btn btn-outline-primary btn-sm"
+            variant="outline-primary"
+            size="sm"
             disabled={loading}
           >
             {loading ? (
               <>
-                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <Spinner
+                  animation="border"
+                  size="sm"
+                  className="me-2"
+                  role="status"
+                  aria-hidden="true"
+                />
                 Verificando...
               </>
             ) : (
@@ -65,15 +73,15 @@ export default function ApiStatus() {
                 Actualizar
               </>
             )}
-          </button>
+          </Button>
         </div>
 
-        <div className="row">
-          <div className="col-md-6">
+        <Row>
+          <Col md={6}>
             <div className="d-flex align-items-center mb-2">
-              <span className={`badge bg-${getStatusVariant()} me-2`}>
+              <Badge bg={getStatusVariant()} className="me-2">
                 {getStatusText()}
-              </span>
+              </Badge>
               <small className="text-muted">Estado del servidor</small>
             </div>
             
@@ -95,16 +103,19 @@ export default function ApiStatus() {
                 </div>
               </>
             )}
-          </div>
+          </Col>
           
-          <div className="col-md-6">
+          <Col md={6}>
             {status?.database && (
               <div className="mb-3">
                 <h6 className="fw-bold">Base de Datos</h6>
                 <div className="d-flex align-items-center mb-1">
-                  <span className={`badge bg-${status.database.status === 'ok' ? 'success' : 'warning'} me-2`}>
+                  <Badge 
+                    bg={status.database.status === 'ok' ? 'success' : 'warning'} 
+                    className="me-2"
+                  >
                     {status.database.status === 'ok' ? 'Conectada' : 'Fallback'}
-                  </span>
+                  </Badge>
                   <small className="text-muted">{status.database.type}</small>
                 </div>
                 <small className="text-muted">{status.database.message}</small>
@@ -124,16 +135,16 @@ export default function ApiStatus() {
                 </ul>
               </div>
             )}
-          </div>
-        </div>
+          </Col>
+        </Row>
 
         {error && (
-          <div className="alert alert-danger mt-3 mb-0" role="alert">
+          <Alert variant="danger" className="mt-3 mb-0">
             <i className="bi bi-exclamation-triangle-fill me-2"></i>
             <strong>Error:</strong> {error}
-          </div>
+          </Alert>
         )}
-      </div>
-    </div>
+      </Card.Body>
+    </Card>
   );
 }

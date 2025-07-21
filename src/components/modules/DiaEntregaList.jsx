@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { diaEntregaApi, handleApiError } from '../lib/api.js';
+import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { diaEntregaApi, handleApiError } from '../../lib/api.js';
 
 const DiaEntregaList = () => {
   const [diasEntrega, setDiasEntrega] = useState([]);

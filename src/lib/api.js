@@ -1,4 +1,4 @@
-import { validateUser, validateCreateUserData, validateTruck, validateCreateTruckData, validateClient, validateCreateClientData, validateDiaEntrega, validateCreateDiaEntregaData, validateReparto, validateCreateRepartoData, validateClienteporReparto, validateCreateClienteporRepartoData } from '../types/index.js';
+import { validateCreateUserData, validateCreateTruckData, validateCreateClientData, validateCreateDiaEntregaData, validateCreateRepartoData, validateCreateClienteporRepartoData } from '../types/index.js';
 
 const API_BASE_URL = '/api';
 

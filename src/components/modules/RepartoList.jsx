@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { repartoApi, diaEntregaApi, truckApi, handleApiError } from '../lib/api.js';
+import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { repartoApi, diaEntregaApi, truckApi, handleApiError } from '../../lib/api.js';
 
 const RepartoList = () => {
   const [repartos, setRepartos] = useState([]);
@@ -242,19 +243,19 @@ const RepartoList = () => {
   const [viewMode, setViewMode] = useState('table'); // 'table' o 'matrix'
 
   return (
-    <div className="container-fluid py-4">
-      <div className="row">
-        <div className="col-12">
-          <div className="card shadow">
-            <div className="card-header bg-warning text-dark">
-              <div className="row align-items-center">
-                <div className="col">
+    <Container fluid className="py-4">
+      <Row>
+        <Col xs={12}>
+          <Card className="shadow">
+            <Card.Header className="bg-warning text-dark">
+              <Row className="align-items-center">
+                <Col>
                   <h4 className="mb-0">
                     <i className="bi bi-truck-flatbed me-2"></i>
                     Gestión de Repartos
                   </h4>
-                </div>
-                <div className="col-auto">
+                </Col>
+                <Col xs="auto">
                   <div className="btn-group me-2" role="group">
                     <input
                       type="radio"
@@ -295,11 +296,11 @@ const RepartoList = () => {
                   >
                     {loading ? 'Cargando...' : 'Actualizar'}
                   </button>
-                </div>
-              </div>
-            </div>
+                </Col>
+              </Row>
+            </Card.Header>
 
-            <div className="card-body">
+            <Card.Body>
               {/* Mensajes */}
               {error && (
                 <div className="alert alert-danger alert-dismissible fade show" role="alert">
@@ -608,11 +609,11 @@ const RepartoList = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

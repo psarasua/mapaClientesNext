@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { clientesporRepartoApi, clientApi, repartoApi } from '../lib/api.js';
+import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { clientesporRepartoApi, clientApi, repartoApi } from '../../lib/api.js';
 
 export default function ClientesporRepartoList() {
   const [clientesporReparto, setClientesporReparto] = useState([]);
@@ -141,36 +142,36 @@ export default function ClientesporRepartoList() {
     return groups;
   }, {}) : {};
 
-  if (loading) return <div className="text-center py-4">Cargando asignaciones de clientes...</div>;
-  if (error) return <div className="alert alert-danger">Error: {error}</div>;
+  if (loading) return <div className="text-center py-4"><Spinner animation="border" /> Cargando asignaciones de clientes...</div>;
+  if (error) return <Alert variant="danger">Error: {error}</Alert>;
 
   return (
-    <div className="container-fluid py-4">
-      <div className="row">
-        <div className="col-12">
+    <Container fluid className="py-4">
+      <Row>
+        <Col xs={12}>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2>Asignación de Clientes por Reparto</h2>
             <div className="d-flex gap-2">
-              <div className="btn-group" role="group">
-                <button
-                  className={`btn ${viewMode === 'table' ? 'btn-primary' : 'btn-outline-primary'}`}
+              <ButtonGroup>
+                <Button
+                  variant={viewMode === 'table' ? 'primary' : 'outline-primary'}
                   onClick={() => setViewMode('table')}
                 >
                   Vista Tabla
-                </button>
-                <button
-                  className={`btn ${viewMode === 'grouped' ? 'btn-primary' : 'btn-outline-primary'}`}
+                </Button>
+                <Button
+                  variant={viewMode === 'grouped' ? 'primary' : 'outline-primary'}
                   onClick={() => setViewMode('grouped')}
                 >
                   Vista Agrupada
-                </button>
-              </div>
-              <button
-                className="btn btn-success"
+                </Button>
+              </ButtonGroup>
+              <Button
+                variant="success"
                 onClick={() => setShowForm(true)}
               >
                 Agregar Asignación
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -391,8 +392,8 @@ export default function ClientesporRepartoList() {
               </div>
             </div>
           )}
-        </div>
-      </div>
-    </div>
+        </Col>
+      </Row>
+    </Container>
   );
 }

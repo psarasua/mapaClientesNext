@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { clientApi, handleApiError } from '../lib/api.js';
+import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { clientApi, handleApiError } from '../../lib/api.js';
 
 const ClientList = () => {
   const [clients, setClients] = useState([]);
@@ -201,38 +202,39 @@ const ClientList = () => {
   const filteredClients = getFilteredAndSortedClients();
 
   return (
-    <div className="container-fluid py-4">
-      <div className="row">
-        <div className="col-12">
-          <div className="card shadow">
-            <div className="card-header bg-primary text-white">
-              <div className="row align-items-center">
-                <div className="col">
+    <Container fluid className="py-4">
+      <Row>
+        <Col xs={12}>
+          <Card className="shadow">
+            <Card.Header className="bg-primary text-white">
+              <Row className="align-items-center">
+                <Col>
                   <h4 className="mb-0">
                     <i className="bi bi-people-fill me-2"></i>
                     Gestión de Clientes
                   </h4>
-                </div>
-                <div className="col-auto">
-                  <button 
-                    className="btn btn-light"
+                </Col>
+                <Col xs="auto">
+                  <Button 
+                    variant="light"
                     onClick={() => setShowForm(!showForm)}
                     disabled={loading}
                   >
                     {showForm ? 'Cancelar' : 'Agregar Cliente'}
-                  </button>
-                  <button 
-                    className="btn btn-outline-light ms-2"
+                  </Button>
+                  <Button 
+                    variant="outline-light"
+                    className="ms-2"
                     onClick={loadClients}
                     disabled={loading}
                   >
                     {loading ? 'Cargando...' : 'Actualizar'}
-                  </button>
-                </div>
-              </div>
-            </div>
+                  </Button>
+                </Col>
+              </Row>
+            </Card.Header>
 
-            <div className="card-body">
+            <Card.Body>
               {/* Mensajes */}
               {error && (
                 <div className="alert alert-danger alert-dismissible fade show" role="alert">
@@ -517,11 +519,11 @@ const ClientList = () => {
                   </tbody>
                 </table>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
