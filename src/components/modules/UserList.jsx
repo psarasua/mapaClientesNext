@@ -16,11 +16,8 @@ export default function UserList() {
 
   // Estados del formulario
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    age: 0,
-    phone: '',
-    role: 'user'
+    usuario: '',
+    password: ''
   });
 
   // Cargar usuarios al montar el componente
@@ -93,11 +90,8 @@ export default function UserList() {
   const handleEdit = (user) => {
     setEditingUser(user);
     setFormData({
-      name: user.name,
-      email: user.email,
-      age: user.age,
-      phone: user.phone || '',
-      role: user.role || 'user'
+      usuario: user.usuario || '',
+      password: user.password || ''
     });
     setShowForm(true);
   };
@@ -124,23 +118,11 @@ export default function UserList() {
 
   const resetForm = () => {
     setFormData({ 
-      name: '', 
-      email: '', 
-      age: 0, 
-      phone: '', 
-      role: 'user' 
+      usuario: '', 
+      password: ''
     });
     setEditingUser(null);
     setShowForm(false);
-  };
-
-  const getRoleBadge = (role) => {
-    const variants = {
-      admin: 'danger',
-      moderator: 'warning',
-      user: 'primary'
-    };
-    return variants[role] || 'secondary';
   };
 
   if (loading) {
@@ -204,75 +186,41 @@ export default function UserList() {
                     <Col md={6} className="mb-3">
                       <Form.Group>
                         <Form.Label>
-                          Nombre <span className="text-danger">*</span>
+                          Usuario <span className="text-danger">*</span>
                         </Form.Label>
                         <Form.Control
                           type="text"
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          value={formData.usuario || ''}
+                          onChange={(e) => setFormData({ ...formData, usuario: e.target.value })}
                           required
-                          placeholder="Ingrese el nombre completo"
+                          placeholder="Ingrese el nombre de usuario"
+                          minLength={3}
                         />
+                        <Form.Text className="text-muted">
+                          Mínimo 3 caracteres
+                        </Form.Text>
                       </Form.Group>
                     </Col>
                     <Col md={6} className="mb-3">
                       <Form.Group>
                         <Form.Label>
-                          Email <span className="text-danger">*</span>
+                          Contraseña <span className="text-danger">*</span>
                         </Form.Label>
                         <Form.Control
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          type="password"
+                          value={formData.password || ''}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                           required
-                          placeholder="usuario@example.com"
+                          placeholder="Ingrese la contraseña"
+                          minLength={6}
                         />
+                        <Form.Text className="text-muted">
+                          Mínimo 6 caracteres
+                        </Form.Text>
                       </Form.Group>
                     </Col>
                   </Row>
-                  <Row>
-                    <Col md={4} className="mb-3">
-                      <Form.Group>
-                        <Form.Label>
-                          Edad <span className="text-danger">*</span>
-                        </Form.Label>
-                        <Form.Control
-                          type="number"
-                          value={formData.age}
-                          onChange={(e) => setFormData({ ...formData, age: parseInt(e.target.value) || 0 })}
-                          min="1"
-                          max="120"
-                          required
-                          placeholder="25"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={4} className="mb-3">
-                      <Form.Group>
-                        <Form.Label>Teléfono</Form.Label>
-                        <Form.Control
-                          type="tel"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          placeholder="+34 666 123 456"
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={4} className="mb-3">
-                      <Form.Group>
-                        <Form.Label>Rol</Form.Label>
-                        <Form.Select
-                          value={formData.role}
-                          onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                        >
-                          <option value="user">Usuario</option>
-                          <option value="moderator">Moderador</option>
-                          <option value="admin">Administrador</option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <div className="d-flex gap-2">
+                  <div className="d-flex gap-2 mt-3">
                     <Button type="submit" variant="success">
                       <i className={`bi ${editingUser ? 'bi-check-lg' : 'bi-plus-lg'} me-1`}></i>
                       {editingUser ? 'Actualizar' : 'Crear'}
@@ -293,11 +241,8 @@ export default function UserList() {
               <thead className="table-light">
                 <tr>
                   <th>ID</th>
-                  <th>Nombre</th>
-                  <th>Email</th>
-                  <th>Edad</th>
-                  <th>Teléfono</th>
-                  <th>Rol</th>
+                  <th>Usuario</th>
+                  <th>Password</th>
                   <th scope="col">Acciones</th>
                 </tr>
               </thead>
@@ -307,26 +252,9 @@ export default function UserList() {
                     <td>
                       <Badge bg="light" text="dark">{user.id}</Badge>
                     </td>
-                    <td className="fw-medium">{user.name}</td>
+                    <td className="fw-medium">{user.usuario}</td>
                     <td>
-                      <a href={`mailto:${user.email}`} className="text-decoration-none">
-                        {user.email}
-                      </a>
-                    </td>
-                    <td>{user.age} años</td>
-                    <td>
-                      {user.phone ? (
-                        <a href={`tel:${user.phone}`} className="text-decoration-none">
-                          {user.phone}
-                        </a>
-                      ) : (
-                        <span className="text-muted">-</span>
-                      )}
-                    </td>
-                    <td>
-                      <Badge bg={getRoleBadge(user.role)}>
-                        {user.role}
-                      </Badge>
+                      <span className="text-muted">••••••••</span>
                     </td>
                     <td>
                       <ButtonGroup size="sm">
@@ -379,7 +307,7 @@ export default function UserList() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>¿Estás seguro de que quieres eliminar al usuario <strong>{userToDelete?.name}</strong>?</p>
+          <p>¿Estás seguro de que quieres eliminar al usuario <strong>{userToDelete?.usuario}</strong>?</p>
           <p className="text-muted small">Esta acción no se puede deshacer.</p>
         </Modal.Body>
         <Modal.Footer>

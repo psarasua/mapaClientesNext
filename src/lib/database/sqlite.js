@@ -24,11 +24,8 @@ class SQLiteDatabase {
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS users (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          email TEXT UNIQUE NOT NULL,
-          age INTEGER NOT NULL,
-          phone TEXT,
-          role TEXT DEFAULT 'user',
+          usuario TEXT UNIQUE NOT NULL,
+          password TEXT NOT NULL,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -145,16 +142,13 @@ class SQLiteDatabase {
   async createUser(userData) {
     const db = await this.init();
     const stmt = db.prepare(`
-      INSERT INTO users (name, email, age, phone, role) 
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO users (usuario, password) 
+      VALUES (?, ?)
     `);
     
     const result = stmt.run(
-      userData.name, 
-      userData.email, 
-      userData.age,
-      userData.phone || null,
-      userData.role || 'user'
+      userData.usuario, 
+      userData.password
     );
     
     return this.getUserById(result.lastInsertRowid);
@@ -188,11 +182,11 @@ class SQLiteDatabase {
     const db = await this.init();
     const stmt = db.prepare(`
       SELECT * FROM users 
-      WHERE name LIKE ? OR email LIKE ? 
+      WHERE usuario LIKE ? 
       ORDER BY created_at DESC
     `);
     const searchPattern = `%${query}%`;
-    return stmt.all(searchPattern, searchPattern);
+    return stmt.all(searchPattern);
   }
 
   async getUsersCount() {
@@ -206,7 +200,7 @@ class SQLiteDatabase {
   
   async getAllTrucks() {
     const db = await this.init();
-    const stmt = db.prepare('SELECT * FROM trucks ORDER BY created_at DESC');
+    const stmt = db.prepare('SELECT * FROM trucks ORDER BY id ASC');
     return stmt.all();
   }
 
@@ -354,9 +348,9 @@ class SQLiteDatabase {
     const userCount = await this.getUsersCount();
     if (userCount === 0) {
       const initialUsers = [
-        { name: 'María García', email: 'maria.garcia@example.com', age: 28, phone: '+34 666 111 222', role: 'admin' },
-        { name: 'Juan Pérez', email: 'juan.perez@example.com', age: 32, phone: '+34 666 333 444', role: 'user' },
-        { name: 'Ana Martínez', email: 'ana.martinez@example.com', age: 25, phone: '+34 666 555 666', role: 'user' }
+        { usuario: 'admin', password: 'admin123' },
+        { usuario: 'usuario1', password: 'pass123' },
+        { usuario: 'operador', password: 'operador456' }
       ];
 
       for (const user of initialUsers) {

@@ -29,12 +29,19 @@ export default function TruckList() {
       setLoading(true);
       const response = await truckApi.getAll();
       
+      let trucksData = [];
+      
       // truckApi.getAll() devuelve el objeto completo con { success, trucks, total, source }
       if (response && response.trucks) {
-        setTrucks(response.trucks);
+        trucksData = response.trucks;
       } else {
-        setTrucks(Array.isArray(response) ? response : []);
+        trucksData = Array.isArray(response) ? response : [];
       }
+      
+      // Ordenar camiones por ID de forma ascendente
+      trucksData.sort((a, b) => a.id - b.id);
+      
+      setTrucks(trucksData);
       setError(null);
     } catch (err) {
       console.error('Error cargando camiones:', err);

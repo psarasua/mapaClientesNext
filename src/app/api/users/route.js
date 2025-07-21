@@ -35,21 +35,15 @@ export async function GET() {
       const fallbackUsers = [
         {
           id: 1,
-          name: 'Juan Pérez',
-          email: 'juan@example.com',
-          age: 25,
-          phone: '+34 666 123 456',
-          role: 'user',
+          usuario: 'admin',
+          password: 'admin123',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         },
         {
           id: 2,
-          name: 'María García',
-          email: 'maria@example.com',
-          age: 30,
-          phone: '+34 666 789 012',
-          role: 'admin',
+          usuario: 'usuario1',
+          password: 'pass123',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }
@@ -78,26 +72,25 @@ export async function POST(request) {
     const userData = await request.json();
     
     // Validación básica
-    if (!userData.name || !userData.email || !userData.age) {
+    if (!userData.usuario || !userData.password) {
       return NextResponse.json(
-        { success: false, error: 'Nombre, email y edad son requeridos' },
+        { success: false, error: 'Usuario y password son requeridos' },
         { status: 400 }
       );
     }
 
-    // Validar email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(userData.email)) {
+    // Validar que el usuario tenga al menos 3 caracteres
+    if (userData.usuario.length < 3) {
       return NextResponse.json(
-        { success: false, error: 'Email inválido' },
+        { success: false, error: 'El usuario debe tener al menos 3 caracteres' },
         { status: 400 }
       );
     }
 
-    // Validar edad
-    if (typeof userData.age !== 'number' || userData.age < 1 || userData.age > 120) {
+    // Validar que el password tenga al menos 6 caracteres
+    if (userData.password.length < 6) {
       return NextResponse.json(
-        { success: false, error: 'La edad debe ser un número entre 1 y 120' },
+        { success: false, error: 'La contraseña debe tener al menos 6 caracteres' },
         { status: 400 }
       );
     }
@@ -114,10 +107,10 @@ export async function POST(request) {
     } catch (sqliteError) {
       console.error('Error con SQLite al crear usuario:', sqliteError);
       
-      // Si hay error de email duplicado
+      // Si hay error de usuario duplicado
       if (sqliteError.message && sqliteError.message.includes('UNIQUE constraint failed')) {
         return NextResponse.json(
-          { success: false, error: 'Ya existe un usuario con ese email' },
+          { success: false, error: 'Ya existe un usuario con ese nombre de usuario' },
           { status: 409 }
         );
       }
@@ -149,23 +142,18 @@ export async function PUT(request) {
     }
 
     // Validaciones opcionales (solo si se proporcionan)
-    if (userData.email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(userData.email)) {
-        return NextResponse.json(
-          { success: false, error: 'Email inválido' },
-          { status: 400 }
-        );
-      }
+    if (userData.usuario && userData.usuario.length < 3) {
+      return NextResponse.json(
+        { success: false, error: 'El usuario debe tener al menos 3 caracteres' },
+        { status: 400 }
+      );
     }
 
-    if (userData.age !== undefined) {
-      if (typeof userData.age !== 'number' || userData.age < 1 || userData.age > 120) {
-        return NextResponse.json(
-          { success: false, error: 'La edad debe ser un número entre 1 y 120' },
-          { status: 400 }
-        );
-      }
+    if (userData.password && userData.password.length < 6) {
+      return NextResponse.json(
+        { success: false, error: 'La contraseña debe tener al menos 6 caracteres' },
+        { status: 400 }
+      );
     }
 
     const db = getSQLiteDB();
@@ -190,7 +178,7 @@ export async function PUT(request) {
       
       if (sqliteError.message && sqliteError.message.includes('UNIQUE constraint failed')) {
         return NextResponse.json(
-          { success: false, error: 'Ya existe un usuario con ese email' },
+          { success: false, error: 'Ya existe un usuario con ese nombre de usuario' },
           { status: 409 }
         );
       }

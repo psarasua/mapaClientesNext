@@ -3,11 +3,8 @@
  * 
  * User: {
  *   id: number,
- *   name: string,
- *   email: string,
- *   age: number,
- *   phone?: string,
- *   role?: 'user' | 'admin' | 'moderator',
+ *   usuario: string,
+ *   password: string,
  *   created_at?: string,
  *   updated_at?: string
  * }
@@ -171,9 +168,8 @@
 // Funciones de validación para usuarios
 export const validateCreateUserData = (data) => {
   return data &&
-         typeof data.name === 'string' && data.name.length > 0 &&
-         typeof data.email === 'string' && data.email.includes('@') &&
-         typeof data.age === 'number' && data.age > 0;
+         typeof data.usuario === 'string' && data.usuario.length >= 3 &&
+         typeof data.password === 'string' && data.password.length >= 6;
 };
 
 // Funciones de validación para camiones
