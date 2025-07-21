@@ -2,7 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import dynamic from 'next/dynamic';
 import { clientApi, handleApiError } from '../../lib/api.js';
+
+// Importar el mapa de forma dinámica para evitar errores de SSR
+const MapComponent = dynamic(() => import('./MapComponent.jsx'), {
+  ssr: false,
+  loading: () => <div className="text-center p-4"><Spinner animation="border" /></div>
+});
+
+const LocationPickerMap = dynamic(() => import('./LocationPickerMap.jsx'), {
+  ssr: false,
+  loading: () => <div className="text-center p-2"><Spinner animation="border" size="sm" /></div>
+});
 
 const ClientList = () => {
   const [clients, setClients] = useState([]);
@@ -27,6 +39,8 @@ const ClientList = () => {
   const [filterText, setFilterText] = useState('');
   const [sortField, setSortField] = useState('nombre');
   const [sortDirection, setSortDirection] = useState('asc');
+  const [showMap, setShowMap] = useState(false);
+  const [selectedClient, setSelectedClient] = useState(null);
 
   // Cargar clientes al montar el componente
   useEffect(() => {
@@ -194,6 +208,24 @@ const ClientList = () => {
     }
   };
 
+  const handleShowMap = (client) => {
+    setSelectedClient(client);
+    setShowMap(true);
+  };
+
+  const handleCloseMap = () => {
+    setShowMap(false);
+    setSelectedClient(null);
+  };
+
+  const handleLocationChange = (coordinates) => {
+    setFormData(prev => ({
+      ...prev,
+      latitud: coordinates.latitude,
+      longitud: coordinates.longitude
+    }));
+  };
+
   const filteredClients = getFilteredAndSortedClients();
 
   return (
@@ -201,7 +233,7 @@ const ClientList = () => {
       <Row>
         <Col xs={12}>
           <Card className="shadow">
-            <Card.Header className="bg-primary text-white">
+            <Card.Header className="bg-white border-bottom-0 py-3">
               <Row className="align-items-center">
                 <Col>
                   <h4 className="mb-0">
@@ -211,19 +243,12 @@ const ClientList = () => {
                 </Col>
                 <Col xs="auto">
                   <Button 
-                    variant="light"
+                    variant={showForm ? 'outline-secondary' : 'primary'}
                     onClick={() => setShowForm(!showForm)}
                     disabled={loading}
                   >
+                    <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
                     {showForm ? 'Cancelar' : 'Agregar Cliente'}
-                  </Button>
-                  <Button 
-                    variant="outline-light"
-                    className="ms-2"
-                    onClick={loadClients}
-                    disabled={loading}
-                  >
-                    {loading ? 'Cargando...' : 'Actualizar'}
                   </Button>
                 </Col>
               </Row>
@@ -340,8 +365,9 @@ const ClientList = () => {
                             className="form-control"
                             id="latitud"
                             name="latitud"
-                            value={formData.latitud}
+                            value={formData.latitud || ''}
                             onChange={handleInputChange}
+                            readOnly
                           />
                         </div>
                         <div className="col-md-4 mb-3">
@@ -352,8 +378,9 @@ const ClientList = () => {
                             className="form-control"
                             id="longitud"
                             name="longitud"
-                            value={formData.longitud}
+                            value={formData.longitud || ''}
                             onChange={handleInputChange}
+                            readOnly
                           />
                         </div>
                         <div className="col-md-4 mb-3">
@@ -369,6 +396,19 @@ const ClientList = () => {
                             <option value={0}>Inactivo</option>
                           </select>
                         </div>
+                      </div>
+
+                      {/* Mapa para seleccionar coordenadas */}
+                      <div className="mb-3">
+                        <label className="form-label">
+                          <strong>📍 Seleccionar Ubicación en el Mapa</strong>
+                        </label>
+                        <LocationPickerMap
+                          latitude={formData.latitud || -33.4489}
+                          longitude={formData.longitud || -70.6693}
+                          onLocationChange={handleLocationChange}
+                          height="350px"
+                        />
                       </div>
 
                       <div className="d-flex gap-2">
@@ -405,7 +445,7 @@ const ClientList = () => {
               {/* Tabla de Clientes */}
               <div className="table-responsive">
                 <table className="table table-hover table-striped">
-                  <thead className="table-dark">
+                  <thead className="table-light">
                     <tr>
                       <th 
                         scope="col" 
@@ -481,32 +521,60 @@ const ClientList = () => {
                               {client.activo ? 'Activo' : 'Inactivo'}
                             </span>
                           </td>
-                          <td>
+                          <td className="text-center">
                             {client.latitud && client.longitud ? (
-                              <small className="text-muted">
-                                {client.latitud.toFixed(4)}, {client.longitud.toFixed(4)}
-                              </small>
-                            ) : '-'}
+                              <Button
+                                variant="success"
+                                size="sm"
+                                onClick={() => handleShowMap(client)}
+                                title={`Ver ubicación: ${client.latitud.toFixed(4)}, ${client.longitud.toFixed(4)}`}
+                                className="border-0"
+                                style={{ width: '32px', height: '32px' }}
+                              >
+                                🟢
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                disabled
+                                title="Sin coordenadas de ubicación"
+                                className="border-0"
+                                style={{ width: '32px', height: '32px' }}
+                              >
+                                🔴
+                              </Button>
+                            )}
                           </td>
                           <td>
-                            <div className="btn-group" role="group">
-                              <button
-                                className="btn btn-sm btn-outline-primary"
-                                onClick={() => handleEdit(client)}
-                                disabled={loading}
-                                title="Editar cliente"
+                            <ButtonGroup>
+                              <OverlayTrigger
+                                placement="top"
+                                overlay={<Tooltip>Editar cliente</Tooltip>}
                               >
-                                <i className="bi bi-pencil"></i>
-                              </button>
-                              <button
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleDelete(client.id, client.nombre)}
-                                disabled={loading}
-                                title="Eliminar cliente"
+                                <Button
+                                  onClick={() => handleEdit(client)}
+                                  variant="outline-primary"
+                                  size="sm"
+                                  disabled={loading}
+                                >
+                                  <i className="bi bi-pencil"></i>
+                                </Button>
+                              </OverlayTrigger>
+                              <OverlayTrigger
+                                placement="top"
+                                overlay={<Tooltip>Eliminar cliente</Tooltip>}
                               >
-                                <i className="bi bi-trash"></i>
-                              </button>
-                            </div>
+                                <Button
+                                  onClick={() => handleDelete(client.id, client.nombre)}
+                                  variant="outline-danger"
+                                  size="sm"
+                                  disabled={loading}
+                                >
+                                  <i className="bi bi-trash"></i>
+                                </Button>
+                              </OverlayTrigger>
+                            </ButtonGroup>
                           </td>
                         </tr>
                       ))
@@ -518,6 +586,39 @@ const ClientList = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Modal para mostrar el mapa */}
+      <Modal show={showMap} onHide={handleCloseMap} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            📍 Ubicación de {selectedClient?.nombre}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedClient && (
+            <>
+              <div className="mb-3">
+                <strong>Cliente:</strong> {selectedClient.nombre}<br/>
+                <strong>Dirección:</strong> {selectedClient.direccion}<br/>
+                <strong>Coordenadas:</strong> {selectedClient.latitud?.toFixed(6)}, {selectedClient.longitud?.toFixed(6)}
+              </div>
+              <div style={{ height: '400px', width: '100%' }}>
+                <MapComponent 
+                  latitude={selectedClient.latitud} 
+                  longitude={selectedClient.longitud}
+                  clientName={selectedClient.nombre}
+                  address={selectedClient.direccion}
+                />
+              </div>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseMap}>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

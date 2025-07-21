@@ -149,31 +149,44 @@ export default function ClientesporRepartoList() {
     <Container fluid className="py-4">
       <Row>
         <Col xs={12}>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2>Asignación de Clientes por Reparto</h2>
-            <div className="d-flex gap-2">
-              <ButtonGroup>
-                <Button
-                  variant={viewMode === 'table' ? 'primary' : 'outline-primary'}
-                  onClick={() => setViewMode('table')}
-                >
-                  Vista Tabla
-                </Button>
-                <Button
-                  variant={viewMode === 'grouped' ? 'primary' : 'outline-primary'}
-                  onClick={() => setViewMode('grouped')}
-                >
-                  Vista Agrupada
-                </Button>
-              </ButtonGroup>
-              <Button
-                variant="success"
-                onClick={() => setShowForm(true)}
-              >
-                Agregar Asignación
-              </Button>
-            </div>
-          </div>
+          <Card className="shadow">
+            <Card.Header className="bg-white border-bottom-0 py-3">
+              <Row className="align-items-center">
+                <Col>
+                  <h4 className="mb-0">
+                    <i className="bi bi-boxes me-2"></i>
+                    Asignación de Clientes por Reparto
+                  </h4>
+                </Col>
+                <Col xs="auto">
+                  <div className="d-flex gap-2">
+                    <ButtonGroup>
+                      <Button
+                        variant={viewMode === 'table' ? 'primary' : 'outline-primary'}
+                        onClick={() => setViewMode('table')}
+                      >
+                        Vista Tabla
+                      </Button>
+                      <Button
+                        variant={viewMode === 'grouped' ? 'primary' : 'outline-primary'}
+                        onClick={() => setViewMode('grouped')}
+                      >
+                        Vista Agrupada
+                      </Button>
+                    </ButtonGroup>
+                    <Button
+                      variant={showForm ? 'outline-secondary' : 'primary'}
+                      onClick={() => setShowForm(!showForm)}
+                    >
+                      <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
+                      {showForm ? 'Cancelar' : 'Agregar Asignación'}
+                    </Button>
+                  </div>
+                </Col>
+              </Row>
+            </Card.Header>
+
+            <Card.Body>
 
           {/* Filtros */}
           <div className="row mb-4">
@@ -213,7 +226,7 @@ export default function ClientesporRepartoList() {
           {viewMode === 'table' && (
             <div className="table-responsive">
               <table className="table table-striped table-hover">
-                <thead className="table-dark">
+                <thead className="table-light">
                   <tr>
                     <th>ID</th>
                     <th>Día de Entrega</th>
@@ -249,20 +262,30 @@ export default function ClientesporRepartoList() {
                         <td>{item.cliente_telefono}</td>
                         <td>{item.cliente_rut}</td>
                         <td>
-                          <div className="btn-group btn-group-sm">
-                            <button
-                              className="btn btn-warning"
-                              onClick={() => handleEdit(item)}
+                          <ButtonGroup size="sm">
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={<Tooltip>Editar asignación</Tooltip>}
                             >
-                              Editar
-                            </button>
-                            <button
-                              className="btn btn-danger"
-                              onClick={() => handleDelete(item.id)}
+                              <Button
+                                variant="outline-warning"
+                                onClick={() => handleEdit(item)}
+                              >
+                                <i className="bi bi-pencil"></i>
+                              </Button>
+                            </OverlayTrigger>
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={<Tooltip>Eliminar asignación</Tooltip>}
                             >
-                              Eliminar
-                            </button>
-                          </div>
+                              <Button
+                                variant="outline-danger"
+                                onClick={() => handleDelete(item.id)}
+                              >
+                                <i className="bi bi-trash"></i>
+                              </Button>
+                            </OverlayTrigger>
+                          </ButtonGroup>
                         </td>
                       </tr>
                     ))
@@ -302,22 +325,32 @@ export default function ClientesporRepartoList() {
                                 <br />
                                 <small className="text-muted">RUT: {cliente.cliente_rut}</small>
                               </div>
-                              <div className="btn-group btn-group-sm ms-2">
-                                <button
-                                  className="btn btn-outline-warning btn-sm"
-                                  onClick={() => handleEdit(cliente)}
-                                  title="Editar"
+                              <ButtonGroup size="sm" className="ms-2">
+                                <OverlayTrigger
+                                  placement="top"
+                                  overlay={<Tooltip>Editar asignación</Tooltip>}
                                 >
-                                  ✏️
-                                </button>
-                                <button
-                                  className="btn btn-outline-danger btn-sm"
-                                  onClick={() => handleDelete(cliente.id)}
-                                  title="Eliminar"
+                                  <Button
+                                    variant="outline-warning"
+                                    size="sm"
+                                    onClick={() => handleEdit(cliente)}
+                                  >
+                                    <i className="bi bi-pencil"></i>
+                                  </Button>
+                                </OverlayTrigger>
+                                <OverlayTrigger
+                                  placement="top"
+                                  overlay={<Tooltip>Eliminar asignación</Tooltip>}
                                 >
-                                  🗑️
-                                </button>
-                              </div>
+                                  <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => handleDelete(cliente.id)}
+                                  >
+                                    <i className="bi bi-trash"></i>
+                                  </Button>
+                                </OverlayTrigger>
+                              </ButtonGroup>
                             </li>
                           ))}
                         </ul>
@@ -392,6 +425,8 @@ export default function ClientesporRepartoList() {
               </div>
             </div>
           )}
+            </Card.Body>
+          </Card>
         </Col>
       </Row>
     </Container>

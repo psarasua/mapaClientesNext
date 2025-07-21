@@ -168,7 +168,7 @@ const DiaEntregaList = () => {
       <div className="row">
         <div className="col-12">
           <div className="card shadow">
-            <div className="card-header bg-success text-white">
+            <div className="card-header bg-white border-bottom-0 py-3">
               <div className="row align-items-center">
                 <div className="col">
                   <h4 className="mb-0">
@@ -177,13 +177,14 @@ const DiaEntregaList = () => {
                   </h4>
                 </div>
                 <div className="col-auto">
-                  <button 
-                    className="btn btn-light"
+                  <Button 
+                    variant={showForm ? 'outline-secondary' : 'primary'}
                     onClick={() => setShowForm(!showForm)}
                     disabled={loading}
                   >
+                    <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
                     {showForm ? 'Cancelar' : 'Agregar Día'}
-                  </button>
+                  </Button>
                   <button 
                     className="btn btn-outline-light ms-2"
                     onClick={loadDiasEntrega}
@@ -271,7 +272,7 @@ const DiaEntregaList = () => {
               {/* Tabla de Días de Entrega */}
               <div className="table-responsive">
                 <table className="table table-hover table-striped">
-                  <thead className="table-dark">
+                  <thead className="table-light">
                     <tr>
                       <th scope="col" className="text-center">ID</th>
                       <th 
@@ -315,24 +316,34 @@ const DiaEntregaList = () => {
                             </div>
                           </td>
                           <td className="text-center">
-                            <div className="btn-group" role="group">
-                              <button
-                                className="btn btn-sm btn-outline-primary"
-                                onClick={() => handleEdit(diaEntrega)}
-                                disabled={loading}
-                                title="Editar día de entrega"
+                            <ButtonGroup>
+                              <OverlayTrigger
+                                placement="top"
+                                overlay={<Tooltip>Editar día de entrega</Tooltip>}
                               >
-                                <i className="bi bi-pencil"></i>
-                              </button>
-                              <button
-                                className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleDelete(diaEntrega.id, diaEntrega.descripcion)}
-                                disabled={loading}
-                                title="Eliminar día de entrega"
+                                <Button
+                                  onClick={() => handleEdit(diaEntrega)}
+                                  variant="outline-primary"
+                                  size="sm"
+                                  disabled={loading}
+                                >
+                                  <i className="bi bi-pencil"></i>
+                                </Button>
+                              </OverlayTrigger>
+                              <OverlayTrigger
+                                placement="top"
+                                overlay={<Tooltip>Eliminar día de entrega</Tooltip>}
                               >
-                                <i className="bi bi-trash"></i>
-                              </button>
-                            </div>
+                                <Button
+                                  onClick={() => handleDelete(diaEntrega.id, diaEntrega.descripcion)}
+                                  variant="outline-danger"
+                                  size="sm"
+                                  disabled={loading}
+                                >
+                                  <i className="bi bi-trash"></i>
+                                </Button>
+                              </OverlayTrigger>
+                            </ButtonGroup>
                           </td>
                         </tr>
                       ))
