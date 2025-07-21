@@ -32,7 +32,13 @@ export default function UserList() {
     try {
       setLoading(true);
       const response = await userApi.getAll();
-      setUsers(response.users);
+      
+      // userApi.getAll() devuelve el objeto completo con { success, users, total, source }
+      if (response && response.users) {
+        setUsers(response.users);
+      } else {
+        setUsers(Array.isArray(response) ? response : []);
+      }
       setError(null);
     } catch (err) {
       console.error('Error cargando usuarios:', err);

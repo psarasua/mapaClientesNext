@@ -37,18 +37,13 @@ const ClientList = () => {
     try {
       setLoading(true);
       setError('');
-      const response = await clientApi.getAll();
+      const clients = await clientApi.getAll();
       
-      if (response.success) {
-        setClients(response.clients || []);
-        if (response.source) {
-          console.log('Fuente de datos:', response.source);
-        }
-      } else {
-        throw new Error(response.error || 'Error cargando clientes');
-      }
+      // clientApi.getAll() ya devuelve directamente el array de clientes
+      setClients(Array.isArray(clients) ? clients : []);
+      
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error cargando clientes:', error);
       setError(handleApiError(error));
     } finally {
       setLoading(false);

@@ -28,7 +28,13 @@ export default function TruckList() {
     try {
       setLoading(true);
       const response = await truckApi.getAll();
-      setTrucks(response.trucks);
+      
+      // truckApi.getAll() devuelve el objeto completo con { success, trucks, total, source }
+      if (response && response.trucks) {
+        setTrucks(response.trucks);
+      } else {
+        setTrucks(Array.isArray(response) ? response : []);
+      }
       setError(null);
     } catch (err) {
       console.error('Error cargando camiones:', err);
