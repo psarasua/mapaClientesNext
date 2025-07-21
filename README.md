@@ -1,186 +1,274 @@
-# 🚀 Next.js Fullstack App
+# 🚚 MapaClientesNext - Sistema de Gestión Logística
 
-Una aplicación fullstack moderna desarrollada con **JavaScript**, **Next.js** y **Bootstrap**, que incluye una base de datos **SQLite** con fallback a **Local Storage**.
+Sistema completo de gestión logística desarrollado con **Next.js 15**, **React 19**, **SQLite** y **Bootstrap 5**. Permite administrar flotas de camiones, clientes, rutas de entrega y asignación de clientes por reparto con interfaz moderna y responsive.
 
-## ✨ Características
+## 🎯 **Características Principales**
 
-### 🎯 Frontend
-- **React 19** con hooks modernos
-- **Next.js 15** con App Router
+- ✅ **Gestión Completa**: Usuarios, Camiones, Clientes, Días de Entrega y Repartos
+- ✅ **Asignación Inteligente**: Sistema de asignación de clientes por reparto
+- ✅ **Vista Dual**: Tabla detallada y vista agrupada por camión/día
+- ✅ **CRUD Completo**: Crear, leer, actualizar y eliminar en todas las entidades
+- ✅ **Base de Datos SQLite**: Persistencia local con relaciones complejas
+- ✅ **Interfaz Moderna**: Design responsive con Bootstrap 5
+- ✅ **APIs RESTful**: Endpoints completos con validación
+- ✅ **Datos de Ejemplo**: Sistema precargado con datos realistas
+
+## 🏗️ **Arquitectura del Sistema**
+
+### **Frontend**
+- **Next.js 15** con App Router y Turbopack
+- **React 19** con hooks y componentes funcionales
 - **Bootstrap 5** para diseño responsive
-- **JavaScript ES6+** (migrado desde TypeScript)
-- Componentes interactivos y responsive
-- **CRUD completo** para gestión de usuarios
-- **Manejo de errores** robusto
-- **Estado de API** en tiempo real
+- **6 Módulos principales** con navegación por pestañas
 
-## 🛠️ Tecnologías Utilizadas
+### **Backend**
+- **Next.js API Routes** como servidor Node.js
+- **SQLite** con better-sqlite3 para base de datos
+- **Validación de datos** con sistema de tipos robusto
+- **Manejo de errores** comprehensive
 
-- [Next.js 15](https://nextjs.org/) - Framework React fullstack
-- [React](https://reactjs.org/) - Librería de interfaz de usuario
-- [TypeScript](https://www.typescriptlang.org/) - JavaScript con tipos
-- [Tailwind CSS](https://tailwindcss.com/) - Framework CSS utilitario
-- [ESLint](https://eslint.org/) - Linter de código
-
-## 🚀 Inicio Rápido
-
-### Prerrequisitos
-
-- Node.js 18.17 o superior
-- npm, yarn, pnpm, o bun
-
-### Instalación y Ejecución
-
-1. **Clona el repositorio** (si aplicable):
-```bash
-git clone <repository-url>
-cd nextjs-fullstack
+### **Base de Datos**
+```sql
+Usuarios (5) → Camiones (5) → Clientes (10) 
+    ↓             ↓              ↓
+DiasEntrega (5) → Repartos (25) → ClientesporReparto (76)
 ```
 
-2. **Instala las dependencias**:
+## 🚀 **Instalación Rápida**
+
+### **1. Clonar el repositorio**
+```bash
+git clone https://github.com/psarasua/mapaClientesNext.git
+cd mapaClientesNext
+```
+
+### **2. Instalar dependencias**
 ```bash
 npm install
-# o
-yarn install
-# o
-pnpm install
 ```
 
-3. **Ejecuta el servidor de desarrollo**:
+### **3. Iniciar el servidor**
 ```bash
 npm run dev
-# o
-yarn dev
-# o
-pnpm dev
 ```
 
-4. **Abre tu navegador** y ve a [http://localhost:3000](http://localhost:3000)
-
-## 📁 Estructura del Proyecto
-
+### **4. Abrir en el navegador**
 ```
-src/
-├── app/
-│   ├── api/              # Backend API routes
-│   │   ├── users/        # CRUD de usuarios
-│   │   │   └── route.ts  # GET, POST, PUT, DELETE
-│   │   └── health/       # Health check
-│   │       └── route.ts  # Estado de la API
-│   ├── layout.tsx        # Layout principal
-│   ├── page.tsx          # Página de inicio
-│   └── globals.css       # Estilos globales
-├── components/           # Componentes React
-│   ├── UserList.tsx      # Lista y gestión de usuarios
-│   └── ApiStatus.tsx     # Estado de la API
-├── lib/                  # Utilidades
-│   └── api.ts           # Cliente API
-└── types/               # Definiciones TypeScript
-    └── index.ts         # Tipos principales
+http://localhost:3000
 ```
 
-## 🔌 API Endpoints
+> 💡 **Nota**: Si el puerto 3000 está ocupado, Next.js automáticamente usará el siguiente disponible (3001, 3002, etc.)
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/api/users` | Obtener todos los usuarios |
-| POST | `/api/users` | Crear nuevo usuario |
-| PUT | `/api/users` | Actualizar usuario |
-| DELETE | `/api/users?id={id}` | Eliminar usuario |
-| GET | `/api/health` | Verificar estado de la API |
+## 📊 **Módulos del Sistema**
 
-### Ejemplo de uso de la API
+### **1. 👥 Usuarios**
+- Gestión de personal de la empresa
+- CRUD completo con validaciones
+- Campos: nombre, email, teléfono, cargo
 
-```typescript
-// Obtener usuarios
-const response = await fetch('/api/users');
-const data = await response.json();
+### **2. 🚚 Camiones**
+- Administración de flota vehicular
+- Control de patentes y descripciones
+- Estados y disponibilidad
 
-// Crear usuario
-const newUser = {
-  name: 'Juan Pérez',
-  email: 'juan@example.com',
-  age: 25
-};
-const response = await fetch('/api/users', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(newUser)
-});
+### **3. 🏢 Clientes**
+- Base de datos de clientes
+- Información completa: razón social, dirección, RUT
+- Códigos alternativos y contactos
+
+### **4. 📅 Días de Entrega**
+- Configuración de días laborables
+- Horarios y rutas específicas
+- Planificación semanal
+
+### **5. 🚛 Repartos**
+- Combinación día + camión
+- 25 repartos automáticos (5 días × 5 camiones)
+- Vista matriz para planificación
+
+### **6. 👨‍💼 Clientes por Reparto** ⭐
+- **Funcionalidad Principal**: Asignación de clientes a repartos
+- **Vista Agrupada**: Organizada por camión y día
+- **Vista Tabla**: Lista detallada con filtros
+- **Gestión Completa**: Agregar/quitar clientes fácilmente
+
+## 🎮 **Cómo Usar el Sistema**
+
+### **Navegación Principal**
+1. **Pestañas superiores**: Cambia entre los 6 módulos
+2. **Botones de acción**: Crear, editar, eliminar registros
+3. **Filtros**: Buscar por criterios específicos
+4. **Vistas alternativas**: Tabla vs. vista agrupada
+
+### **Gestión de Clientes por Reparto**
+1. Ve a la pestaña **"Clientes por Reparto"**
+2. **Vista Agrupada**: Ver clientes por camión/día
+3. **Agregar**: Botón "Agregar Asignación" → seleccionar reparto + cliente
+4. **Eliminar**: Botón 🗑️ junto a cada cliente
+5. **Filtrar**: Por reparto específico o cliente específico
+
+### **Flujo de Trabajo Típico**
+1. **Configurar usuarios** y camiones disponibles
+2. **Registrar clientes** con información completa
+3. **Configurar días de entrega** operativos
+4. **Los repartos se generan automáticamente** (día × camión)
+5. **Asignar clientes** a cada reparto según rutas
+6. **Visualizar planificación** en vista agrupada
+
+## 📁 **Estructura del Proyecto**
+
+```
+📁 mapaClientesNext/
+├── 📁 src/
+│   ├── 📁 app/
+│   │   ├── 📁 api/                 # Endpoints REST
+│   │   │   ├── 📁 users/          # CRUD usuarios
+│   │   │   ├── 📁 trucks/         # CRUD camiones
+│   │   │   ├── 📁 clients/        # CRUD clientes
+│   │   │   ├── 📁 diasEntrega/    # CRUD días entrega
+│   │   │   ├── 📁 repartos/       # CRUD repartos
+│   │   │   ├── 📁 clientesporreparto/ # CRUD asignaciones
+│   │   │   └── 📁 health/         # Health check
+│   │   ├── layout.js              # Layout principal
+│   │   └── page.js                # Página principal
+│   ├── 📁 components/
+│   │   ├── UserList.jsx           # Gestión usuarios
+│   │   ├── TruckList.jsx          # Gestión camiones
+│   │   ├── ClientList.jsx         # Gestión clientes
+│   │   ├── DiaEntregaList.jsx     # Gestión días
+│   │   ├── RepartoList.jsx        # Gestión repartos
+│   │   ├── ClientesporRepartoList.jsx # ⭐ Asignaciones
+│   │   └── ApiStatus.jsx          # Estado del sistema
+│   ├── 📁 lib/
+│   │   ├── 📁 database/
+│   │   │   └── sqlite.js          # Motor de base de datos
+│   │   └── api.js                 # Cliente API
+│   └── 📁 types/
+│       └── index.js               # Validaciones y tipos
+├── 📁 data/
+│   └── users.db                   # Base de datos SQLite
+├── 📁 .github/
+│   └── copilot-instructions.md    # Instrucciones desarrollo
+└── 📄 Archivos configuración (package.json, next.config.js, etc.)
 ```
 
-## 🎨 Características del Frontend
+## 🛠️ **APIs Disponibles**
 
-- **Gestión de usuarios** con interfaz intuitiva
-- **Formularios dinámicos** para crear/editar usuarios
-- **Tablas responsivas** para mostrar datos
-- **Estado de carga** y manejo de errores
-- **Confirmaciones** para operaciones destructivas
-- **Diseño moderno** con Tailwind CSS
+### **Endpoints REST**
+```
+GET/POST/PUT/DELETE /api/users              # Usuarios
+GET/POST/PUT/DELETE /api/trucks             # Camiones  
+GET/POST/PUT/DELETE /api/clients            # Clientes
+GET/POST/PUT/DELETE /api/diasEntrega        # Días entrega
+GET/POST/PUT/DELETE /api/repartos           # Repartos
+GET/POST/PUT/DELETE /api/clientesporreparto # Asignaciones
+GET                 /api/health             # Estado sistema
+```
 
-## 🔧 Características del Backend
+### **Filtros Especiales**
+```
+GET /api/clientesporreparto?reparto=1       # Por reparto
+GET /api/clientesporreparto?cliente=5       # Por cliente
+GET /api/repartos?dia=1&camion=2           # Por día y camión
+```
 
-- **API RESTful** con Next.js API Routes
-- **Validación de datos** en el servidor
-- **Manejo de errores** consistente
-- **Respuestas JSON** estructuradas
-- **Base de datos en memoria** (para demo)
+## 💾 **Base de Datos**
 
-- **Validación de datos** en el servidor
-- **Manejo de errores** consistente
-- **Respuestas JSON** estructuradas
-- **Base de datos en memoria** (para demo)
+### **Tablas y Relaciones**
+- **Users**: Gestión de personal
+- **Trucks**: Flota de vehículos  
+- **Clients**: Base de clientes
+- **DiasEntrega**: Días operativos
+- **Repartos**: día_id + camion_id (25 combinaciones)
+- **ClientesporReparto**: reparto_id + cliente_id (76 asignaciones)
 
-## 📝 Scripts Disponibles
+### **Datos de Ejemplo Incluidos**
+- 5 usuarios con diferentes cargos
+- 5 camiones con patentes realistas
+- 10 clientes con datos completos
+- 5 días de entrega (Lunes a Viernes)
+- 25 repartos automáticos
+- 76 asignaciones de clientes distribuidas aleatoriamente
 
-- `npm run dev` - Ejecutar en modo desarrollo
-- `npm run build` - Construir para producción
-- `npm run start` - Ejecutar en producción
-- `npm run lint` - Verificar código con ESLint
+## 🔧 **Comandos Disponibles**
 
-## 🤝 Contribuir
+```bash
+npm run dev          # Servidor desarrollo (puerto 3000)
+npm run build        # Build producción
+npm run start        # Servidor producción
+npm run lint         # Linting código
+```
 
-1. Fork el proyecto
-2. Crea tu rama de feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+## 🌟 **Características Técnicas**
 
-## 📚 Recursos de Aprendizaje
+### **Tecnologías**
+- **Next.js 15.4.2** con Turbopack
+- **React 19** con Concurrent Features
+- **SQLite** con better-sqlite3
+- **Bootstrap 5.3** para UI
+- **JavaScript ES6+** con modules
 
-- [Documentación de Next.js](https://nextjs.org/docs)
-- [Tutorial de React](https://reactjs.org/tutorial/tutorial.html)
-- [Guía de TypeScript](https://www.typescriptlang.org/docs/)
-- [Documentación de Tailwind CSS](https://tailwindcss.com/docs)
+### **Funcionalidades Avanzadas**
+- **Relaciones complejas** entre entidades
+- **Validación robusta** de datos
+- **Manejo de errores** comprehensive  
+- **Interfaz responsive** mobile-first
+- **Carga automática** de datos ejemplo
+- **APIs con filtros** y búsquedas
+- **Estado persistente** con SQLite
 
-## 🔮 Próximas Mejoras
+## 📝 **Desarrollo y Contribución**
 
-- [ ] Integración con base de datos real (PostgreSQL/MongoDB)
-- [ ] Autenticación y autorización
-- [ ] Paginación y filtros avanzados
-- [ ] Tests unitarios y de integración
-- [ ] Deployment automático
-- [ ] Documentación API con Swagger
+### **Estructura de Commits**
+```bash
+git add .
+git commit -m "feat: descripción de nueva funcionalidad"
+git push origin main
+```
 
-## 🐛 Resolución de Problemas
+### **Extensiones Recomendadas**
+- ES7+ React/Redux/React-Native snippets
+- Better SQLite3 VSCode
+- Bootstrap 5 & Font Awesome snippets
 
-### Error de compilación
-Si encuentras errores de TypeScript, asegúrate de que todos los tipos estén correctamente importados.
+## 🎯 **Casos de Uso**
 
-### Problemas con Tailwind
-Si los estilos no se aplican, verifica que el archivo `tailwind.config.js` esté configurado correctamente.
+### **Empresas de Logística**
+- Planificación de rutas diarias
+- Asignación eficiente de clientes
+- Control de flota vehicular
+- Seguimiento de entregas
 
-### API no responde
-Verifica que el servidor de desarrollo esté ejecutándose y que los endpoints estén en la ruta correcta.
+### **Distribuidoras**
+- Gestión de clientes por zona
+- Optimización de repartos
+- Control de días operativos
+- Administración de recursos
 
-## 📄 Licencia
+### **Pequeñas y Medianas Empresas**
+- Sistema completo sin costos de licencia
+- Fácil implementación local
+- Datos seguros en SQLite
+- Interface intuitiva
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+## 📞 **Soporte**
+
+- **Repositorio**: https://github.com/psarasua/mapaClientesNext
+- **Issues**: Reportar bugs y solicitar features
+- **Documentación**: README.md actualizado
+- **Código**: Completamente comentado
 
 ---
 
-**¡Hecho con ❤️ usando Next.js y React!**
+## 🏆 **¡Sistema Listo para Producción!**
 
-Para más información sobre Next.js, visita [https://nextjs.org](https://nextjs.org).
+El proyecto incluye **todo lo necesario** para un sistema de gestión logística completo:
+- ✅ Base de datos funcional con datos ejemplo
+- ✅ APIs REST completas y documentadas  
+- ✅ Interface moderna y responsive
+- ✅ CRUD completo en todas las entidades
+- ✅ Sistema de asignaciones avanzado
+- ✅ Validaciones y manejo de errores
+- ✅ Documentación completa
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+**¡Simplemente instala y ejecuta!** 🚀
