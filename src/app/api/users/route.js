@@ -1,61 +1,29 @@
 import { NextResponse } from 'next/server';
-import { getSQLiteDB } from '../../../lib/database/sqlite.js';
+import { getDatabase } from '../../../lib/database/adapter.js';
 
 // GET - Obtener todos los usuarios
 export async function GET() {
   try {
-    const db = getSQLiteDB();
+    const db = getDatabase();
+    const dbInfo = db.getDatabaseInfo();
     
-    // Intentar obtener usuarios de SQLite
+    // Intentar obtener usuarios
     try {
       const users = await db.getAllUsers();
-      
-      // Si no hay usuarios, crear datos iniciales
-      if (users.length === 0) {
-        await db.seedInitialData();
-        const newUsers = await db.getAllUsers();
-        return NextResponse.json({
-          success: true,
-          users: newUsers,
-          total: newUsers.length,
-          source: 'sqlite'
-        });
-      }
       
       return NextResponse.json({
         success: true,
         users,
         total: users.length,
-        source: 'sqlite'
+        database: dbInfo
       });
-    } catch (sqliteError) {
-      console.error('Error con SQLite, usando fallback:', sqliteError);
+    } catch (dbError) {
+      console.error('Error con base de datos:', dbError);
       
-      // Fallback a datos por defecto si SQLite falla
-      const fallbackUsers = [
-        {
-          id: 1,
-          usuario: 'admin',
-          password: 'admin123',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: 2,
-          usuario: 'usuario1',
-          password: 'pass123',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ];
-      
-      return NextResponse.json({
-        success: true,
-        users: fallbackUsers,
-        total: fallbackUsers.length,
-        source: 'fallback',
-        warning: 'SQLite no disponible, usando datos de fallback'
-      });
+      return NextResponse.json(
+        { success: false, error: 'Error de base de datos', details: dbError.message },
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
@@ -95,7 +63,7 @@ export async function POST(request) {
       );
     }
 
-    const db = getSQLiteDB();
+    const db = getDatabase();
     
     try {
       const newUser = await db.createUser(userData);
@@ -104,11 +72,11 @@ export async function POST(request) {
         user: newUser,
         message: 'Usuario creado exitosamente'
       });
-    } catch (sqliteError) {
-      console.error('Error con SQLite al crear usuario:', sqliteError);
+    } catch (dbError) {
+      console.error('Error con base de datos al crear usuario:', dbError);
       
       // Si hay error de usuario duplicado
-      if (sqliteError.message && sqliteError.message.includes('UNIQUE constraint failed')) {
+      if (dbError.message && dbError.message.includes('UNIQUE constraint failed')) {
         return NextResponse.json(
           { success: false, error: 'Ya existe un usuario con ese nombre de usuario' },
           { status: 409 }
@@ -156,7 +124,7 @@ export async function PUT(request) {
       );
     }
 
-    const db = getSQLiteDB();
+    const db = getDatabase();
     
     try {
       const updatedUser = await db.updateUser(userData.id, userData);
@@ -173,10 +141,10 @@ export async function PUT(request) {
         user: updatedUser,
         message: 'Usuario actualizado exitosamente'
       });
-    } catch (sqliteError) {
-      console.error('Error con SQLite al actualizar usuario:', sqliteError);
+    } catch (dbError) {
+      console.error('Error con base de datos al actualizar usuario:', dbError);
       
-      if (sqliteError.message && sqliteError.message.includes('UNIQUE constraint failed')) {
+      if (dbError.message && (dbError.message.includes('UNIQUE constraint failed') || dbError.message.includes('duplicate'))) {
         return NextResponse.json(
           { success: false, error: 'Ya existe un usuario con ese nombre de usuario' },
           { status: 409 }
@@ -210,7 +178,7 @@ export async function DELETE(request) {
       );
     }
 
-    const db = getSQLiteDB();
+    const db = getDatabase();
     
     try {
       const deleted = await db.deleteUser(id);
@@ -226,8 +194,8 @@ export async function DELETE(request) {
         success: true,
         message: 'Usuario eliminado exitosamente'
       });
-    } catch (sqliteError) {
-      console.error('Error con SQLite al eliminar usuario:', sqliteError);
+    } catch (dbError) {
+      console.error('Error con base de datos al eliminar usuario:', dbError);
       return NextResponse.json(
         { success: false, error: 'Error al eliminar usuario de la base de datos' },
         { status: 500 }

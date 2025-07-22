@@ -6,27 +6,28 @@
 
 This is a **Next.js fullstack application** with the following architecture:
 
-- **Frontend**: React components with TypeScript and Tailwind CSS
+- **Frontend**: React components with JavaScript and Tailwind CSS
 - **Backend**: Next.js API Routes serving as Node.js backend
-- **Database**: In-memory data storage (for demo purposes)
+- **Database**: SQLite local database
 - **Styling**: Tailwind CSS for responsive design
 
 ## Key Technologies
 
 - **Next.js 15** with App Router
-- **TypeScript** for type safety
+- **JavaScript** for development
 - **Tailwind CSS** for styling
 - **React Hooks** for state management
 - **API Routes** for backend functionality
+- **SQLite** with better-sqlite3 for data storage
 
 ## Code Style Guidelines
 
-1. **Use TypeScript** for all new files
+1. **Use JavaScript** for all new files
 2. **Follow React functional components** with hooks
 3. **Use Tailwind CSS** for styling instead of custom CSS
 4. **Implement proper error handling** in API routes
 5. **Use descriptive variable and function names** in Spanish/English
-6. **Add proper TypeScript interfaces** for data structures
+6. **Add proper data validation** using the types system
 
 ## Project Structure
 
@@ -57,7 +58,7 @@ src/
 
 ## Development Notes
 
-- The project uses **in-memory storage** for simplicity
+- The project uses **SQLite database** for local storage
 - All components are **client-side rendered** (`'use client'`)
 - **Error handling** is implemented throughout the application
 - **Responsive design** is achieved with Tailwind CSS
