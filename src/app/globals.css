@@ -8,13 +8,13 @@
   --font-geist-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-geist-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
   
-  /* Colores personalizados - ACTUALIZADO */
-  --primary-color: #ff6b35;
-  --secondary-color: #004e89;
-  --success-color: #2a9d8f;
-  --warning-color: #f4a261;
-  --danger-color: #e76f51;
-  --info-color: #264653;
+  /* Colores personalizados */
+  --primary-color: #0d6efd;
+  --secondary-color: #6c757d;
+  --success-color: #198754;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --info-color: #0dcaf0;
 }
 
 /* Configuración base */
