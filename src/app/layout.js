@@ -3,6 +3,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import "./globals.css";
 
+// Cargar variables de entorno en el servidor
+if (typeof window === 'undefined') {
+  require('dotenv').config();
+}
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

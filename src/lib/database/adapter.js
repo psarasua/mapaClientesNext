@@ -1,5 +1,6 @@
-// Adaptador de base de datos usando SQLite
+// Adaptador de base de datos - Soporte para SQLite local y Turso en producción
 import SQLiteDatabase from './sqlite.js';
+import TursoDatabase from './turso.js';
 
 class DatabaseAdapter {
   constructor() {
@@ -8,8 +9,14 @@ class DatabaseAdapter {
 
   async init() {
     if (!this.database) {
-      console.log('🟡 Inicializando SQLite Database...');
-      this.database = new SQLiteDatabase();
+      // Usar Turso en producción, SQLite en desarrollo
+      if (process.env.NODE_ENV === 'production' && process.env.TURSO_DATABASE_URL) {
+        console.log('🟡 Inicializando Turso Database (Producción)...');
+        this.database = new TursoDatabase();
+      } else {
+        console.log('🟡 Inicializando SQLite Database (Local)...');
+        this.database = new SQLiteDatabase();
+      }
     }
     return await this.database.init();
   }
