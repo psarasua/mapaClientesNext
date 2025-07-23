@@ -1,45 +1,50 @@
-# 🚀 Configuración de Turso para Producción
+# Configuración de Turso Database
 
-## Paso 1: Crear cuenta en Turso
-1. Ve a [https://app.turso.tech/](https://app.turso.tech/)
-2. Regístrate con GitHub o email
-3. Crea una nueva base de datos
+Este proyecto utiliza Turso como base de datos en producción.
 
-## Paso 2: Obtener credenciales
+## Variables de Entorno Requeridas
+
 ```bash
-# En la terminal (después de instalar Turso CLI)
-turso auth login
-turso db create mapa-clientes
-turso db show mapa-clientes
-turso db tokens create mapa-clientes
-```
-
-## Paso 3: Variables de entorno para Vercel
-```env
-NODE_ENV=production
 TURSO_DATABASE_URL=libsql://your-database-url.turso.io
-TURSO_AUTH_TOKEN=your-auth-token-here
+TURSO_AUTH_TOKEN=your-auth-token
 ```
 
-## Paso 4: Deploy a Vercel
-1. Ve a [https://vercel.com/](https://vercel.com/)
-2. Conecta tu repositorio GitHub
-3. Agrega las variables de entorno en Vercel Dashboard
-4. Deploy automático
+## Configuración en Producción
 
-## Migración de datos
-Tu proyecto detectará automáticamente:
-- **Local**: Usa SQLite (data/users.db)
-- **Producción**: Usa Turso (en la nube)
+1. **Crear base de datos en Turso:**
+   ```bash
+   turso db create mapaclientesnext
+   ```
 
-## Comandos útiles
+2. **Obtener URL de conexión:**
+   ```bash
+   turso db show mapaclientesnext --url
+   ```
+
+3. **Crear token de autenticación:**
+   ```bash
+   turso db tokens create mapaclientesnext
+   ```
+
+## Migración de Datos
+
+Para migrar datos de SQLite local a Turso, usar el script:
 ```bash
-# Ver bases de datos
-turso db list
-
-# Conectar a la BD
-turso db shell mapa-clientes
-
-# Ver tokens
-turso db tokens list mapa-clientes
+node migrate-to-turso.js
 ```
+
+## Estructura de Tablas
+
+El adaptador de base de datos crea automáticamente las siguientes tablas:
+- `users` - Usuarios del sistema
+- `clients` - Clientes
+- `trucks` - Camiones
+- `repartos` - Repartos
+- `dias_entrega` - Días de entrega
+- `clientes_reparto` - Relación clientes-reparto
+
+## Notas Importantes
+
+- En desarrollo usa SQLite local (`data/users.db`)
+- En producción automáticamente cambia a Turso si están configuradas las variables de entorno
+- El adaptador maneja la migración transparente entre ambas bases de datos

@@ -1,6 +1,6 @@
 // Adaptador de base de datos - Soporte para SQLite local y Turso en producción
-import SQLiteDatabase from './sqlite.js';
-import TursoDatabase from './turso.js';
+import SQLiteDatabase from './sqlite';
+import TursoDatabase from './turso';
 
 class DatabaseAdapter {
   constructor() {
@@ -169,12 +169,49 @@ class DatabaseAdapter {
     return await this.database.clearAllClientesporReparto();
   }
 
+  // Métodos específicos de autenticación
+  async getUserByUsernameOrEmail(usernameOrEmail) {
+    await this.init();
+    return await this.database.getUserByUsernameOrEmail(usernameOrEmail);
+  }
+
+  async getUserByEmail(email) {
+    await this.init();
+    return await this.database.getUserByEmail(email);
+  }
+
+  async updateUserLastLogin(userId) {
+    await this.init();
+    return await this.database.updateUserLastLogin(userId);
+  }
+
+  async updateUserResetToken(userId, resetToken, resetTokenExpires) {
+    await this.init();
+    return await this.database.updateUserResetToken(userId, resetToken, resetTokenExpires);
+  }
+
+  async getUserByResetToken(resetToken) {
+    await this.init();
+    return await this.database.getUserByResetToken(resetToken);
+  }
+
+  async updateUserPassword(userId, hashedPassword) {
+    await this.init();
+    return await this.database.updateUserPassword(userId, hashedPassword);
+  }
+
+  async clearUserResetToken(userId) {
+    await this.init();
+    return await this.database.clearUserResetToken(userId);
+  }
+
   // Método para obtener información del ambiente
   getDatabaseInfo() {
+    const isProduction = process.env.NODE_ENV === 'production' && process.env.TURSO_DATABASE_URL;
     return {
-      type: 'SQLite (Local)',
+      type: isProduction ? 'Turso (Cloud)' : 'SQLite (Local)',
       environment: process.env.NODE_ENV || 'development',
-      isProduction: false
+      isProduction: isProduction
     };
   }
 }

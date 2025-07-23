@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import DatabaseAdapter from '../../../lib/database/adapter.js';
+import DatabaseAdapter from '@/lib/database/adapter';
 import { validateCreateRepartoData } from '../../../types/index.js';
 
 // GET - Obtener todos los repartos

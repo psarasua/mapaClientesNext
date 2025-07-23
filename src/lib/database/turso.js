@@ -353,6 +353,64 @@ class TursoDatabase {
     const result = await this.client.execute('DELETE FROM clientes_reparto');
     return { deletedCount: result.rowsAffected };
   }
+
+  // ===== MÉTODOS ESPECÍFICOS DE AUTENTICACIÓN =====
+  
+  async getUserByUsernameOrEmail(usernameOrEmail) {
+    const result = await this.client.execute({
+      sql: 'SELECT * FROM users WHERE name = ? OR email = ? LIMIT 1',
+      args: [usernameOrEmail, usernameOrEmail]
+    });
+    return result.rows[0] || null;
+  }
+
+  async getUserByEmail(email) {
+    const result = await this.client.execute({
+      sql: 'SELECT * FROM users WHERE email = ? LIMIT 1',
+      args: [email]
+    });
+    return result.rows[0] || null;
+  }
+
+  async updateUserLastLogin(userId) {
+    await this.client.execute({
+      sql: 'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
+      args: [userId]
+    });
+    return true;
+  }
+
+  async updateUserResetToken(userId, resetToken, resetTokenExpires) {
+    await this.client.execute({
+      sql: 'UPDATE users SET reset_token = ?, reset_token_expires = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      args: [resetToken, resetTokenExpires.toISOString(), userId]
+    });
+    return true;
+  }
+
+  async getUserByResetToken(resetToken) {
+    const result = await this.client.execute({
+      sql: 'SELECT * FROM users WHERE reset_token = ? LIMIT 1',
+      args: [resetToken]
+    });
+    return result.rows[0] || null;
+  }
+
+  async updateUserPassword(userId, hashedPassword) {
+    await this.client.execute({
+      sql: 'UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      args: [hashedPassword, userId]
+    });
+    return true;
+  }
+
+  async clearUserResetToken(userId) {
+    await this.client.execute({
+      sql: 'UPDATE users SET reset_token = NULL, reset_token_expires = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      args: [userId]
+    });
+    return true;
+  }
 }
 
 export default TursoDatabase;

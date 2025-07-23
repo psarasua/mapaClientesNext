@@ -1,53 +1,104 @@
-# 🚀 Configuración final de Vercel
+# Configuración de Vercel para MapaClientes
 
-## Variables de entorno requeridas en Vercel Dashboard:
+## Variables de Entorno en Vercel
 
-### 1. Ve a tu proyecto en Vercel:
-https://vercel.com/dashboard
+Configurar las siguientes variables en el dashboard de Vercel:
 
-### 2. Selecciona tu proyecto "mapa-clientes"
-
-### 3. Ve a Settings > Environment Variables
-
-### 4. Agrega estas variables:
-
+### Base de Datos (Turso)
 ```
-NODE_ENV = production
-TURSO_DATABASE_URL = libsql://your-database-url.turso.io
-TURSO_AUTH_TOKEN = your-auth-token-here
+TURSO_DATABASE_URL=libsql://your-database-url.turso.io
+TURSO_AUTH_TOKEN=your-auth-token
 ```
 
-## 🎯 Para obtener las credenciales de Turso:
+### Autenticación JWT
+```
+JWT_SECRET=your-super-secret-jwt-key-here
+```
 
-### Opción A: Sin CLI (Más fácil)
-1. Ve a https://app.turso.tech/
-2. Crea una cuenta
-3. Crea database "mapa-clientes"
-4. Copia URL y genera token desde la web
+### Configuración de Node.js
+```
+NODE_ENV=production
+```
 
-### Opción B: Con CLI
+## Configuración de Build
+
+El proyecto ya está configurado para Vercel:
+
+### `next.config.js`
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    serverComponentsExternalPackages: ['better-sqlite3']
+  }
+}
+
+module.exports = nextConfig
+```
+
+### `vercel.json` (opcional)
+```json
+{
+  "functions": {
+    "app/api/**/*": {
+      "maxDuration": 30
+    }
+  }
+}
+```
+
+## Scripts de Build
+```json
+{
+  "scripts": {
+    "build": "next build",
+    "start": "next start",
+    "dev": "next dev --turbopack"
+  }
+}
+```
+
+## Configuración Estática (Azure)
+
+Si se despliega en Azure Static Web Apps, usar:
+
+### `public/staticwebapp.config.json`
+```json
+{
+  "routes": [
+    {
+      "route": "/api/*",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/*",
+      "serve": "/index.html",
+      "statusCode": 200
+    }
+  ],
+  "mimeTypes": {
+    ".json": "application/json"
+  }
+}
+```
+
+## Notas de Despliegue
+
+1. **Turso** se conecta automáticamente en producción
+2. **SQLite** se usa solo en desarrollo local
+3. Las **API Routes** funcionan como serverless functions
+4. **Bootstrap CSS** se carga desde CDN en producción
+5. **Middleware** protege rutas automáticamente
+
+## Comandos de Despliegue
+
+### Vercel CLI
 ```bash
-# Instalar Turso CLI
-iwr https://get.tur.so/install.ps1 | iex
-
-# Autenticar
-turso auth login
-
-# Crear base de datos
-turso db create mapa-clientes
-
-# Obtener URL
-turso db show mapa-clientes
-
-# Crear token
-turso db tokens create mapa-clientes
+npm install -g vercel
+vercel --prod
 ```
 
-## 🔄 Después de agregar variables:
-1. Redeploy el proyecto en Vercel
-2. Tu app detectará automáticamente Turso en producción
-3. Las tablas se crearán automáticamente
-
-## 📱 Tu app funcionará con:
-- SQLite local para desarrollo
-- Turso para producción en Vercel
+### Desde GitHub
+- Conectar repositorio a Vercel
+- Las variables de entorno se configuran en el dashboard
+- El despliegue es automático con cada push a main

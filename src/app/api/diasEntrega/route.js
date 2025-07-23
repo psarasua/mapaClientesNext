@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import DatabaseAdapter from '../../../lib/database/adapter.js';
-import { validateCreateDiaEntregaData } from '../../../types/index.js';
+import DatabaseAdapter from '@/lib/database/adapter';
+import { validateCreateDiaEntregaData } from '@/types/index';
 
 // GET - Obtener todos los días de entrega
 export async function GET() {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import DatabaseAdapter from '../../../lib/database/adapter.js';
+import DatabaseAdapter from '@/lib/database/adapter';
 
 // GET - Obtener todos los camiones
 export async function GET() {

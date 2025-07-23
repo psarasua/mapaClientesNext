@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navigation from '../components/common/Navigation';
 import Dashboard from '../components/common/Dashboard';
 import UserList from '../components/modules/UserList';
@@ -10,10 +10,36 @@ import DiaEntregaList from '../components/modules/DiaEntregaList';
 import RepartoList from '../components/modules/RepartoList';
 import ClientesporRepartoList from '../components/modules/ClientesporRepartoList';
 import ConfiguracionPage from './configuracion/page';
-import { Container } from 'react-bootstrap';
+import { Container, Spinner } from 'react-bootstrap';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState('dashboard');
+  const { user, loading, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    // Si no está autenticado y no está cargando, redirigir a login
+    if (!loading && !isAuthenticated()) {
+      window.location.href = '/login';
+    }
+  }, [loading, isAuthenticated]);
+
+  // Mostrar spinner mientras verifica autenticación
+  if (loading) {
+    return (
+      <Container fluid className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" style={{ width: '3rem', height: '3rem' }} />
+          <div className="mt-3 text-muted">Verificando autenticación...</div>
+        </div>
+      </Container>
+    );
+  }
+
+  // Si no está autenticado, no mostrar nada (se redirigirá)
+  if (!isAuthenticated()) {
+    return null;
+  }
 
   const renderContent = () => {
     switch (activeSection) {
@@ -70,7 +96,11 @@ export default function Home() {
 
   return (
     <div className="min-vh-100 bg-light">
-      <Navigation activeSection={activeSection} onSectionChange={setActiveSection} />
+      <Navigation 
+        activeSection={activeSection} 
+        onSectionChange={setActiveSection}
+        user={user}
+      />
       
       <main className="pt-4">
         {renderContent()}

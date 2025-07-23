@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import DatabaseAdapter from '../../../lib/database/adapter.js';
-import { validateCreateClientData } from '../../../types/index.js';
+import DatabaseAdapter from '@/lib/database/adapter';
+import { validateCreateClientData } from '@/types/index';
 
 // GET - Obtener todos los clientes
 export async function GET() {

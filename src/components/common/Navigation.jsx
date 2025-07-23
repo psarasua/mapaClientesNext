@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Navbar, Nav, Container, Offcanvas, Badge } from 'react-bootstrap';
+import { Navbar, Nav, Container, Offcanvas, Badge, Dropdown, Button } from 'react-bootstrap';
+import { FaUser, FaSignOutAlt } from 'react-icons/fa';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Iconos SVG con colores originales
 const IconHome = () => (
@@ -75,9 +77,16 @@ const IconSettings = () => (
 
 export default function Navigation({ activeSection, onSectionChange }) {
   const [show, setShow] = useState(false);
+  const { user, logout } = useAuth();
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const handleLogout = () => {
+    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+      logout();
+    }
+  };
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <IconHome />, badge: null },
@@ -131,6 +140,28 @@ export default function Navigation({ activeSection, onSectionChange }) {
                   )}
                 </Nav.Link>
               ))}
+            </Nav>
+
+            {/* User Dropdown */}
+            <Nav className="ms-auto">
+              <Dropdown align="end">
+                <Dropdown.Toggle variant="outline-light" id="dropdown-user" className="d-flex align-items-center">
+                  <FaUser className="me-2" />
+                  {user?.usuario || 'Usuario'}
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu>
+                  <Dropdown.Header>
+                    <div className="fw-bold">{user?.usuario}</div>
+                    <small className="text-muted">{user?.email}</small>
+                  </Dropdown.Header>
+                  <Dropdown.Divider />
+                  <Dropdown.Item onClick={handleLogout} className="text-danger">
+                    <FaSignOutAlt className="me-2" />
+                    Cerrar Sesión
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
             </Nav>
           </Navbar.Collapse>
         </Container>

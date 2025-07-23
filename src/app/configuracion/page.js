@@ -173,15 +173,24 @@ export default function ConfiguracionPage() {
       const seedPromises = [
         fetch('/api/trucks', { method: 'GET' }), // Esto creará camiones si no existen
         fetch('/api/clients', { method: 'GET' }), // Esto creará clientes si no existen
-        fetch('/api/users', { method: 'GET' }),   // Esto creará usuarios si no existen
+        fetch('/api/auth/seed', { // Crear usuarios iniciales
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'seed-users' })
+        }),
       ];
 
-      await Promise.all(seedPromises);
+      const results = await Promise.all(seedPromises);
+      const seedResult = await results[2].json(); // Resultado del seeder de usuarios
       
       // Refrescar estado de tablas
       await testTables();
       
-      alert('Seeders ejecutados exitosamente');
+      if (seedResult.success) {
+        alert(`Seeders ejecutados exitosamente. ${seedResult.message}`);
+      } else {
+        alert('Seeders ejecutados (algunos con advertencias): ' + seedResult.message);
+      }
     } catch (error) {
       console.error('Error ejecutando seeders:', error);
       alert('Error ejecutando seeders: ' + error.message);

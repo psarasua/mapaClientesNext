@@ -304,3 +304,94 @@ a:hover {
 .dashboard-container {
   animation: fadeIn 0.3s ease-out;
 }
+
+/* ===========================================
+   ESTILOS PARA LOGIN
+   =========================================== */
+
+/* Login split layout */
+.login-left-panel {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #0b5ed7 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-left-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.login-right-panel {
+  background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Login form improvements */
+.login-form-container {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.login-form .form-control {
+  border-radius: 0.5rem;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+  font-size: 16px;
+}
+
+.login-form .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+  transform: translateY(-1px);
+}
+
+.login-form .btn-primary {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #0b5ed7 100%);
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.login-form .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+}
+
+.login-form .btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Feature icons animation */
+.login-feature-icon {
+  transition: transform 0.3s ease;
+}
+
+.login-feature-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Mobile adjustments for login */
+@media (max-width: 767.98px) {
+  .login-left-panel {
+    display: none !important;
+  }
+  
+  .login-right-panel {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #0b5ed7 20%, #f8f9fa 20%, #f8f9fa 100%);
+  }
+  
+  .login-form-container {
+    padding-top: 2rem;
+  }
+}

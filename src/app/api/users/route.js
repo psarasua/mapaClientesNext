@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDatabase } from '../../../lib/database/adapter.js';
+import { getDatabase } from '@/lib/database/adapter';
 
 // GET - Obtener todos los usuarios
 export async function GET() {

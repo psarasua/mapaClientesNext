@@ -182,7 +182,7 @@ class SQLiteDatabase {
     const db = await this.init();
     const stmt = db.prepare(`
       SELECT * FROM users 
-      WHERE usuario LIKE ? 
+      WHERE usuario LIKE ?
       ORDER BY created_at DESC
     `);
     const searchPattern = `%${query}%`;
@@ -1021,6 +1021,32 @@ class SQLiteDatabase {
     const stmt = this.db.prepare('DELETE FROM clientesporReparto');
     const result = stmt.run();
     return { deletedCount: result.changes };
+  }
+
+  // ===== MÉTODOS ESPECÍFICOS DE AUTENTICACIÓN =====
+  
+  async getUserByUsernameOrEmail(usernameOrEmail) {
+    const db = await this.init();
+    const stmt = db.prepare('SELECT * FROM users WHERE usuario = ? LIMIT 1');
+    const result = stmt.get(usernameOrEmail);
+    return result || null;
+  }
+
+  async getUserByEmail(email) {
+    // Ya no usamos email, redirigir a búsqueda por usuario
+    return this.getUserByUsernameOrEmail(email);
+  }
+
+  // Métodos simplificados - solo lo esencial
+  async updateUserPassword(userId, hashedPassword) {
+    const db = await this.init();
+    const stmt = db.prepare(`
+      UPDATE users 
+      SET password = ?, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = ?
+    `);
+    stmt.run(hashedPassword, userId);
+    return true;
   }
 
   close() {
