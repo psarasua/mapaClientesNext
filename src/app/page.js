@@ -9,6 +9,7 @@ import ClientList from '../components/modules/ClientList';
 import DiaEntregaList from '../components/modules/DiaEntregaList';
 import RepartoList from '../components/modules/RepartoList';
 import ClientesporRepartoList from '../components/modules/ClientesporRepartoList';
+import ConfiguracionPage from './configuracion/page';
 import { Container } from 'react-bootstrap';
 
 export default function Home() {
@@ -60,6 +61,8 @@ export default function Home() {
             <ClientesporRepartoList />
           </Container>
         );
+      case 'configuracion':
+        return <ConfiguracionPage />;
       default:
         return <Dashboard />;
     }

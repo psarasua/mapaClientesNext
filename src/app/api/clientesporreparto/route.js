@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSQLiteDB } from '../../../lib/database/sqlite.js';
+import DatabaseAdapter from '../../../lib/database/adapter.js';
 import { validateCreateClienteporRepartoData } from '../../../types/index.js';
 
 // GET - Obtener todos los clientes por reparto
@@ -10,7 +10,7 @@ export async function GET(request) {
     const cliente = searchParams.get('cliente');
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       let clientesporReparto;
 
       if (reparto) {
@@ -96,7 +96,7 @@ export async function POST(request) {
     }
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const newClienteporReparto = await db.createClienteporReparto(clienteRepartoData);
       
       return NextResponse.json({
@@ -142,7 +142,7 @@ export async function PUT(request) {
     }
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const updatedClienteporReparto = await db.updateClienteporReparto(id, clienteRepartoData);
       
       if (!updatedClienteporReparto) {
@@ -196,7 +196,7 @@ export async function DELETE(request) {
     }
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const deleted = await db.deleteClienteporReparto(parseInt(id));
       
       if (!deleted) {

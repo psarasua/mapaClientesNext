@@ -82,6 +82,11 @@ class DatabaseAdapter {
     return await this.database.deleteTruck(id);
   }
 
+  async seedInitialTrucks() {
+    await this.init();
+    return await this.database.seedInitialTrucks();
+  }
+
   async getAllClients() {
     await this.init();
     return await this.database.getAllClients();
@@ -131,6 +136,37 @@ class DatabaseAdapter {
     if (this.database) {
       await this.database.close();
     }
+  }
+
+  // Métodos de limpieza de datos
+  async clearAllUsers() {
+    await this.init();
+    return await this.database.clearAllUsers();
+  }
+
+  async clearAllClients() {
+    await this.init();
+    return await this.database.clearAllClients();
+  }
+
+  async clearAllTrucks() {
+    await this.init();
+    return await this.database.clearAllTrucks();
+  }
+
+  async clearAllRepartos() {
+    await this.init();
+    return await this.database.clearAllRepartos();
+  }
+
+  async clearAllDiasEntrega() {
+    await this.init();
+    return await this.database.clearAllDiasEntrega();
+  }
+
+  async clearAllClientesporReparto() {
+    await this.init();
+    return await this.database.clearAllClientesporReparto();
   }
 
   // Método para obtener información del ambiente

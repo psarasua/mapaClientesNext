@@ -203,6 +203,34 @@ class TursoDatabase {
     return result.rows[0];
   }
 
+  async seedInitialTrucks() {
+    // Verificar si ya hay camiones
+    const countResult = await this.client.execute('SELECT COUNT(*) as count FROM trucks');
+    const count = countResult.rows[0].count;
+    
+    if (count > 0) {
+      return;
+    }
+
+    const initialTrucks = [
+      { description: 'Camión de carga pesada Volvo FH16' },
+      { description: 'Camión refrigerado Mercedes Actros' },
+      { description: 'Camión de distribución Scania R450' },
+      { description: 'Camión urbano Iveco Stralis' },
+      { description: 'Camión articulado MAN TGX' }
+    ];
+
+    for (const truck of initialTrucks) {
+      try {
+        await this.createTruck(truck);
+      } catch (error) {
+        console.error('Error creando camión inicial:', error);
+      }
+    }
+
+    console.log(`🚚 Se crearon ${initialTrucks.length} camiones iniciales en Turso`);
+  }
+
   // Repartos methods
   async getAllRepartos() {
     const result = await this.client.execute(`
@@ -293,6 +321,37 @@ class TursoDatabase {
       ORDER BY cr.order_number ASC
     `);
     return result.rows;
+  }
+
+  // Métodos de limpieza de datos
+  async clearAllUsers() {
+    const result = await this.client.execute('DELETE FROM users');
+    return { deletedCount: result.rowsAffected };
+  }
+
+  async clearAllClients() {
+    const result = await this.client.execute('DELETE FROM clients');
+    return { deletedCount: result.rowsAffected };
+  }
+
+  async clearAllTrucks() {
+    const result = await this.client.execute('DELETE FROM trucks');
+    return { deletedCount: result.rowsAffected };
+  }
+
+  async clearAllRepartos() {
+    const result = await this.client.execute('DELETE FROM repartos');
+    return { deletedCount: result.rowsAffected };
+  }
+
+  async clearAllDiasEntrega() {
+    const result = await this.client.execute('DELETE FROM dias_entrega');
+    return { deletedCount: result.rowsAffected };
+  }
+
+  async clearAllClientesporReparto() {
+    const result = await this.client.execute('DELETE FROM clientes_reparto');
+    return { deletedCount: result.rowsAffected };
   }
 }
 

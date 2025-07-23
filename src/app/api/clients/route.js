@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getDatabase } from '../../../lib/database/adapter.js';
+import DatabaseAdapter from '../../../lib/database/adapter.js';
 import { validateCreateClientData } from '../../../types/index.js';
 
 // GET - Obtener todos los clientes
 export async function GET() {
   try {
-    const db = getDatabase();
+    const db = new DatabaseAdapter();
     const clients = await db.getAllClients();
 
     return NextResponse.json({
@@ -37,7 +37,7 @@ export async function POST(request) {
     }
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const newClient = await db.createClient(clientData);
       
       return NextResponse.json({
@@ -74,7 +74,7 @@ export async function PUT(request) {
     }
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const updatedClient = await db.updateClient(id, clientData);
       
       if (!updatedClient) {
@@ -119,7 +119,7 @@ export async function DELETE(request) {
     }
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const deleted = await db.deleteClient(parseInt(id));
       
       if (!deleted) {

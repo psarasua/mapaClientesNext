@@ -986,6 +986,43 @@ class SQLiteDatabase {
     return stmt.all(`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`);
   }
 
+  // Métodos de limpieza de datos
+  async clearAllUsers() {
+    const stmt = this.db.prepare('DELETE FROM users');
+    const result = stmt.run();
+    return { deletedCount: result.changes };
+  }
+
+  async clearAllClients() {
+    const stmt = this.db.prepare('DELETE FROM clients');
+    const result = stmt.run();
+    return { deletedCount: result.changes };
+  }
+
+  async clearAllTrucks() {
+    const stmt = this.db.prepare('DELETE FROM trucks');
+    const result = stmt.run();
+    return { deletedCount: result.changes };
+  }
+
+  async clearAllRepartos() {
+    const stmt = this.db.prepare('DELETE FROM repartos');
+    const result = stmt.run();
+    return { deletedCount: result.changes };
+  }
+
+  async clearAllDiasEntrega() {
+    const stmt = this.db.prepare('DELETE FROM diasEntrega');
+    const result = stmt.run();
+    return { deletedCount: result.changes };
+  }
+
+  async clearAllClientesporReparto() {
+    const stmt = this.db.prepare('DELETE FROM clientesporReparto');
+    const result = stmt.run();
+    return { deletedCount: result.changes };
+  }
+
   close() {
     if (this.db) {
       this.db.close();

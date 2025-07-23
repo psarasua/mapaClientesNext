@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSQLiteDB } from '../../../lib/database/sqlite.js';
+import DatabaseAdapter from '../../../lib/database/adapter.js';
 import { validateCreateDiaEntregaData } from '../../../types/index.js';
 
 // GET - Obtener todos los días de entrega
@@ -7,7 +7,7 @@ export async function GET() {
   try {
     // Intentar obtener días de entrega de SQLite
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const diasEntrega = await db.getAllDiasEntrega();
 
       // Si no hay días de entrega, crear datos iniciales
@@ -86,7 +86,7 @@ export async function POST(request) {
     }
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const newDiaEntrega = await db.createDiaEntrega(diaEntregaData);
       
       return NextResponse.json({
@@ -123,7 +123,7 @@ export async function PUT(request) {
     }
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const updatedDiaEntrega = await db.updateDiaEntrega(id, diaEntregaData);
       
       if (!updatedDiaEntrega) {
@@ -168,7 +168,7 @@ export async function DELETE(request) {
     }
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const deleted = await db.deleteDiaEntrega(parseInt(id));
       
       if (!deleted) {

@@ -1,21 +1,24 @@
 import { NextResponse } from 'next/server';
-import { getSQLiteDB } from '../../../lib/database/sqlite.js';
+import DatabaseAdapter from '../../../lib/database/adapter.js';
 
 export async function GET() {
   try {
-    // Verificar conexión a SQLite
-    const db = getSQLiteDB();
+    // Verificar conexión a la base de datos
+    const db = new DatabaseAdapter();
     let dbStatus = 'ok';
-    let dbMessage = 'SQLite conectado correctamente';
+    let dbMessage = 'Base de datos conectada correctamente';
+    let dbType = process.env.NODE_ENV === 'production' ? 'Turso (cloud)' : 'SQLite (local)';
     
     try {
-      const usersCount = await db.getUsersCount();
-      const trucksCount = await db.getTrucksCount();
-      dbMessage = `SQLite conectado correctamente. ${usersCount} usuarios y ${trucksCount} camiones registrados.`;
+      // Intentar inicializar y hacer una consulta simple
+      await db.init();
+      const users = await db.getAllUsers();
+      const trucks = await db.getAllTrucks();
+      dbMessage = `Base de datos conectada correctamente. ${users.length} usuarios y ${trucks.length} camiones registrados.`;
     } catch (error) {
-      dbStatus = 'warning';
-      dbMessage = 'SQLite no disponible, usando fallback a localStorage';
-      console.warn('SQLite no disponible:', error.message);
+      dbStatus = 'error';
+      dbMessage = `Error de conexión a base de datos: ${error.message}`;
+      console.error('Error de base de datos:', error);
     }
 
     return NextResponse.json({
@@ -27,7 +30,7 @@ export async function GET() {
       database: {
         status: dbStatus,
         message: dbMessage,
-        type: 'SQLite with localStorage fallback'
+        type: dbType
       },
       features: [
         'CRUD de usuarios',

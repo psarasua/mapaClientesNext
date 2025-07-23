@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getSQLiteDB } from '../../../lib/database/sqlite.js';
+import DatabaseAdapter from '../../../lib/database/adapter.js';
 
 // GET - Obtener todos los camiones
 export async function GET() {
   try {
-    const db = getSQLiteDB();
+    const db = new DatabaseAdapter();
     
-    // Intentar obtener camiones de SQLite
+    // Intentar obtener camiones
     try {
       const trucks = await db.getAllTrucks();
       
@@ -18,7 +18,7 @@ export async function GET() {
           success: true,
           trucks: newTrucks,
           total: newTrucks.length,
-          source: 'sqlite'
+          source: process.env.NODE_ENV === 'production' ? 'turso' : 'sqlite'
         });
       }
       
@@ -26,10 +26,10 @@ export async function GET() {
         success: true,
         trucks,
         total: trucks.length,
-        source: 'sqlite'
+        source: process.env.NODE_ENV === 'production' ? 'turso' : 'sqlite'
       });
-    } catch (sqliteError) {
-      console.error('Error con SQLite, usando fallback:', sqliteError);
+    } catch (dbError) {
+      console.error('Error con la base de datos, usando fallback:', dbError);
       
       // Fallback a datos por defecto si SQLite falla
       const fallbackTrucks = [
@@ -52,7 +52,7 @@ export async function GET() {
         trucks: fallbackTrucks,
         total: fallbackTrucks.length,
         source: 'fallback',
-        warning: 'SQLite no disponible, usando datos de fallback'
+        warning: 'Base de datos no disponible, usando datos de fallback'
       });
     }
   } catch (error) {
@@ -96,7 +96,7 @@ export async function POST(request) {
       }
     }
 
-    const db = getSQLiteDB();
+    const db = new DatabaseAdapter();
     
     try {
       const newTruck = await db.createTruck(truckData);
@@ -105,11 +105,11 @@ export async function POST(request) {
         truck: newTruck,
         message: 'Camión creado exitosamente'
       });
-    } catch (sqliteError) {
-      console.error('Error con SQLite al crear camión:', sqliteError);
+    } catch (dbError) {
+      console.error('Error con la base de datos al crear camión:', dbError);
       
       // Si hay error de placa duplicada
-      if (sqliteError.message && sqliteError.message.includes('UNIQUE constraint failed')) {
+      if (dbError.message && dbError.message.includes('UNIQUE constraint failed')) {
         return NextResponse.json(
           { success: false, error: 'Ya existe un camión con esa placa' },
           { status: 409 }
@@ -160,7 +160,7 @@ export async function PUT(request) {
       }
     }
 
-    const db = getSQLiteDB();
+    const db = new DatabaseAdapter();
     
     try {
       const updatedTruck = await db.updateTruck(truckData.id, truckData);
@@ -177,10 +177,10 @@ export async function PUT(request) {
         truck: updatedTruck,
         message: 'Camión actualizado exitosamente'
       });
-    } catch (sqliteError) {
-      console.error('Error con SQLite al actualizar camión:', sqliteError);
+    } catch (dbError) {
+      console.error('Error con la base de datos al actualizar camión:', dbError);
       
-      if (sqliteError.message && sqliteError.message.includes('UNIQUE constraint failed')) {
+      if (dbError.message && dbError.message.includes('UNIQUE constraint failed')) {
         return NextResponse.json(
           { success: false, error: 'Ya existe un camión con esa placa' },
           { status: 409 }
@@ -214,7 +214,7 @@ export async function DELETE(request) {
       );
     }
 
-    const db = getSQLiteDB();
+    const db = new DatabaseAdapter();
     
     try {
       const deleted = await db.deleteTruck(id);
@@ -230,8 +230,8 @@ export async function DELETE(request) {
         success: true,
         message: 'Camión eliminado exitosamente'
       });
-    } catch (sqliteError) {
-      console.error('Error con SQLite al eliminar camión:', sqliteError);
+    } catch (dbError) {
+      console.error('Error con la base de datos al eliminar camión:', dbError);
       return NextResponse.json(
         { success: false, error: 'Error al eliminar camión de la base de datos' },
         { status: 500 }

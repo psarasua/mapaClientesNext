@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSQLiteDB } from '../../../lib/database/sqlite.js';
+import DatabaseAdapter from '../../../lib/database/adapter.js';
 import { validateCreateRepartoData } from '../../../types/index.js';
 
 // GET - Obtener todos los repartos
@@ -10,7 +10,7 @@ export async function GET(request) {
     const camion = searchParams.get('camion');
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       let repartos;
 
       if (dia) {
@@ -94,7 +94,7 @@ export async function POST(request) {
     }
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const newReparto = await db.createReparto(repartoData);
       
       return NextResponse.json({
@@ -140,7 +140,7 @@ export async function PUT(request) {
     }
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const updatedReparto = await db.updateReparto(id, repartoData);
       
       if (!updatedReparto) {
@@ -194,7 +194,7 @@ export async function DELETE(request) {
     }
 
     try {
-      const db = getSQLiteDB();
+      const db = new DatabaseAdapter();
       const deleted = await db.deleteReparto(parseInt(id));
       
       if (!deleted) {
