@@ -10,7 +10,9 @@
     "lint": "next lint",
     "test:production": "node scripts/test-production.js",
     "test:auth": "node -e \"import('./scripts/test-production.js').then(m => m.testPasswordHashing())\"",
-    "validate:deployment": "npm run test:production && npm run build"
+    "validate:deployment": "npm run test:production && npm run build",
+    "diagnose:turso": "node scripts/diagnose-turso.js",
+    "fix:turso": "node scripts/diagnose-turso.js"
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",
