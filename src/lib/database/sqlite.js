@@ -843,17 +843,17 @@ class SQLiteDatabase {
         r.camion_id,
         d.descripcion as dia_descripcion,
         t.description as camion_descripcion,
-        c.nombre as cliente_nombre,
-        c.razonsocial as cliente_razonsocial,
-        c.direccion as cliente_direccion,
-        c.telefono as cliente_telefono,
-        c.rut as cliente_rut
+        c.Nombre as cliente_nombre,
+        c.Razon as cliente_razonsocial,
+        c.Direccion as cliente_direccion,
+        c.Telefono1 as cliente_telefono,
+        c.Ruc as cliente_rut
       FROM ClientesporReparto cpr
       LEFT JOIN repartos r ON cpr.reparto_id = r.id
       LEFT JOIN diasEntrega d ON r.diasEntrega_id = d.id
       LEFT JOIN trucks t ON r.camion_id = t.id
       LEFT JOIN clients c ON cpr.cliente_id = c.id
-      ORDER BY d.id, t.id, c.nombre
+      ORDER BY d.id, t.id, c.Nombre
     `);
     return stmt.all();
   }
@@ -867,11 +867,11 @@ class SQLiteDatabase {
         r.camion_id,
         d.descripcion as dia_descripcion,
         t.description as camion_descripcion,
-        c.nombre as cliente_nombre,
-        c.razonsocial as cliente_razonsocial,
-        c.direccion as cliente_direccion,
-        c.telefono as cliente_telefono,
-        c.rut as cliente_rut
+        c.Nombre as cliente_nombre,
+        c.Razon as cliente_razonsocial,
+        c.Direccion as cliente_direccion,
+        c.Telefono1 as cliente_telefono,
+        c.Ruc as cliente_rut
       FROM ClientesporReparto cpr
       LEFT JOIN repartos r ON cpr.reparto_id = r.id
       LEFT JOIN diasEntrega d ON r.diasEntrega_id = d.id
@@ -888,17 +888,17 @@ class SQLiteDatabase {
     const stmt = db.prepare(`
       SELECT 
         cpr.*,
-        c.nombre as cliente_nombre,
-        c.razonsocial as cliente_razonsocial,
-        c.direccion as cliente_direccion,
-        c.telefono as cliente_telefono,
-        c.rut as cliente_rut,
-        c.latitud,
-        c.longitud
+        c.Nombre as cliente_nombre,
+        c.Razon as cliente_razonsocial,
+        c.Direccion as cliente_direccion,
+        c.Telefono1 as cliente_telefono,
+        c.Ruc as cliente_rut,
+        c.Coordenada_y as latitud,
+        c.Coordenada_x as longitud
       FROM ClientesporReparto cpr
       LEFT JOIN clients c ON cpr.cliente_id = c.id
       WHERE cpr.reparto_id = ?
-      ORDER BY c.nombre
+      ORDER BY c.Nombre
     `);
     return stmt.all(repartoId);
   }
@@ -979,18 +979,18 @@ class SQLiteDatabase {
         r.camion_id,
         d.descripcion as dia_descripcion,
         t.description as camion_descripcion,
-        c.nombre as cliente_nombre,
-        c.razonsocial as cliente_razonsocial,
-        c.direccion as cliente_direccion,
-        c.telefono as cliente_telefono,
-        c.rut as cliente_rut
+        c.Nombre as cliente_nombre,
+        c.Razon as cliente_razonsocial,
+        c.Direccion as cliente_direccion,
+        c.Telefono1 as cliente_telefono,
+        c.Ruc as cliente_rut
       FROM ClientesporReparto cpr
       LEFT JOIN repartos r ON cpr.reparto_id = r.id
       LEFT JOIN diasEntrega d ON r.diasEntrega_id = d.id
       LEFT JOIN trucks t ON r.camion_id = t.id
       LEFT JOIN clients c ON cpr.cliente_id = c.id
-      WHERE d.descripcion LIKE ? OR t.description LIKE ? OR c.nombre LIKE ? OR c.rut LIKE ?
-      ORDER BY d.id, t.id, c.nombre
+      WHERE d.descripcion LIKE ? OR t.description LIKE ? OR c.Nombre LIKE ? OR c.Ruc LIKE ?
+      ORDER BY d.id, t.id, c.Nombre
     `);
     return stmt.all(`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`);
   }
