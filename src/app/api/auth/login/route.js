@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import DatabaseAdapter from '@/lib/database/adapter';
-import { verifyPassword, generateToken } from '@/lib/auth';
+import DatabaseAdapter from '../../../../lib/database/adapter.js';
+import { verifyPassword, generateToken } from '../../../../lib/auth.js';
 
 // Configurar runtime para compatibilidad con bcrypt y otras dependencias
 export const runtime = 'nodejs';
