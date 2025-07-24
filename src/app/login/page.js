@@ -31,7 +31,7 @@ export default function LoginPage() {
     try {
       // Usar la URL correcta detectando automáticamente el puerto
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-      const response = await fetch(`${baseUrl}/api/auth/login`, {
+      const response = await fetch(`${baseUrl}/api/login-capture`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
