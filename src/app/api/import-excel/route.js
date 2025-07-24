@@ -126,26 +126,47 @@ async function importClients(db, data, replaceData = false) {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     try {
+      // Convertir todos los valores a string y limpiar
+      const rawCodigo = row['Codigo'] || row['codigo'] || row['CODIGO'] || '';
+      const rawRazon = row['Razon'] || row['razon'] || row['RazonSocial'] || row['razonSocial'] || row['RAZON_SOCIAL'] || '';
+      const rawNombre = row['Nombre'] || row['nombre'] || row['NOMBRE'] || rawRazon || '';
+      const rawDireccion = row['Direccion'] || row['direccion'] || row['DIRECCION'] || '';
+      const rawTelefono = row['Telefono1'] || row['telefono1'] || row['telefono'] || row['Telefono'] || row['TELEFONO'] || '';
+      const rawRuc = row['Ruc'] || row['ruc'] || row['RUC'] || row['rut'] || row['RUT'] || '';
+      const rawActivo = row['Activo'] || row['activo'] || row['ACTIVO'] || '1';
+      const rawCoordX = row['Coordenada_x'] || row['coordenada_x'] || row['lng'] || row['longitud'] || row['longitude'] || 0;
+      const rawCoordY = row['Coordenada_y'] || row['coordenada_y'] || row['lat'] || row['latitud'] || row['latitude'] || 0;
+
       // Mapear columnas del Excel a campos de la BD
       const client = {
-        Codigo: row['Codigo'] || row['codigo'] || row['CODIGO'] || '',
-        Razon: row['Razon'] || row['razon'] || row['RazonSocial'] || row['razonSocial'] || row['RAZON_SOCIAL'] || '',
-        Nombre: row['Nombre'] || row['nombre'] || row['NOMBRE'] || row['Razon'] || row['razon'] || '',
-        Direccion: row['Direccion'] || row['direccion'] || row['DIRECCION'] || '',
-        Telefono1: row['Telefono1'] || row['telefono1'] || row['telefono'] || row['Telefono'] || row['TELEFONO'] || '',
-        Ruc: row['Ruc'] || row['ruc'] || row['RUC'] || row['rut'] || row['RUT'] || '',
-        Activo: parseInt(row['Activo'] || row['activo'] || row['ACTIVO'] || '1'),
-        Coordenada_x: parseFloat(row['Coordenada_x'] || row['coordenada_x'] || row['lng'] || row['longitud'] || row['longitude'] || 0) || null,
-        Coordenada_y: parseFloat(row['Coordenada_y'] || row['coordenada_y'] || row['lat'] || row['latitud'] || row['latitude'] || 0) || null
+        Codigo: String(rawCodigo).trim(),
+        Razon: String(rawRazon).trim(),
+        Nombre: String(rawNombre).trim(),
+        Direccion: String(rawDireccion).trim(),
+        Telefono1: String(rawTelefono).trim(),
+        Ruc: String(rawRuc).trim(),
+        Activo: parseInt(rawActivo) || 1,
+        Coordenada_x: parseFloat(rawCoordX) || null,
+        Coordenada_y: parseFloat(rawCoordY) || null
       };
 
       // Validar campos requeridos
-      if (!client.Codigo?.trim()) {
+      if (!client.Codigo || client.Codigo.length === 0) {
         errors.push(`Fila ${i + 2}: Código es requerido`);
         continue;
       }
-      if (!client.Nombre?.trim()) {
+      if (!client.Nombre || client.Nombre.length === 0) {
         errors.push(`Fila ${i + 2}: Nombre es requerido`);
+        continue;
+      }
+
+      // Validar longitud de campos
+      if (client.Codigo.length > 50) {
+        errors.push(`Fila ${i + 2}: Código demasiado largo (máximo 50 caracteres)`);
+        continue;
+      }
+      if (client.Nombre.length > 255) {
+        errors.push(`Fila ${i + 2}: Nombre demasiado largo (máximo 255 caracteres)`);
         continue;
       }
 

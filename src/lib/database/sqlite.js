@@ -1003,9 +1003,19 @@ class SQLiteDatabase {
   }
 
   async clearAllClients() {
-    const stmt = this.db.prepare('DELETE FROM clients');
-    const result = stmt.run();
-    return { deletedCount: result.changes };
+    // Primero eliminar registros dependientes para evitar errores de clave foránea
+    console.log('🗑️ Eliminando clientesporReparto...');
+    const stmt1 = this.db.prepare('DELETE FROM clientesporReparto');
+    const result1 = stmt1.run();
+    console.log(`🗑️ Eliminados ${result1.changes} registros de clientesporReparto`);
+    
+    // Luego eliminar los clientes
+    console.log('🗑️ Eliminando clients...');
+    const stmt2 = this.db.prepare('DELETE FROM clients');
+    const result2 = stmt2.run();
+    console.log(`🗑️ Eliminados ${result2.changes} clientes`);
+    
+    return { deletedCount: result2.changes };
   }
 
   async clearAllTrucks() {

@@ -222,8 +222,17 @@ class TursoDatabase {
   }
 
   async clearAllClients() {
-    const result = await this.client.execute('DELETE FROM clients');
-    return result.rowsAffected;
+    // Primero eliminar registros dependientes para evitar errores de clave foránea
+    console.log('🗑️ Eliminando clientesporReparto...');
+    const result1 = await this.client.execute('DELETE FROM clientesporReparto');
+    console.log(`🗑️ Eliminados ${result1.rowsAffected} registros de clientesporReparto`);
+    
+    // Luego eliminar los clientes
+    console.log('🗑️ Eliminando clients...');
+    const result2 = await this.client.execute('DELETE FROM clients');
+    console.log(`🗑️ Eliminados ${result2.rowsAffected} clientes`);
+    
+    return result2.rowsAffected;
   }
 
   // Trucks methods
@@ -395,8 +404,17 @@ class TursoDatabase {
   }
 
   async clearAllClients() {
-    const result = await this.client.execute('DELETE FROM clients');
-    return { deletedCount: result.rowsAffected };
+    // Primero eliminar registros dependientes para evitar errores de clave foránea
+    console.log('🗑️ Eliminando clientesporReparto...');
+    const result1 = await this.client.execute('DELETE FROM clientesporReparto');
+    console.log(`🗑️ Eliminados ${result1.rowsAffected} registros de clientesporReparto`);
+    
+    // Luego eliminar los clientes
+    console.log('🗑️ Eliminando clients...');
+    const result2 = await this.client.execute('DELETE FROM clients');
+    console.log(`🗑️ Eliminados ${result2.rowsAffected} clientes`);
+    
+    return { deletedCount: result2.rowsAffected };
   }
 
   async clearAllTrucks() {
