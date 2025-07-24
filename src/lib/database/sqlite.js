@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import { hashPassword } from '../auth.js';
 
 class SQLiteDatabase {
   constructor() {
@@ -99,8 +100,7 @@ class SQLiteDatabase {
 
       // Crear índices para mejor rendimiento
       this.db.exec(`
-        CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-        CREATE INDEX IF NOT EXISTS idx_users_name ON users(name);
+        CREATE INDEX IF NOT EXISTS idx_users_usuario ON users(usuario);
         CREATE INDEX IF NOT EXISTS idx_trucks_description ON trucks(description);
         CREATE INDEX IF NOT EXISTS idx_clients_rut ON clients(rut);
         CREATE INDEX IF NOT EXISTS idx_clients_nombre ON clients(nombre);
@@ -141,6 +141,10 @@ class SQLiteDatabase {
 
   async createUser(userData) {
     const db = await this.init();
+    
+    // Hashear la contraseña antes de guardarla
+    const hashedPassword = await hashPassword(userData.password);
+    
     const stmt = db.prepare(`
       INSERT INTO users (usuario, password) 
       VALUES (?, ?)
@@ -148,7 +152,7 @@ class SQLiteDatabase {
     
     const result = stmt.run(
       userData.usuario, 
-      userData.password
+      hashedPassword
     );
     
     return this.getUserById(result.lastInsertRowid);
@@ -156,6 +160,11 @@ class SQLiteDatabase {
 
   async updateUser(id, userData) {
     const db = await this.init();
+    
+    // Hashear la contraseña si se está actualizando
+    if (userData.password) {
+      userData.password = await hashPassword(userData.password);
+    }
     
     const fields = Object.keys(userData).filter(key => userData[key] !== undefined);
     const setClause = fields.map(field => `${field} = ?`).join(', ');

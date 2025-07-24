@@ -2,11 +2,15 @@
   "name": "nextjs-fullstack",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:production": "node scripts/test-production.js",
+    "test:auth": "node -e \"import('./scripts/test-production.js').then(m => m.testPasswordHashing())\"",
+    "validate:deployment": "npm run test:production && npm run build"
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",

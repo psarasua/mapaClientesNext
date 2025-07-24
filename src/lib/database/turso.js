@@ -1,5 +1,6 @@
 // Turso Database implementation for production
 import { createClient } from '@libsql/client';
+import { hashPassword } from '../auth.js';
 
 class TursoDatabase {
   constructor() {
@@ -17,6 +18,10 @@ class TursoDatabase {
 
       // Crear tablas si no existen
       await this.createTables();
+      
+      // Inicializar datos si es necesario
+      await this.seedInitialData();
+      
       console.log('✅ Turso Database inicializada correctamente');
     }
     return true;
@@ -26,10 +31,10 @@ class TursoDatabase {
     const createUsersTable = `
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        role TEXT DEFAULT 'user',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        usuario TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `;
 
@@ -114,19 +119,30 @@ class TursoDatabase {
   }
 
   async createUser(userData) {
-    const { name, email, role = 'user' } = userData;
+    // Hashear la contraseña antes de guardarla
+    const hashedPassword = await hashPassword(userData.password);
+    
     const result = await this.client.execute({
-      sql: 'INSERT INTO users (name, email, role) VALUES (?, ?, ?) RETURNING *',
-      args: [name, email, role]
+      sql: 'INSERT INTO users (usuario, password) VALUES (?, ?) RETURNING *',
+      args: [userData.usuario, hashedPassword]
     });
     return result.rows[0];
   }
 
   async updateUser(id, userData) {
-    const { name, email, role } = userData;
+    // Hashear la contraseña si se está actualizando
+    let password = userData.password;
+    if (password) {
+      password = await hashPassword(password);
+    }
+    
+    const fields = Object.keys(userData).filter(key => userData[key] !== undefined);
+    const setClause = fields.map(field => `${field} = ?`).join(', ');
+    const values = fields.map(field => field === 'password' ? password : userData[field]);
+    
     const result = await this.client.execute({
-      sql: 'UPDATE users SET name = ?, email = ?, role = ? WHERE id = ? RETURNING *',
-      args: [name, email, role, id]
+      sql: `UPDATE users SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING *`,
+      args: [...values, id]
     });
     return result.rows[0];
   }
@@ -358,18 +374,15 @@ class TursoDatabase {
   
   async getUserByUsernameOrEmail(usernameOrEmail) {
     const result = await this.client.execute({
-      sql: 'SELECT * FROM users WHERE name = ? OR email = ? LIMIT 1',
-      args: [usernameOrEmail, usernameOrEmail]
+      sql: 'SELECT * FROM users WHERE usuario = ? LIMIT 1',
+      args: [usernameOrEmail]
     });
     return result.rows[0] || null;
   }
 
   async getUserByEmail(email) {
-    const result = await this.client.execute({
-      sql: 'SELECT * FROM users WHERE email = ? LIMIT 1',
-      args: [email]
-    });
-    return result.rows[0] || null;
+    // Ya no usamos email, redirigir a búsqueda por usuario
+    return this.getUserByUsernameOrEmail(email);
   }
 
   async updateUserLastLogin(userId) {
@@ -410,6 +423,33 @@ class TursoDatabase {
       args: [userId]
     });
     return true;
+  }
+
+  // ===== MÉTODOS DE INICIALIZACIÓN DE DATOS =====
+  
+  async getUsersCount() {
+    const result = await this.client.execute('SELECT COUNT(*) as count FROM users');
+    return result.rows[0]?.count || 0;
+  }
+
+  async seedInitialData() {
+    const userCount = await this.getUsersCount();
+    if (userCount === 0) {
+      const initialUsers = [
+        { usuario: 'admin', password: 'admin123' },
+        { usuario: 'usuario1', password: 'pass123' },
+        { usuario: 'operador', password: 'operador456' }
+      ];
+
+      for (const user of initialUsers) {
+        try {
+          await this.createUser(user);
+        } catch (error) {
+          console.error('Error creando usuario inicial en Turso:', error);
+        }
+      }
+      console.log(`🌱 Se crearon ${initialUsers.length} usuarios iniciales en Turso`);
+    }
   }
 }
 
