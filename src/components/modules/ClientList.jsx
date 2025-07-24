@@ -25,15 +25,15 @@ const ClientList = () => {
   const [editingClient, setEditingClient] = useState(null);
   
   const [formData, setFormData] = useState({
-    codigoalternativo: '',
-    razonsocial: '',
-    nombre: '',
-    direccion: '',
-    telefono: '',
-    rut: '',
-    activo: 1,
-    latitud: 0,
-    longitud: 0
+    Codigo: '',
+    Razon: '',
+    Nombre: '',
+    Direccion: '',
+    Telefono1: '',
+    Ruc: '',
+    Activo: 1,
+    Coordenada_x: 0,
+    Coordenada_y: 0
   });
 
   const [filterText, setFilterText] = useState('');

@@ -115,7 +115,7 @@ async function importClients(db, data, replaceData = false) {
   if (replaceData) {
     try {
       console.log('🗑️ [IMPORT] Eliminando todos los clientes existentes...');
-      await db.clearAllClients(); // Necesitaremos implementar esta función
+      await db.clearAllClients();
       console.log('✅ [IMPORT] Clientes existentes eliminados');
     } catch (error) {
       console.error('❌ [IMPORT] Error eliminando clientes:', error);
@@ -128,15 +128,26 @@ async function importClients(db, data, replaceData = false) {
     try {
       // Mapear columnas del Excel a campos de la BD
       const client = {
-        codigoalternativo: row['codigo'] || row['Código'] || row['CODIGO'] || '',
-        razonsocial: row['razonSocial'] || row['Razón Social'] || row['razon_social'] || row['RAZON_SOCIAL'] || '',
-        direccion: row['direccion'] || row['Dirección'] || row['DIRECCION'] || '',
-        telefono: row['telefono'] || row['Teléfono'] || row['TELEFONO'] || '',
-        email: row['email'] || row['Email'] || row['EMAIL'] || '',
-        latitude: parseFloat(row['lat'] || row['Latitud'] || row['latitude'] || row['LATITUD'] || 0),
-        longitude: parseFloat(row['lng'] || row['Longitud'] || row['longitude'] || row['LONGITUD'] || 0),
-        observaciones: row['observaciones'] || row['Observaciones'] || row['OBSERVACIONES'] || ''
+        Codigo: row['Codigo'] || row['codigo'] || row['CODIGO'] || '',
+        Razon: row['Razon'] || row['razon'] || row['RazonSocial'] || row['razonSocial'] || row['RAZON_SOCIAL'] || '',
+        Nombre: row['Nombre'] || row['nombre'] || row['NOMBRE'] || row['Razon'] || row['razon'] || '',
+        Direccion: row['Direccion'] || row['direccion'] || row['DIRECCION'] || '',
+        Telefono1: row['Telefono1'] || row['telefono1'] || row['telefono'] || row['Telefono'] || row['TELEFONO'] || '',
+        Ruc: row['Ruc'] || row['ruc'] || row['RUC'] || row['rut'] || row['RUT'] || '',
+        Activo: parseInt(row['Activo'] || row['activo'] || row['ACTIVO'] || '1'),
+        Coordenada_x: parseFloat(row['Coordenada_x'] || row['coordenada_x'] || row['lng'] || row['longitud'] || row['longitude'] || 0) || null,
+        Coordenada_y: parseFloat(row['Coordenada_y'] || row['coordenada_y'] || row['lat'] || row['latitud'] || row['latitude'] || 0) || null
       };
+
+      // Validar campos requeridos
+      if (!client.Codigo?.trim()) {
+        errors.push(`Fila ${i + 2}: Código es requerido`);
+        continue;
+      }
+      if (!client.Nombre?.trim()) {
+        errors.push(`Fila ${i + 2}: Nombre es requerido`);
+        continue;
+      }
 
       await db.createClient(client);
       imported++;

@@ -46,15 +46,15 @@ class SQLiteDatabase {
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS clients (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          codigoalternativo TEXT,
-          razonsocial TEXT,
-          nombre TEXT NOT NULL,
-          direccion TEXT,
-          telefono TEXT,
-          rut TEXT,
-          activo INTEGER DEFAULT 1,
-          latitud REAL,
-          longitud REAL,
+          Codigo TEXT UNIQUE NOT NULL,
+          Razon TEXT,
+          Nombre TEXT NOT NULL,
+          Direccion TEXT,
+          Telefono1 TEXT,
+          Ruc TEXT,
+          Activo INTEGER DEFAULT 1,
+          Coordenada_x REAL,
+          Coordenada_y REAL,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -102,9 +102,9 @@ class SQLiteDatabase {
       this.db.exec(`
         CREATE INDEX IF NOT EXISTS idx_users_usuario ON users(usuario);
         CREATE INDEX IF NOT EXISTS idx_trucks_description ON trucks(description);
-        CREATE INDEX IF NOT EXISTS idx_clients_rut ON clients(rut);
-        CREATE INDEX IF NOT EXISTS idx_clients_nombre ON clients(nombre);
-        CREATE INDEX IF NOT EXISTS idx_clients_codigo ON clients(codigoalternativo);
+        CREATE INDEX IF NOT EXISTS idx_clients_ruc ON clients(Ruc);
+        CREATE INDEX IF NOT EXISTS idx_clients_nombre ON clients(Nombre);
+        CREATE INDEX IF NOT EXISTS idx_clients_codigo ON clients(Codigo);
         CREATE INDEX IF NOT EXISTS idx_diasEntrega_descripcion ON diasEntrega(descripcion);
         CREATE INDEX IF NOT EXISTS idx_repartos_dia ON repartos(diasEntrega_id);
         CREATE INDEX IF NOT EXISTS idx_repartos_camion ON repartos(camion_id);
@@ -292,20 +292,20 @@ class SQLiteDatabase {
   async createClient(clientData) {
     const db = await this.init();
     const stmt = db.prepare(`
-      INSERT INTO clients (codigoalternativo, razonsocial, nombre, direccion, telefono, rut, activo, latitud, longitud) 
+      INSERT INTO clients (Codigo, Razon, Nombre, Direccion, Telefono1, Ruc, Activo, Coordenada_x, Coordenada_y) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     
     const result = stmt.run(
-      clientData.codigoalternativo || null,
-      clientData.razonsocial || null,
-      clientData.nombre,
-      clientData.direccion || null,
-      clientData.telefono || null,
-      clientData.rut || null,
-      clientData.activo !== undefined ? clientData.activo : 1,
-      clientData.latitud || null,
-      clientData.longitud || null
+      clientData.Codigo,
+      clientData.Razon || null,
+      clientData.Nombre,
+      clientData.Direccion || null,
+      clientData.Telefono1 || null,
+      clientData.Ruc || null,
+      clientData.Activo !== undefined ? parseInt(clientData.Activo) : 1,
+      clientData.Coordenada_x || null,
+      clientData.Coordenada_y || null
     );
     
     return this.getClientById(result.lastInsertRowid);
@@ -339,7 +339,7 @@ class SQLiteDatabase {
     const db = await this.init();
     const stmt = db.prepare(`
       SELECT * FROM clients 
-      WHERE nombre LIKE ? OR razonsocial LIKE ? OR rut LIKE ? OR codigoalternativo LIKE ?
+      WHERE Nombre LIKE ? OR Razon LIKE ? OR Ruc LIKE ? OR Codigo LIKE ?
       ORDER BY created_at DESC
     `);
     const searchPattern = `%${query}%`;

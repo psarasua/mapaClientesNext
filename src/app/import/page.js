@@ -32,14 +32,15 @@ export default function ImportPage() {
       icon: '👥',
       description: 'Importar información de clientes con direcciones y coordenadas',
       columns: [
-        { name: 'codigo', required: true, type: 'text', description: 'Código único del cliente (ej: CLI001)', example: 'CLI001' },
-        { name: 'razonSocial', required: true, type: 'text', description: 'Nombre o razón social completa', example: 'Distribuidora Norte S.A.' },
-        { name: 'direccion', required: true, type: 'text', description: 'Dirección física completa', example: 'Av. Italia 2354, Montevideo' },
-        { name: 'telefono', required: false, type: 'text', description: 'Número de teléfono de contacto', example: '099123456' },
-        { name: 'email', required: false, type: 'email', description: 'Correo electrónico de contacto', example: 'contacto@cliente.com' },
-        { name: 'lat', required: false, type: 'number', description: 'Latitud de la ubicación (decimal)', example: '-34.9011' },
-        { name: 'lng', required: false, type: 'number', description: 'Longitud de la ubicación (decimal)', example: '-56.1645' },
-        { name: 'observaciones', required: false, type: 'text', description: 'Notas adicionales del cliente', example: 'Cliente VIP - Descuento especial' }
+        { name: 'Codigo', required: true, type: 'text', description: 'Código único del cliente (ej: CLI001)', example: 'CLI001' },
+        { name: 'Razon', required: true, type: 'text', description: 'Razón social completa', example: 'Distribuidora Norte S.A.' },
+        { name: 'Nombre', required: true, type: 'text', description: 'Nombre comercial del cliente', example: 'Supermercado Norte' },
+        { name: 'Direccion', required: true, type: 'text', description: 'Dirección física completa', example: 'Av. Italia 2354, Montevideo' },
+        { name: 'Telefono1', required: false, type: 'text', description: 'Número de teléfono principal', example: '099123456' },
+        { name: 'Ruc', required: false, type: 'text', description: 'RUC o documento fiscal', example: '212345670018' },
+        { name: 'Activo', required: false, type: 'boolean', description: 'Estado activo (1=Activo, 0=Inactivo)', example: '1' },
+        { name: 'Coordenada_x', required: false, type: 'number', description: 'Longitud de la ubicación (decimal)', example: '-56.1645' },
+        { name: 'Coordenada_y', required: false, type: 'number', description: 'Latitud de la ubicación (decimal)', example: '-34.9011' }
       ]
     },
     { 

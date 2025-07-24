@@ -41,15 +41,15 @@ class TursoDatabase {
     const createClientsTable = `
       CREATE TABLE IF NOT EXISTS clients (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        codigoalternativo TEXT,
-        razonsocial TEXT,
-        nombre TEXT NOT NULL,
-        direccion TEXT,
-        telefono TEXT,
-        rut TEXT,
-        activo INTEGER DEFAULT 1,
-        latitud REAL,
-        longitud REAL,
+        Codigo TEXT UNIQUE NOT NULL,
+        Razon TEXT,
+        Nombre TEXT NOT NULL,
+        Direccion TEXT,
+        Telefono1 TEXT,
+        Ruc TEXT,
+        Activo INTEGER DEFAULT 1,
+        Coordenada_x REAL,
+        Coordenada_y REAL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -173,18 +173,18 @@ class TursoDatabase {
 
   async createClient(clientData) {
     const result = await this.client.execute({
-      sql: `INSERT INTO clients (codigoalternativo, razonsocial, nombre, direccion, telefono, rut, activo, latitud, longitud) 
+      sql: `INSERT INTO clients (Codigo, Razon, Nombre, Direccion, Telefono1, Ruc, Activo, Coordenada_x, Coordenada_y) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
       args: [
-        clientData.codigoalternativo || null,
-        clientData.razonsocial || null,
-        clientData.nombre || clientData.razonsocial || 'Cliente sin nombre',
-        clientData.direccion || null,
-        clientData.telefono || null,
-        clientData.rut || null,
-        clientData.activo !== undefined ? clientData.activo : 1,
-        clientData.latitud || clientData.latitude || null,
-        clientData.longitud || clientData.longitude || null
+        clientData.Codigo,
+        clientData.Razon || null,
+        clientData.Nombre,
+        clientData.Direccion || null,
+        clientData.Telefono1 || null,
+        clientData.Ruc || null,
+        clientData.Activo !== undefined ? parseInt(clientData.Activo) : 1,
+        clientData.Coordenada_x || null,
+        clientData.Coordenada_y || null
       ]
     });
     return result.rows[0];
@@ -193,20 +193,20 @@ class TursoDatabase {
   async updateClient(id, clientData) {
     const result = await this.client.execute({
       sql: `UPDATE clients SET 
-            codigoalternativo = ?, razonsocial = ?, nombre = ?, direccion = ?, 
-            telefono = ?, rut = ?, activo = ?, latitud = ?, longitud = ?, 
+            Codigo = ?, Razon = ?, Nombre = ?, Direccion = ?, 
+            Telefono1 = ?, Ruc = ?, Activo = ?, Coordenada_x = ?, Coordenada_y = ?, 
             updated_at = CURRENT_TIMESTAMP 
             WHERE id = ? RETURNING *`,
       args: [
-        clientData.codigoalternativo || null,
-        clientData.razonsocial || null,
-        clientData.nombre || clientData.razonsocial || 'Cliente sin nombre',
-        clientData.direccion || null,
-        clientData.telefono || null,
-        clientData.rut || null,
-        clientData.activo !== undefined ? clientData.activo : 1,
-        clientData.latitud || clientData.latitude || null,
-        clientData.longitud || clientData.longitude || null,
+        clientData.Codigo,
+        clientData.Razon || null,
+        clientData.Nombre,
+        clientData.Direccion || null,
+        clientData.Telefono1 || null,
+        clientData.Ruc || null,
+        clientData.Activo !== undefined ? parseInt(clientData.Activo) : 1,
+        clientData.Coordenada_x || null,
+        clientData.Coordenada_y || null,
         id
       ]
     });
