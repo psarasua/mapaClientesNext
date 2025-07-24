@@ -41,13 +41,17 @@ class TursoDatabase {
     const createClientsTable = `
       CREATE TABLE IF NOT EXISTS clients (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT,
-        phone TEXT,
-        address TEXT,
-        latitude REAL,
-        longitude REAL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        codigoalternativo TEXT,
+        razonsocial TEXT,
+        nombre TEXT NOT NULL,
+        direccion TEXT,
+        telefono TEXT,
+        rut TEXT,
+        activo INTEGER DEFAULT 1,
+        latitud REAL,
+        longitud REAL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `;
 
@@ -106,6 +110,12 @@ class TursoDatabase {
       await this.client.execute(createRepartosTable);
       await this.client.execute(createDiasEntregaTable);
       await this.client.execute(createClientesRepartoTable);
+      
+      // Crear índices para optimizar consultas
+      await this.client.execute('CREATE INDEX IF NOT EXISTS idx_clients_codigo ON clients(codigoalternativo)');
+      await this.client.execute('CREATE INDEX IF NOT EXISTS idx_clients_razonsocial ON clients(razonsocial)');
+      await this.client.execute('CREATE INDEX IF NOT EXISTS idx_clients_activo ON clients(activo)');
+      
     } catch (error) {
       console.error('❌ Error creating tables:', error);
       throw error;
@@ -162,19 +172,43 @@ class TursoDatabase {
   }
 
   async createClient(clientData) {
-    const { name, email, phone, address, latitude, longitude } = clientData;
     const result = await this.client.execute({
-      sql: 'INSERT INTO clients (name, email, phone, address, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?) RETURNING *',
-      args: [name, email, phone, address, latitude, longitude]
+      sql: `INSERT INTO clients (codigoalternativo, razonsocial, nombre, direccion, telefono, rut, activo, latitud, longitud) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+      args: [
+        clientData.codigoalternativo || null,
+        clientData.razonsocial || null,
+        clientData.nombre || clientData.razonsocial || 'Cliente sin nombre',
+        clientData.direccion || null,
+        clientData.telefono || null,
+        clientData.rut || null,
+        clientData.activo !== undefined ? clientData.activo : 1,
+        clientData.latitud || clientData.latitude || null,
+        clientData.longitud || clientData.longitude || null
+      ]
     });
     return result.rows[0];
   }
 
   async updateClient(id, clientData) {
-    const { name, email, phone, address, latitude, longitude } = clientData;
     const result = await this.client.execute({
-      sql: 'UPDATE clients SET name = ?, email = ?, phone = ?, address = ?, latitude = ?, longitude = ? WHERE id = ? RETURNING *',
-      args: [name, email, phone, address, latitude, longitude, id]
+      sql: `UPDATE clients SET 
+            codigoalternativo = ?, razonsocial = ?, nombre = ?, direccion = ?, 
+            telefono = ?, rut = ?, activo = ?, latitud = ?, longitud = ?, 
+            updated_at = CURRENT_TIMESTAMP 
+            WHERE id = ? RETURNING *`,
+      args: [
+        clientData.codigoalternativo || null,
+        clientData.razonsocial || null,
+        clientData.nombre || clientData.razonsocial || 'Cliente sin nombre',
+        clientData.direccion || null,
+        clientData.telefono || null,
+        clientData.rut || null,
+        clientData.activo !== undefined ? clientData.activo : 1,
+        clientData.latitud || clientData.latitude || null,
+        clientData.longitud || clientData.longitude || null,
+        id
+      ]
     });
     return result.rows[0];
   }
@@ -185,6 +219,11 @@ class TursoDatabase {
       args: [id]
     });
     return result.rows[0];
+  }
+
+  async clearAllClients() {
+    const result = await this.client.execute('DELETE FROM clients');
+    return result.rowsAffected;
   }
 
   // Trucks methods
@@ -217,6 +256,11 @@ class TursoDatabase {
       args: [id]
     });
     return result.rows[0];
+  }
+
+  async clearAllTrucks() {
+    const result = await this.client.execute('DELETE FROM trucks');
+    return result.rowsAffected;
   }
 
   async seedInitialTrucks() {
@@ -282,6 +326,11 @@ class TursoDatabase {
       args: [id]
     });
     return result.rows[0];
+  }
+
+  async clearAllRepartos() {
+    const result = await this.client.execute('DELETE FROM repartos');
+    return result.rowsAffected;
   }
 
   // Dias Entrega methods
