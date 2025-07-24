@@ -37,7 +37,7 @@ const ClientList = () => {
   });
 
   const [filterText, setFilterText] = useState('');
-  const [sortField, setSortField] = useState('nombre');
+  const [sortField, setSortField] = useState('Nombre');
   const [sortDirection, setSortDirection] = useState('asc');
   const [showMap, setShowMap] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
@@ -117,15 +117,15 @@ const ClientList = () => {
   // Resetear formulario
   const resetForm = () => {
     setFormData({
-      codigoalternativo: '',
-      razonsocial: '',
-      nombre: '',
-      direccion: '',
-      telefono: '',
-      rut: '',
-      activo: 1,
-      latitud: 0,
-      longitud: 0
+      Codigo: '',
+      Razon: '',
+      Nombre: '',
+      Direccion: '',
+      Telefono1: '',
+      Ruc: '',
+      Activo: 1,
+      Coordenada_x: 0,
+      Coordenada_y: 0
     });
     setEditingClient(null);
     setShowForm(false);
@@ -225,8 +225,8 @@ const ClientList = () => {
   const handleLocationChange = (coordinates) => {
     setFormData(prev => ({
       ...prev,
-      latitud: coordinates.latitude,
-      longitud: coordinates.longitude
+      Coordenada_y: coordinates.latitude,
+      Coordenada_x: coordinates.longitude
     }));
   };
 
@@ -286,24 +286,24 @@ const ClientList = () => {
                     <form onSubmit={handleSubmit}>
                       <div className="row">
                         <div className="col-md-6 mb-3">
-                          <label htmlFor="nombre" className="form-label">Nombre *</label>
+                          <label htmlFor="Nombre" className="form-label">Nombre *</label>
                           <input
                             type="text"
                             className="form-control"
-                            id="nombre"
-                            name="nombre"
+                            id="Nombre"
+                            name="Nombre"
                             value={formData.Nombre}
                             onChange={handleInputChange}
                             required
                           />
                         </div>
                         <div className="col-md-6 mb-3">
-                          <label htmlFor="codigoalternativo" className="form-label">Código Alternativo</label>
+                          <label htmlFor="Codigo" className="form-label">Código Alternativo</label>
                           <input
                             type="text"
                             className="form-control"
-                            id="codigoalternativo"
-                            name="codigoalternativo"
+                            id="Codigo"
+                            name="Codigo"
                             value={formData.Codigo}
                             onChange={handleInputChange}
                           />
@@ -312,23 +312,23 @@ const ClientList = () => {
 
                       <div className="row">
                         <div className="col-md-8 mb-3">
-                          <label htmlFor="razonsocial" className="form-label">Razón Social</label>
+                          <label htmlFor="Razon" className="form-label">Razón Social</label>
                           <input
                             type="text"
                             className="form-control"
-                            id="razonsocial"
-                            name="razonsocial"
+                            id="Razon"
+                            name="Razon"
                             value={formData.Razon}
                             onChange={handleInputChange}
                           />
                         </div>
                         <div className="col-md-4 mb-3">
-                          <label htmlFor="rut" className="form-label">RUT</label>
+                          <label htmlFor="Ruc" className="form-label">RUT</label>
                           <input
                             type="text"
                             className="form-control"
-                            id="rut"
-                            name="rut"
+                            id="Ruc"
+                            name="Ruc"
                             value={formData.Ruc}
                             onChange={handleInputChange}
                           />
@@ -337,23 +337,23 @@ const ClientList = () => {
 
                       <div className="row">
                         <div className="col-md-8 mb-3">
-                          <label htmlFor="direccion" className="form-label">Dirección</label>
+                          <label htmlFor="Direccion" className="form-label">Dirección</label>
                           <input
                             type="text"
                             className="form-control"
-                            id="direccion"
-                            name="direccion"
+                            id="Direccion"
+                            name="Direccion"
                             value={formData.Direccion}
                             onChange={handleInputChange}
                           />
                         </div>
                         <div className="col-md-4 mb-3">
-                          <label htmlFor="telefono" className="form-label">Teléfono</label>
+                          <label htmlFor="Telefono1" className="form-label">Teléfono</label>
                           <input
                             type="text"
                             className="form-control"
-                            id="telefono"
-                            name="telefono"
+                            id="Telefono1"
+                            name="Telefono1"
                             value={formData.Telefono1}
                             onChange={handleInputChange}
                           />
@@ -362,37 +362,37 @@ const ClientList = () => {
 
                       <div className="row">
                         <div className="col-md-4 mb-3">
-                          <label htmlFor="latitud" className="form-label">Latitud</label>
+                          <label htmlFor="Coordenada_y" className="form-label">Latitud</label>
                           <input
                             type="number"
                             step="any"
                             className="form-control"
-                            id="latitud"
-                            name="latitud"
+                            id="Coordenada_y"
+                            name="Coordenada_y"
                             value={formData.Coordenada_y || ''}
                             onChange={handleInputChange}
                             readOnly
                           />
                         </div>
                         <div className="col-md-4 mb-3">
-                          <label htmlFor="longitud" className="form-label">Longitud</label>
+                          <label htmlFor="Coordenada_x" className="form-label">Longitud</label>
                           <input
                             type="number"
                             step="any"
                             className="form-control"
-                            id="longitud"
-                            name="longitud"
+                            id="Coordenada_x"
+                            name="Coordenada_x"
                             value={formData.Coordenada_x || ''}
                             onChange={handleInputChange}
                             readOnly
                           />
                         </div>
                         <div className="col-md-4 mb-3">
-                          <label htmlFor="activo" className="form-label">Estado</label>
+                          <label htmlFor="Activo" className="form-label">Estado</label>
                           <select
                             className="form-control"
-                            id="activo"
-                            name="activo"
+                            id="Activo"
+                            name="Activo"
                             value={formData.Activo}
                             onChange={handleInputChange}
                           >
@@ -462,26 +462,26 @@ const ClientList = () => {
                       <th 
                         scope="col" 
                         className="cursor-pointer" 
-                        onClick={() => handleSort('codigoalternativo')}
+                        onClick={() => handleSort('Codigo')}
                         style={{cursor: 'pointer'}}
                       >
-                        Código {sortField === 'codigoalternativo' && (sortDirection === 'asc' ? '↑' : '↓')}
+                        Código {sortField === 'Codigo' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
                       <th 
                         scope="col" 
                         className="cursor-pointer" 
-                        onClick={() => handleSort('nombre')}
+                        onClick={() => handleSort('Nombre')}
                         style={{cursor: 'pointer'}}
                       >
-                        Nombre {sortField === 'nombre' && (sortDirection === 'asc' ? '↑' : '↓')}
+                        Nombre {sortField === 'Nombre' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
                       <th 
                         scope="col" 
                         className="cursor-pointer" 
-                        onClick={() => handleSort('razonsocial')}
+                        onClick={() => handleSort('Razon')}
                         style={{cursor: 'pointer'}}
                       >
-                        Razón Social {sortField === 'razonsocial' && (sortDirection === 'asc' ? '↑' : '↓')}
+                        Razón Social {sortField === 'Razon' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
                       <th scope="col">Dirección</th>
                       <th scope="col">Teléfono</th>
@@ -595,23 +595,23 @@ const ClientList = () => {
       <Modal show={showMap} onHide={handleCloseMap} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>
-            📍 Ubicación de {selectedClient?.nombre}
+            📍 Ubicación de {selectedClient?.Nombre}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedClient && (
             <>
               <div className="mb-3">
-                <strong>Cliente:</strong> {selectedClient.nombre}<br/>
-                <strong>Dirección:</strong> {selectedClient.direccion}<br/>
-                <strong>Coordenadas:</strong> {selectedClient.latitud?.toFixed(6)}, {selectedClient.longitud?.toFixed(6)}
+                <strong>Cliente:</strong> {selectedClient.Nombre}<br/>
+                <strong>Dirección:</strong> {selectedClient.Direccion}<br/>
+                <strong>Coordenadas:</strong> {selectedClient.Coordenada_y?.toFixed(6)}, {selectedClient.Coordenada_x?.toFixed(6)}
               </div>
               <div style={{ height: '400px', width: '100%' }}>
                 <MapComponent 
-                  latitude={selectedClient.latitud} 
-                  longitude={selectedClient.longitud}
-                  clientName={selectedClient.nombre}
-                  address={selectedClient.direccion}
+                  latitude={selectedClient.Coordenada_y} 
+                  longitude={selectedClient.Coordenada_x}
+                  clientName={selectedClient.Nombre}
+                  address={selectedClient.Direccion}
                 />
               </div>
             </>
