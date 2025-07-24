@@ -1,0 +1,45 @@
+<!-- Logo para redes sociales y meta tags -->
+<svg width="400" height="200" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo -->
+  <rect x="0" y="0" width="400" height="200" rx="16" fill="#2c3e50"/>
+  
+  <!-- Icono de mapa grande -->
+  <g transform="translate(30, 30)">
+    <!-- Base del mapa -->
+    <rect x="0" y="0" width="140" height="140" rx="8" fill="#18bc9c" stroke="#ffffff" stroke-width="3"/>
+    
+    <!-- Marcadores en el mapa */
+    <circle cx="35" cy="40" r="8" fill="#e74c3c"/>
+    <circle cx="100" cy="30" r="8" fill="#f39c12"/>
+    <circle cx="60" cy="80" r="8" fill="#3498db"/>
+    <circle cx="110" cy="100" r="8" fill="#9b59b6"/>
+    <circle cx="30" cy="120" r="8" fill="#27ae60"/>
+    
+    <!-- Líneas de conexión -->
+    <path d="M35,40 L60,80 L100,30 L110,100 L30,120" stroke="#ffffff" stroke-width="3" fill="none" opacity="0.7"/>
+    
+    <!-- Cuadrícula del mapa -->
+    <g opacity="0.3" stroke="#ffffff" stroke-width="1">
+      <line x1="0" y1="35" x2="140" y2="35"/>
+      <line x1="0" y1="70" x2="140" y2="70"/>
+      <line x1="0" y1="105" x2="140" y2="105"/>
+      <line x1="35" y1="0" x2="35" y2="140"/>
+      <line x1="70" y1="0" x2="70" y2="140"/>
+      <line x1="105" y1="0" x2="105" y2="140"/>
+    </g>
+  </g>
+  
+  <!-- Texto del logo -->
+  <text x="200" y="80" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="700" fill="#ffffff">
+    MapaClientes
+  </text>
+  <text x="200" y="120" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="400" fill="#95a5a6">
+    Sistema de Gestión Logística
+  </text>
+  
+  <!-- Elementos decorativos */
+  <circle cx="360" cy="50" r="20" fill="#18bc9c" opacity="0.3"/>
+  <circle cx="360" cy="50" r="12" fill="#18bc9c"/>
+  <circle cx="340" cy="150" r="15" fill="#3498db" opacity="0.4"/>
+  <circle cx="340" cy="150" r="8" fill="#3498db"/>
+</svg>

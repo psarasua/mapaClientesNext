@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { Logo } from '../../components/common/Logo';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -65,11 +66,10 @@ export default function LoginPage() {
       <div className="col-md-6 col-lg-7 d-none d-md-flex flex-column justify-content-center align-items-center login-left-panel text-white p-5">
         <div className="text-center" style={{ maxWidth: '500px', zIndex: 1 }}>
           <div className="mb-5">
-            <div className="mb-4 login-feature-icon">
-              <h1 className="display-3 fw-bold mb-3">🚛</h1>
+            <div className="mb-4 d-flex justify-content-center">
+              <Logo width={280} height={80} />
             </div>
-            <h1 className="display-5 fw-bold mb-3">Sistema de Repartos</h1>
-          
+            <p className="fs-5 mb-3 opacity-90">Sistema integral de gestión de clientes y repartos</p>
           </div>
           
           <div className="row g-4 mb-5">

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Navbar, Nav, Container, Offcanvas, Badge, Dropdown, Button } from 'react-bootstrap';
 import { FaUser, FaSignOutAlt } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
+import { LogoSmall } from './Logo';
 
 // Iconos SVG con colores originales
 const IconHome = () => (
@@ -75,6 +76,15 @@ const IconSettings = () => (
   </svg>
 );
 
+const IconImport = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    <rect x="3" y="3" width="18" height="18" rx="2" fill="#16A085" stroke="#138D75" strokeWidth="1"/>
+    <path d="M8 12L12 8L16 12" stroke="#ECF0F1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 8V16" stroke="#ECF0F1" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M7 19H17" stroke="#ECF0F1" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+
 export default function Navigation({ activeSection, onSectionChange }) {
   const [show, setShow] = useState(false);
   const { user, logout } = useAuth();
@@ -96,11 +106,17 @@ export default function Navigation({ activeSection, onSectionChange }) {
     { id: 'diasEntrega', label: 'Días de Entrega', icon: <IconCalendar />, badge: null },
     { id: 'repartos', label: 'Repartos', icon: <IconMap />, badge: null },
     { id: 'clientesporreparto', label: 'Asignaciones', icon: <IconBoxes />, badge: null },
+    { id: 'import', label: 'Importar Datos', icon: <IconImport />, badge: null },
     { id: 'configuracion', label: 'Configuración', icon: <IconSettings />, badge: null }
   ];
 
   const handleMenuClick = (sectionId) => {
-    onSectionChange(sectionId);
+    if (sectionId === 'import') {
+      // Navegar a la página de importación
+      window.location.href = '/import';
+    } else {
+      onSectionChange(sectionId);
+    }
     handleClose();
   };
 
@@ -109,8 +125,9 @@ export default function Navigation({ activeSection, onSectionChange }) {
       {/* Navbar Principal */}
       <Navbar bg="dark" variant="dark" expand="lg" className="shadow-sm">
         <Container fluid>
-          <Navbar.Brand href="#" className="fw-bold">
-            📍 MapaClientes
+          <Navbar.Brand href="#" className="d-flex align-items-center">
+            <LogoSmall size={28} className="me-2" />
+            <span className="fw-bold text-white">MapaClientes</span>
           </Navbar.Brand>
           
           {/* Botón de menú para móvil */}
@@ -170,8 +187,9 @@ export default function Navigation({ activeSection, onSectionChange }) {
       {/* Offcanvas para móvil */}
       <Offcanvas show={show} onHide={handleClose} placement="start">
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>
-            📍 MapaClientes
+          <Offcanvas.Title className="d-flex align-items-center">
+            <LogoSmall size={24} className="me-2" />
+            MapaClientes
           </Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>

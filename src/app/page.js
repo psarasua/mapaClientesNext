@@ -17,6 +17,17 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const { user, loading, isAuthenticated } = useAuth();
 
+  // Verificar si hay un parámetro de sección en la URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const section = urlParams.get('section');
+    if (section) {
+      setActiveSection(section);
+      // Limpiar la URL
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+
   useEffect(() => {
     // Si no está autenticado y no está cargando, redirigir a login
     if (!loading && !isAuthenticated()) {

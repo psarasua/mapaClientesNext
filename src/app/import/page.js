@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, ProgressBar, Table, Badge, Spinner } from 'react-bootstrap';
-import { FaUpload, FaFileExcel, FaDownload, FaInfoCircle } from 'react-icons/fa';
+import { FaUpload, FaFileExcel, FaDownload, FaInfoCircle, FaArrowLeft } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
+import Navigation from '../../components/common/Navigation';
 import * as XLSX from 'xlsx';
 
 export default function ImportPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const [activeSection, setActiveSection] = useState('import');
   
   // Redirigir si no está autenticado
   useEffect(() => {
@@ -17,6 +19,17 @@ export default function ImportPage() {
       router.push('/login');
     }
   }, [user, authLoading, router]);
+
+  // Manejar cambios de sección
+  const handleSectionChange = (sectionId) => {
+    if (sectionId === 'import') {
+      // Si ya estamos en import, no hacer nada
+      return;
+    } else {
+      // Para otras secciones, ir a la página principal
+      router.push(`/?section=${sectionId}`);
+    }
+  };
 
   const [file, setFile] = useState(null);
   const [tableType, setTableType] = useState('');
@@ -172,13 +185,32 @@ export default function ImportPage() {
   }
 
   return (
-    <Container className="mt-4">
-      <Row>
-        <Col>
-          <h2 className="mb-4">
-            <FaFileExcel className="me-2" />
-            Importación de Datos desde Excel
-          </h2>
+    <div className="min-vh-100 bg-light">
+      <Navigation 
+        activeSection={activeSection} 
+        onSectionChange={handleSectionChange}
+        user={user}
+      />
+      
+      <main className="pt-4">
+        <Container className="mt-4">
+          <Row>
+            <Col>
+              <div className="d-flex align-items-center mb-4">
+                <Button 
+                  variant="outline-secondary" 
+                  size="sm" 
+                  onClick={() => router.push('/')}
+                  className="me-3"
+                >
+                  <FaArrowLeft className="me-2" />
+                  Volver al Dashboard
+                </Button>
+                <h2 className="mb-0">
+                  <FaFileExcel className="me-2" />
+                  Importación de Datos desde Excel
+                </h2>
+              </div>
           
           <Card className="mb-4">
             <Card.Header>
@@ -383,5 +415,7 @@ export default function ImportPage() {
         </Col>
       </Row>
     </Container>
+      </main>
+    </div>
   );
 }
