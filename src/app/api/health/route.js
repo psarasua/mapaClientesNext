@@ -121,6 +121,68 @@ export async function GET() {
       console.log('🔍 [HEALTH] DatabaseAdapter: ❌', e.message);
     }
 
+    // NUEVO: Probar login completo
+    console.log('🔍 [HEALTH] Probando login completo...');
+    try {
+      const { createClient } = await import('@libsql/client');
+      const bcrypt = await import('bcryptjs');
+      const jwt = await import('jsonwebtoken');
+      
+      const client = createClient({
+        url: process.env.TURSO_DATABASE_URL,
+        authToken: process.env.TURSO_AUTH_TOKEN,
+      });
+      
+      // Buscar usuario admin
+      const userResult = await client.execute({
+        sql: 'SELECT * FROM users WHERE usuario = ? LIMIT 1',
+        args: ['admin']
+      });
+      
+      if (userResult.rows.length > 0) {
+        const user = userResult.rows[0];
+        const isValidPassword = await bcrypt.compare('admin123', user.password);
+        
+        if (isValidPassword) {
+          const token = jwt.sign(
+            { id: user.id, usuario: user.usuario },
+            process.env.JWT_SECRET || 'fallback-secret',
+            { expiresIn: '24h' }
+          );
+          
+          healthData.loginTest = {
+            status: '✅ Login funciona completamente',
+            userFound: true,
+            passwordValid: true,
+            tokenGenerated: true,
+            token: token.substring(0, 50) + '...'
+          };
+        } else {
+          healthData.loginTest = {
+            status: '❌ Password inválido',
+            userFound: true,
+            passwordValid: false,
+            tokenGenerated: false
+          };
+        }
+      } else {
+        healthData.loginTest = {
+          status: '❌ Usuario no encontrado',
+          userFound: false,
+          passwordValid: false,
+          tokenGenerated: false
+        };
+      }
+      
+      console.log('🔍 [HEALTH] Login test:', healthData.loginTest.status);
+    } catch (e) {
+      healthData.loginTest = {
+        status: `❌ Error en login test: ${e.message}`,
+        error: e.constructor.name
+      };
+      console.log('🔍 [HEALTH] Login test: ❌', e.message);
+    }
+
     console.log('🔍 [HEALTH] ✅ Health check completado');
     return NextResponse.json(healthData);
 
