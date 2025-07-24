@@ -1,6 +1,6 @@
 // Adaptador de base de datos - Soporte para SQLite local y Turso en producción
-import SQLiteDatabase from './sqlite';
-import TursoDatabase from './turso';
+import SQLiteDatabase from './sqlite.js';
+import TursoDatabase from './turso.js';
 
 class DatabaseAdapter {
   constructor() {
