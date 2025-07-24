@@ -78,8 +78,12 @@ const ClientList = () => {
     e.preventDefault();
     
     // Validación básica
-    if (!formData.nombre.trim()) {
+    if (!formData.Nombre.trim()) {
       setError('El nombre es requerido');
+      return;
+    }
+    if (!formData.Codigo.trim()) {
+      setError('El código es requerido');
       return;
     }
 
@@ -130,15 +134,15 @@ const ClientList = () => {
   // Editar cliente
   const handleEdit = (client) => {
     setFormData({
-      codigoalternativo: client.codigoalternativo || '',
-      razonsocial: client.razonsocial || '',
-      nombre: client.nombre || '',
-      direccion: client.direccion || '',
-      telefono: client.telefono || '',
-      rut: client.rut || '',
-      activo: client.activo || 1,
-      latitud: client.latitud || 0,
-      longitud: client.longitud || 0
+      Codigo: client.Codigo || '',
+      Razon: client.Razon || '',
+      Nombre: client.Nombre || '',
+      Direccion: client.Direccion || '',
+      Telefono1: client.Telefono1 || '',
+      Ruc: client.Ruc || '',
+      Activo: client.Activo || 1,
+      Coordenada_x: client.Coordenada_x || 0,
+      Coordenada_y: client.Coordenada_y || 0
     });
     setEditingClient(client);
     setShowForm(true);
@@ -173,10 +177,10 @@ const ClientList = () => {
   // Filtrar y ordenar clientes
   const getFilteredAndSortedClients = () => {
     let filtered = clients.filter(client => 
-      client.nombre.toLowerCase().includes(filterText.toLowerCase()) ||
-      client.razonsocial.toLowerCase().includes(filterText.toLowerCase()) ||
-      client.rut.toLowerCase().includes(filterText.toLowerCase()) ||
-      (client.codigoalternativo && client.codigoalternativo.toLowerCase().includes(filterText.toLowerCase()))
+      (client.Nombre && client.Nombre.toLowerCase().includes(filterText.toLowerCase())) ||
+      (client.Razon && client.Razon.toLowerCase().includes(filterText.toLowerCase())) ||
+      (client.Ruc && client.Ruc.toLowerCase().includes(filterText.toLowerCase())) ||
+      (client.Codigo && client.Codigo.toLowerCase().includes(filterText.toLowerCase()))
     );
 
     filtered.sort((a, b) => {
@@ -288,7 +292,7 @@ const ClientList = () => {
                             className="form-control"
                             id="nombre"
                             name="nombre"
-                            value={formData.nombre}
+                            value={formData.Nombre}
                             onChange={handleInputChange}
                             required
                           />
@@ -300,7 +304,7 @@ const ClientList = () => {
                             className="form-control"
                             id="codigoalternativo"
                             name="codigoalternativo"
-                            value={formData.codigoalternativo}
+                            value={formData.Codigo}
                             onChange={handleInputChange}
                           />
                         </div>
@@ -314,7 +318,7 @@ const ClientList = () => {
                             className="form-control"
                             id="razonsocial"
                             name="razonsocial"
-                            value={formData.razonsocial}
+                            value={formData.Razon}
                             onChange={handleInputChange}
                           />
                         </div>
@@ -325,7 +329,7 @@ const ClientList = () => {
                             className="form-control"
                             id="rut"
                             name="rut"
-                            value={formData.rut}
+                            value={formData.Ruc}
                             onChange={handleInputChange}
                           />
                         </div>
@@ -339,7 +343,7 @@ const ClientList = () => {
                             className="form-control"
                             id="direccion"
                             name="direccion"
-                            value={formData.direccion}
+                            value={formData.Direccion}
                             onChange={handleInputChange}
                           />
                         </div>
@@ -350,7 +354,7 @@ const ClientList = () => {
                             className="form-control"
                             id="telefono"
                             name="telefono"
-                            value={formData.telefono}
+                            value={formData.Telefono1}
                             onChange={handleInputChange}
                           />
                         </div>
@@ -365,7 +369,7 @@ const ClientList = () => {
                             className="form-control"
                             id="latitud"
                             name="latitud"
-                            value={formData.latitud || ''}
+                            value={formData.Coordenada_y || ''}
                             onChange={handleInputChange}
                             readOnly
                           />
@@ -378,7 +382,7 @@ const ClientList = () => {
                             className="form-control"
                             id="longitud"
                             name="longitud"
-                            value={formData.longitud || ''}
+                            value={formData.Coordenada_x || ''}
                             onChange={handleInputChange}
                             readOnly
                           />
@@ -389,7 +393,7 @@ const ClientList = () => {
                             className="form-control"
                             id="activo"
                             name="activo"
-                            value={formData.activo}
+                            value={formData.Activo}
                             onChange={handleInputChange}
                           >
                             <option value={1}>Activo</option>
@@ -404,8 +408,8 @@ const ClientList = () => {
                           <strong>📍 Seleccionar Ubicación en el Mapa</strong>
                         </label>
                         <LocationPickerMap
-                          latitude={formData.latitud || -33.4489}
-                          longitude={formData.longitud || -70.6693}
+                          latitude={formData.Coordenada_y || -33.4489}
+                          longitude={formData.Coordenada_x || -70.6693}
                           onLocationChange={handleLocationChange}
                           height="350px"
                         />
@@ -508,26 +512,26 @@ const ClientList = () => {
                       filteredClients.map((client) => (
                         <tr key={client.id}>
                           <td><span className="badge bg-secondary">{client.id}</span></td>
-                          <td>{client.codigoalternativo || '-'}</td>
-                          <td><strong>{client.nombre}</strong></td>
-                          <td>{client.razonsocial || '-'}</td>
-                          <td className="text-truncate" style={{maxWidth: '200px'}} title={client.direccion}>
-                            {client.direccion || '-'}
+                          <td>{client.Codigo || '-'}</td>
+                          <td><strong>{client.Nombre}</strong></td>
+                          <td>{client.Razon || '-'}</td>
+                          <td className="text-truncate" style={{maxWidth: '200px'}} title={client.Direccion}>
+                            {client.Direccion || '-'}
                           </td>
-                          <td>{client.telefono || '-'}</td>
-                          <td>{client.rut || '-'}</td>
+                          <td>{client.Telefono1 || '-'}</td>
+                          <td>{client.Ruc || '-'}</td>
                           <td>
-                            <span className={`badge ${client.activo ? 'bg-success' : 'bg-danger'}`}>
-                              {client.activo ? 'Activo' : 'Inactivo'}
+                            <span className={`badge ${client.Activo ? 'bg-success' : 'bg-danger'}`}>
+                              {client.Activo ? 'Activo' : 'Inactivo'}
                             </span>
                           </td>
                           <td className="text-center">
-                            {client.latitud && client.longitud ? (
+                            {client.Coordenada_x && client.Coordenada_y ? (
                               <Button
                                 variant="success"
                                 size="sm"
                                 onClick={() => handleShowMap(client)}
-                                title={`Ver ubicación: ${client.latitud.toFixed(4)}, ${client.longitud.toFixed(4)}`}
+                                title={`Ver ubicación: ${client.Coordenada_y.toFixed(4)}, ${client.Coordenada_x.toFixed(4)}`}
                                 className="border-0"
                                 style={{ width: '32px', height: '32px' }}
                               >
@@ -566,7 +570,7 @@ const ClientList = () => {
                                 overlay={<Tooltip>Eliminar cliente</Tooltip>}
                               >
                                 <Button
-                                  onClick={() => handleDelete(client.id, client.nombre)}
+                                  onClick={() => handleDelete(client.id, client.Nombre)}
                                   variant="outline-danger"
                                   size="sm"
                                   disabled={loading}

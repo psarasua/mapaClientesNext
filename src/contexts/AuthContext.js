@@ -34,7 +34,14 @@ export function AuthProvider({ children }) {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      // Llamar a la API de logout para limpiar la cookie
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Error en logout:', error);
+    }
+    
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');

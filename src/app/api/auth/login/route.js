@@ -46,12 +46,22 @@ export async function POST(request) {
       // Respuesta exitosa (sin incluir la contraseña)
       const { password: _, ...userWithoutPassword } = user;
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: true,
         message: 'Login exitoso',
         user: userWithoutPassword,
         token
       });
+
+      // Establecer cookie con el token (httpOnly para seguridad)
+      response.cookies.set('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000 // 24 horas
+      });
+
+      return response;
 
     } catch (dbError) {
       console.error('Error de base de datos en login:', dbError);

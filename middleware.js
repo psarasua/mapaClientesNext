@@ -24,6 +24,7 @@ export function middleware(request) {
   const publicPaths = [
     '/login',
     '/api/auth/login',
+    '/api/auth/logout',
     '/api/health'
   ];
 
