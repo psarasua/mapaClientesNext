@@ -2,16 +2,22 @@ import { NextResponse } from 'next/server';
 import { verifyToken } from './src/lib/auth.js';
 
 export function middleware(request) {
+  console.log('🔍 Middleware ejecutándose para:', request.nextUrl.pathname);
+  
   // Rutas que requieren autenticación
   const protectedPaths = [
+    '/',
     '/dashboard',
+    '/configuracion',
+    '/import',
     '/api/users',
     '/api/trucks', 
     '/api/clients',
     '/api/repartos',
     '/api/diasEntrega',
     '/api/clientesporreparto',
-    '/api/admin'
+    '/api/admin',
+    '/api/import-excel'
   ];
 
   // Rutas públicas (no requieren autenticación)
@@ -25,23 +31,13 @@ export function middleware(request) {
 
   // Si es una ruta pública, permitir acceso
   if (publicPaths.some(path => pathname.startsWith(path))) {
-    return NextResponse.next();
-  }
-
-  // Si es la raíz y no está autenticado, redirigir a login
-  if (pathname === '/') {
-    const token = request.cookies.get('token')?.value || 
-                  request.headers.get('authorization')?.replace('Bearer ', '');
-    
-    if (!token || !verifyToken(token)) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    
+    console.log('✅ Ruta pública permitida:', pathname);
     return NextResponse.next();
   }
 
   // Si es una ruta protegida, verificar autenticación
   if (protectedPaths.some(path => pathname.startsWith(path))) {
+    console.log('🔒 Verificando autenticación para ruta protegida:', pathname);
     const token = request.cookies.get('token')?.value || 
                   request.headers.get('authorization')?.replace('Bearer ', '');
 

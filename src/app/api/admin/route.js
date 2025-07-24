@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/apiAuth';
 import DatabaseAdapter from '@/lib/database/adapter';
 
 // POST - Limpiar todos los datos de las tablas
 export async function POST(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { action, tables } = await request.json();
     
@@ -88,7 +93,11 @@ export async function POST(request) {
 }
 
 // GET - Obtener estado de las tablas
-export async function GET() {
+export async function GET(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const db = new DatabaseAdapter();
     const status = {};

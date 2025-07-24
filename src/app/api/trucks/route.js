@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/apiAuth';
 import DatabaseAdapter from '@/lib/database/adapter';
 
 // GET - Obtener todos los camiones
-export async function GET() {
+export async function GET(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const db = new DatabaseAdapter();
     
@@ -66,6 +71,10 @@ export async function GET() {
 
 // POST - Crear un nuevo camión
 export async function POST(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const truckData = await request.json();
     
@@ -132,6 +141,10 @@ export async function POST(request) {
 
 // PUT - Actualizar un camión existente
 export async function PUT(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const truckData = await request.json();
     
@@ -203,6 +216,10 @@ export async function PUT(request) {
 
 // DELETE - Eliminar un camión
 export async function DELETE(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const id = parseInt(searchParams.get('id'));

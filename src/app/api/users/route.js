@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/database/adapter';
+import { requireAuth } from '@/lib/apiAuth';
 
 // GET - Obtener todos los usuarios
-export async function GET() {
+export async function GET(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const db = getDatabase();
     const dbInfo = db.getDatabaseInfo();
@@ -36,6 +41,10 @@ export async function GET() {
 
 // POST - Crear un nuevo usuario
 export async function POST(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const userData = await request.json();
     
@@ -99,6 +108,10 @@ export async function POST(request) {
 
 // PUT - Actualizar un usuario existente
 export async function PUT(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const userData = await request.json();
     
@@ -167,6 +180,10 @@ export async function PUT(request) {
 
 // DELETE - Eliminar un usuario
 export async function DELETE(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const id = parseInt(searchParams.get('id'));

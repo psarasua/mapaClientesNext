@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/apiAuth';
 import DatabaseAdapter from '@/lib/database/adapter';
 import { validateCreateClientData } from '@/types/index';
 
 // GET - Obtener todos los clientes
-export async function GET() {
+export async function GET(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const db = new DatabaseAdapter();
     const clients = await db.getAllClients();
@@ -25,6 +30,10 @@ export async function GET() {
 
 // POST - Crear nuevo cliente
 export async function POST(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const clientData = await request.json();
     
@@ -63,6 +72,10 @@ export async function POST(request) {
 
 // PUT - Actualizar cliente existente
 export async function PUT(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id, ...clientData } = await request.json();
     
@@ -107,6 +120,10 @@ export async function PUT(request) {
 
 // DELETE - Eliminar cliente
 export async function DELETE(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

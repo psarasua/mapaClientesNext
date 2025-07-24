@@ -1,0 +1,261 @@
+import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/apiAuth';
+import * as XLSX from 'xlsx';
+import DatabaseAdapter from '../../../lib/database/adapter.js';
+
+// Configurar runtime para compatibilidad
+export const runtime = 'nodejs';
+
+export async function POST(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
+  try {
+    console.log('🔍 [IMPORT] Iniciando importación de Excel...');
+    
+    const formData = await request.formData();
+    const file = formData.get('file');
+    const tableType = formData.get('tableType'); // 'clients', 'trucks', 'users', etc.
+    const replaceData = formData.get('replaceData') === 'true'; // true = reemplazar, false = agregar
+    
+    if (!file) {
+      return NextResponse.json({
+        success: false,
+        error: 'No se ha seleccionado ningún archivo'
+      }, { status: 400 });
+    }
+    
+    if (!tableType) {
+      return NextResponse.json({
+        success: false,
+        error: 'No se ha especificado el tipo de tabla'
+      }, { status: 400 });
+    }
+
+    console.log(`🔍 [IMPORT] Archivo: ${file.name}, Tabla: ${tableType}`);
+
+    // Leer el archivo Excel
+    const arrayBuffer = await file.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer);
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+    console.log(`🔍 [IMPORT] ${jsonData.length} filas encontradas`);
+
+    if (jsonData.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'El archivo Excel está vacío o no tiene datos válidos'
+      }, { status: 400 });
+    }
+
+    // Conectar a la base de datos
+    const db = new DatabaseAdapter();
+    await db.init();
+
+    let importedCount = 0;
+    let errors = [];
+
+    // Procesar según el tipo de tabla
+    switch (tableType) {
+      case 'clients':
+        const clientResults = await importClients(db, jsonData, replaceData);
+        importedCount = clientResults.imported;
+        errors = clientResults.errors;
+        break;
+        
+      case 'trucks':
+        const truckResults = await importTrucks(db, jsonData, replaceData);
+        importedCount = truckResults.imported;
+        errors = truckResults.errors;
+        break;
+        
+      case 'repartos':
+        const repartoResults = await importRepartos(db, jsonData, replaceData);
+        importedCount = repartoResults.imported;
+        errors = repartoResults.errors;
+        break;
+        
+      default:
+        return NextResponse.json({
+          success: false,
+          error: `Tipo de tabla no soportado: ${tableType}`
+        }, { status: 400 });
+    }
+
+    console.log(`🔍 [IMPORT] Importación completada: ${importedCount} registros`);
+
+    return NextResponse.json({
+      success: true,
+      message: `Importación completada exitosamente`,
+      imported: importedCount,
+      total: jsonData.length,
+      errors: errors.length > 0 ? errors.slice(0, 10) : [], // Solo primeros 10 errores
+      hasMoreErrors: errors.length > 10
+    });
+
+  } catch (error) {
+    console.error('🔍 [IMPORT] Error:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Error procesando el archivo',
+      details: error.message
+    }, { status: 500 });
+  }
+}
+
+// Función para importar clientes
+async function importClients(db, data, replaceData = false) {
+  let imported = 0;
+  const errors = [];
+
+  // Si se debe reemplazar, limpiar datos existentes
+  if (replaceData) {
+    try {
+      console.log('🗑️ [IMPORT] Eliminando todos los clientes existentes...');
+      await db.clearAllClients(); // Necesitaremos implementar esta función
+      console.log('✅ [IMPORT] Clientes existentes eliminados');
+    } catch (error) {
+      console.error('❌ [IMPORT] Error eliminando clientes:', error);
+      errors.push(`Error eliminando datos existentes: ${error.message}`);
+    }
+  }
+
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    try {
+      // Mapear columnas del Excel a campos de la BD
+      const client = {
+        codigoalternativo: row['codigo'] || row['Código'] || row['CODIGO'] || '',
+        razonsocial: row['razonSocial'] || row['Razón Social'] || row['razon_social'] || row['RAZON_SOCIAL'] || '',
+        direccion: row['direccion'] || row['Dirección'] || row['DIRECCION'] || '',
+        telefono: row['telefono'] || row['Teléfono'] || row['TELEFONO'] || '',
+        email: row['email'] || row['Email'] || row['EMAIL'] || '',
+        latitude: parseFloat(row['lat'] || row['Latitud'] || row['latitude'] || row['LATITUD'] || 0),
+        longitude: parseFloat(row['lng'] || row['Longitud'] || row['longitude'] || row['LONGITUD'] || 0),
+        observaciones: row['observaciones'] || row['Observaciones'] || row['OBSERVACIONES'] || ''
+      };
+
+      await db.createClient(client);
+      imported++;
+    } catch (error) {
+      errors.push(`Fila ${i + 2}: ${error.message}`);
+    }
+  }
+
+  return { imported, errors };
+}
+
+// Función para importar camiones
+async function importTrucks(db, data, replaceData = false) {
+  let imported = 0;
+  const errors = [];
+
+  // Si se debe reemplazar, limpiar datos existentes
+  if (replaceData) {
+    try {
+      console.log('🗑️ [IMPORT] Eliminando todos los camiones existentes...');
+      await db.clearAllTrucks(); // Necesitaremos implementar esta función
+      console.log('✅ [IMPORT] Camiones existentes eliminados');
+    } catch (error) {
+      console.error('❌ [IMPORT] Error eliminando camiones:', error);
+      errors.push(`Error eliminando datos existentes: ${error.message}`);
+    }
+  }
+
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    try {
+      const truck = {
+        description: row['descripcion'] || row['Descripción'] || row['DESCRIPCION'] || 
+                    row['Nombre'] || row['nombre'] || row['NOMBRE'] || ''
+      };
+
+      if (!truck.description.trim()) {
+        errors.push(`Fila ${i + 2}: Descripción es requerida`);
+        continue;
+      }
+
+      await db.createTruck(truck);
+      imported++;
+    } catch (error) {
+      errors.push(`Fila ${i + 2}: ${error.message}`);
+    }
+  }
+
+  return { imported, errors };
+}
+
+// Función para importar repartos
+async function importRepartos(db, data, replaceData = false) {
+  let imported = 0;
+  const errors = [];
+
+  // Si se debe reemplazar, limpiar datos existentes
+  if (replaceData) {
+    try {
+      console.log('🗑️ [IMPORT] Eliminando todos los repartos existentes...');
+      await db.clearAllRepartos(); // Necesitaremos implementar esta función
+      console.log('✅ [IMPORT] Repartos existentes eliminados');
+    } catch (error) {
+      console.error('❌ [IMPORT] Error eliminando repartos:', error);
+      errors.push(`Error eliminando datos existentes: ${error.message}`);
+    }
+  }
+
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    try {
+      const reparto = {
+        nombre: row['nombre'] || row['Nombre'] || row['NOMBRE'] || '',
+        descripcion: row['descripcion'] || row['Descripción'] || row['DESCRIPCION'] || '',
+        color: row['color'] || row['Color'] || row['COLOR'] || '#007bff'
+      };
+
+      if (!reparto.nombre.trim()) {
+        errors.push(`Fila ${i + 2}: Nombre es requerido`);
+        continue;
+      }
+
+      await db.createReparto(reparto);
+      imported++;
+    } catch (error) {
+      errors.push(`Fila ${i + 2}: ${error.message}`);
+    }
+  }
+
+  return { imported, errors };
+}
+
+export async function GET(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
+  return NextResponse.json({
+    message: 'Endpoint de importación de Excel',
+    supportedTables: ['clients', 'trucks', 'repartos'],
+    expectedColumns: {
+      clients: [
+        'Código (opcional)',
+        'Razón Social',
+        'Dirección',
+        'Teléfono',
+        'Email',
+        'Latitud (opcional)',
+        'Longitud (opcional)',
+        'Observaciones (opcional)'
+      ],
+      trucks: [
+        'Descripción'
+      ],
+      repartos: [
+        'Nombre',
+        'Descripción (opcional)',
+        'Color (opcional, formato hex)'
+      ]
+    }
+  });
+}

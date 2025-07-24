@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/apiAuth';
 import DatabaseAdapter from '@/lib/database/adapter';
 import { validateCreateDiaEntregaData } from '@/types/index';
 
 // GET - Obtener todos los días de entrega
-export async function GET() {
+export async function GET(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     // Intentar obtener días de entrega de SQLite
     try {
@@ -74,6 +79,10 @@ export async function GET() {
 
 // POST - Crear nuevo día de entrega
 export async function POST(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const diaEntregaData = await request.json();
     
@@ -112,6 +121,10 @@ export async function POST(request) {
 
 // PUT - Actualizar día de entrega existente
 export async function PUT(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id, ...diaEntregaData } = await request.json();
     
@@ -156,6 +169,10 @@ export async function PUT(request) {
 
 // DELETE - Eliminar día de entrega
 export async function DELETE(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

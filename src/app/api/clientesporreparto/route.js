@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/apiAuth';
 import DatabaseAdapter from '@/lib/database/adapter';
 import { validateCreateClienteporRepartoData } from '../../../types/index.js';
 
 // GET - Obtener todos los clientes por reparto
 export async function GET(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const reparto = searchParams.get('reparto');
@@ -84,6 +89,10 @@ export async function GET(request) {
 
 // POST - Crear nueva asignación cliente-reparto
 export async function POST(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const clienteRepartoData = await request.json();
     
@@ -131,6 +140,10 @@ export async function POST(request) {
 
 // PUT - Actualizar asignación cliente-reparto existente
 export async function PUT(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id, ...clienteRepartoData } = await request.json();
     
@@ -184,6 +197,10 @@ export async function PUT(request) {
 
 // DELETE - Eliminar asignación cliente-reparto
 export async function DELETE(request) {
+  // Verificar autenticación
+  const authError = requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

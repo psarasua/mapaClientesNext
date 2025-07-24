@@ -2,9 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Badge, Table, Alert, Spinner } from 'react-bootstrap';
-import { FaDatabase, FaServer, FaTable, FaPlay, FaTrash, FaCheck, FaTimes, FaSync } from 'react-icons/fa';
+import { FaDatabase, FaServer, FaTable, FaPlay, FaTrash, FaCheck, FaTimes, FaSync, FaFileExcel, FaUpload } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function ConfiguracionPage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  
+  // Redirigir si no está autenticado
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
+
   const [status, setStatus] = useState({
     server: null,
     database: null,
@@ -256,6 +268,23 @@ export default function ConfiguracionPage() {
     );
   };
 
+  // Mostrar spinner mientras se verifica la autenticación
+  if (authLoading) {
+    return (
+      <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-3 text-muted">Verificando autenticación...</p>
+        </div>
+      </Container>
+    );
+  }
+
+  // Si no está autenticado, no mostrar nada (se redirige en useEffect)
+  if (!user) {
+    return null;
+  }
+
   return (
     <Container fluid className="py-4">
       <Row>
@@ -412,6 +441,63 @@ export default function ConfiguracionPage() {
                     )}
                     Limpiar Datos
                   </Button>
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
+
+          {/* Panel de Importación de Datos */}
+          <Card className="mb-4 shadow-sm">
+            <Card.Body>
+              <h3 className="fw-semibold mb-3">📊 Importación de Datos</h3>
+              <p className="text-muted mb-4">
+                Importa datos masivamente desde archivos Excel (.xlsx) a las tablas del sistema.
+              </p>
+              <Row>
+                <Col md={6} className="mb-3">
+                  <Card className="border-success h-100">
+                    <Card.Body className="text-center">
+                      <FaFileExcel className="text-success fs-1 mb-3" />
+                      <h5 className="fw-semibold mb-3">Importar desde Excel</h5>
+                      <p className="text-muted mb-4">
+                        Carga datos de clientes, camiones y repartos desde archivos Excel
+                      </p>
+                      <Button
+                        variant="success"
+                        onClick={() => router.push('/import')}
+                        className="w-100 d-flex align-items-center justify-content-center py-2"
+                        size="lg"
+                      >
+                        <FaUpload className="me-2" />
+                        Ir a Importación
+                      </Button>
+                    </Card.Body>
+                  </Card>
+                </Col>
+                <Col md={6} className="mb-3">
+                  <Card className="border-info h-100">
+                    <Card.Body>
+                      <h6 className="fw-semibold mb-3">
+                        <FaDatabase className="text-info me-2" />
+                        Tablas Disponibles
+                      </h6>
+                      <div className="d-flex flex-wrap gap-2 mb-3">
+                        <Badge bg="primary">Clientes</Badge>
+                        <Badge bg="success">Camiones</Badge>
+                        <Badge bg="warning">Repartos</Badge>
+                      </div>
+                      <h6 className="fw-semibold mb-2">
+                        <FaFileExcel className="text-success me-2" />
+                        Funciones
+                      </h6>
+                      <ul className="list-unstyled small">
+                        <li>✅ Plantillas Excel descargables</li>
+                        <li>✅ Validación de datos automática</li>
+                        <li>✅ Mapeo de columnas flexible</li>
+                        <li>✅ Progreso de importación en tiempo real</li>
+                      </ul>
+                    </Card.Body>
+                  </Card>
                 </Col>
               </Row>
             </Card.Body>
