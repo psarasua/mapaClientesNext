@@ -56,6 +56,7 @@ export async function POST(request) {
     await db.init();
 
     let importedCount = 0;
+    let updatedCount = 0;
     let errors = [];
 
     // Procesar según el tipo de tabla
@@ -63,18 +64,21 @@ export async function POST(request) {
       case 'clients':
         const clientResults = await importClients(db, jsonData, replaceData);
         importedCount = clientResults.imported;
+        updatedCount = clientResults.updated;
         errors = clientResults.errors;
         break;
         
       case 'trucks':
         const truckResults = await importTrucks(db, jsonData, replaceData);
         importedCount = truckResults.imported;
+        updatedCount = truckResults.updated || 0;
         errors = truckResults.errors;
         break;
         
       case 'repartos':
         const repartoResults = await importRepartos(db, jsonData, replaceData);
         importedCount = repartoResults.imported;
+        updatedCount = repartoResults.updated || 0;
         errors = repartoResults.errors;
         break;
         
@@ -85,12 +89,13 @@ export async function POST(request) {
         }, { status: 400 });
     }
 
-    console.log(`🔍 [IMPORT] Importación completada: ${importedCount} registros`);
+    console.log(`🔍 [IMPORT] Importación completada: ${importedCount} nuevos registros, ${updatedCount} actualizados`);
 
     return NextResponse.json({
       success: true,
       message: `Importación completada exitosamente`,
       imported: importedCount,
+      updated: updatedCount,
       total: jsonData.length,
       errors: errors.length > 0 ? errors.slice(0, 10) : [], // Solo primeros 10 errores
       hasMoreErrors: errors.length > 10
@@ -109,6 +114,7 @@ export async function POST(request) {
 // Función para importar clientes
 async function importClients(db, data, replaceData = false) {
   let imported = 0;
+  let updated = 0;
   const errors = [];
 
   // Si se debe reemplazar, limpiar datos existentes
@@ -170,19 +176,34 @@ async function importClients(db, data, replaceData = false) {
         continue;
       }
 
-      await db.createClient(client);
-      imported++;
+      // Verificar si el cliente ya existe por código
+      const existingClient = await db.getClientByCode(client.Codigo);
+      
+      if (existingClient) {
+        // Si el cliente existe, actualizar en lugar de crear
+        try {
+          await db.updateClient(existingClient.id, client);
+          updated++;
+        } catch (updateError) {
+          errors.push(`Fila ${i + 2}: Error actualizando cliente existente - ${updateError.message}`);
+        }
+      } else {
+        // Si no existe, crear nuevo cliente
+        await db.createClient(client);
+        imported++;
+      }
     } catch (error) {
       errors.push(`Fila ${i + 2}: ${error.message}`);
     }
   }
 
-  return { imported, errors };
+  return { imported, updated, errors };
 }
 
 // Función para importar camiones
 async function importTrucks(db, data, replaceData = false) {
   let imported = 0;
+  let updated = 0;
   const errors = [];
 
   // Si se debe reemplazar, limpiar datos existentes
@@ -217,12 +238,13 @@ async function importTrucks(db, data, replaceData = false) {
     }
   }
 
-  return { imported, errors };
+  return { imported, updated, errors };
 }
 
 // Función para importar repartos
 async function importRepartos(db, data, replaceData = false) {
   let imported = 0;
+  let updated = 0;
   const errors = [];
 
   // Si se debe reemplazar, limpiar datos existentes
@@ -258,7 +280,7 @@ async function importRepartos(db, data, replaceData = false) {
     }
   }
 
-  return { imported, errors };
+  return { imported, updated, errors };
 }
 
 export async function GET(request) {

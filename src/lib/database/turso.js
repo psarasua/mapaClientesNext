@@ -171,6 +171,22 @@ class TursoDatabase {
     return result.rows;
   }
 
+  async getClientById(id) {
+    const result = await this.client.execute({
+      sql: 'SELECT * FROM clients WHERE id = ?',
+      args: [id]
+    });
+    return result.rows[0] || null;
+  }
+
+  async getClientByCode(codigo) {
+    const result = await this.client.execute({
+      sql: 'SELECT * FROM clients WHERE Codigo = ?',
+      args: [codigo]
+    });
+    return result.rows[0] || null;
+  }
+
   async createClient(clientData) {
     const result = await this.client.execute({
       sql: `INSERT INTO clients (Codigo, Razon, Nombre, Direccion, Telefono1, Ruc, Activo, Coordenada_x, Coordenada_y) 

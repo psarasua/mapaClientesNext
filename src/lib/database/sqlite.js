@@ -289,6 +289,13 @@ class SQLiteDatabase {
     return result || null;
   }
 
+  async getClientByCode(codigo) {
+    const db = await this.init();
+    const stmt = db.prepare('SELECT * FROM clients WHERE Codigo = ?');
+    const result = stmt.get(codigo);
+    return result || null;
+  }
+
   async createClient(clientData) {
     const db = await this.init();
     const stmt = db.prepare(`

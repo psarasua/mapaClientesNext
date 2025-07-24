@@ -97,6 +97,11 @@ class DatabaseAdapter {
     return await this.database.getClientById(id);
   }
 
+  async getClientByCode(codigo) {
+    await this.init();
+    return await this.database.getClientByCode(codigo);
+  }
+
   async createClient(clientData) {
     await this.init();
     return await this.database.createClient(clientData);
