@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import DatabaseAdapter from '@/lib/database/adapter';
 import { verifyPassword, generateToken } from '@/lib/auth';
 
+// Configurar runtime para compatibilidad con dependencias
+export const runtime = 'nodejs';
+
 export async function POST(request) {
   console.log('🔍 [LOGIN-DEBUG] Iniciando proceso de login...');
   

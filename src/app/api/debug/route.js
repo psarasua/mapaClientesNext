@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// Configurar runtime para compatibilidad
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     // Información del ambiente
