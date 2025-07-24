@@ -31,7 +31,7 @@ export default function LoginPage() {
     try {
       // Usar la URL correcta detectando automáticamente el puerto
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-      const response = await fetch(`${baseUrl}/api/login-capture`, {
+      const response = await fetch(`${baseUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,9 +69,7 @@ export default function LoginPage() {
               <h1 className="display-3 fw-bold mb-3">🚛</h1>
             </div>
             <h1 className="display-5 fw-bold mb-3">Sistema de Repartos</h1>
-            <p className="lead mb-4 opacity-90">
-              Gestión integral de clientes, camiones y entregas con mapas interactivos
-            </p>
+          
           </div>
           
           <div className="row g-4 mb-5">
@@ -81,7 +79,7 @@ export default function LoginPage() {
                   <span style={{ fontSize: '24px' }}>🗺️</span>
                 </div>
                 <h6 className="fw-semibold">Mapas Interactivos</h6>
-                <small className="opacity-75">Visualización en tiempo real</small>
+                
               </div>
             </div>
             <div className="col-6">
@@ -90,7 +88,7 @@ export default function LoginPage() {
                   <span style={{ fontSize: '24px' }}>📊</span>
                 </div>
                 <h6 className="fw-semibold">Dashboard Analytics</h6>
-                <small className="opacity-75">Estadísticas completas</small>
+               
               </div>
             </div>
             <div className="col-6">
@@ -99,7 +97,7 @@ export default function LoginPage() {
                   <span style={{ fontSize: '24px' }}>🚚</span>
                 </div>
                 <h6 className="fw-semibold">Gestión de Flotas</h6>
-                <small className="opacity-75">Control de vehículos</small>
+                
               </div>
             </div>
             <div className="col-6">
@@ -108,7 +106,7 @@ export default function LoginPage() {
                   <span style={{ fontSize: '24px' }}>👥</span>
                 </div>
                 <h6 className="fw-semibold">Control de Clientes</h6>
-                <small className="opacity-75">Base de datos completa</small>
+                
               </div>
             </div>
           </div>
