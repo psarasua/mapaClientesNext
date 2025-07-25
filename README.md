@@ -199,6 +199,26 @@ npm run start        # Servidor producción
 npm run lint         # Linting código
 ```
 
+## 📚 **Documentación Completa**
+
+Toda la documentación técnica está organizada en la carpeta **`docs/`**:
+
+### **📋 Guías de Desarrollo**
+- **[📁 docs/IMPORT_GUIDE.md](./docs/IMPORT_GUIDE.md)** - Solución de errores de importación y rutas
+- **[🗄️ docs/DATABASE_REPAIRED.md](./docs/DATABASE_REPAIRED.md)** - Reparación y migración de base de datos
+- **[🎨 docs/LOGOS.md](./docs/LOGOS.md)** - Sistema de logos y branding
+
+### **🚀 Configuración de Producción**
+- **[✅ docs/PRODUCTION_VALIDATION.md](./docs/PRODUCTION_VALIDATION.md)** - Validación para producción
+- **[☁️ docs/VERCEL_CONFIG.md](./docs/VERCEL_CONFIG.md)** - Despliegue en Vercel
+- **[🗃️ docs/TURSO_SETUP.md](./docs/TURSO_SETUP.md)** - Base de datos Turso
+
+### **🛡️ Seguridad**
+- **[🔒 docs/SECURITY_PROTECTION.md](./docs/SECURITY_PROTECTION.md)** - Medidas de seguridad API
+
+### **📖 Índice Completo**
+👉 **[docs/README.md](./docs/README.md)** - Índice general de toda la documentación
+
 ## 🌟 **Características Técnicas**
 
 ### **Tecnologías**

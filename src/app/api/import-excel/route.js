@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/apiAuth';
+import { requireAuth } from '../../../lib/apiAuth.js';
 import * as XLSX from 'xlsx';
 import DatabaseAdapter from '../../../lib/database/adapter.js';
 

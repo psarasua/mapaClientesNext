@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/apiAuth';
-import DatabaseAdapter from '@/lib/database/adapter';
+import { requireAuth } from '../../../lib/apiAuth.js';
+import DatabaseAdapter from '../../../lib/database/adapter.js';
 
 // GET - Obtener todos los camiones
 export async function GET(request) {

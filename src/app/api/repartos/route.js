@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/apiAuth';
-import DatabaseAdapter from '@/lib/database/adapter';
+import { requireAuth } from '../../../lib/apiAuth.js';
+import DatabaseAdapter from '../../../lib/database/adapter.js';
 import { validateCreateRepartoData } from '../../../types/index.js';
 
 // GET - Obtener todos los repartos

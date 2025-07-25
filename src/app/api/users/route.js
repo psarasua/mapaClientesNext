@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/database/adapter';
-import { requireAuth } from '@/lib/apiAuth';
+import { getDatabase } from '../../../lib/database/adapter.js';
+import { requireAuth } from '../../../lib/apiAuth.js';
 
 // GET - Obtener todos los usuarios
 export async function GET(request) {

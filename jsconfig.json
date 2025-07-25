@@ -2,13 +2,21 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./src/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@types/*": ["./src/types/*"],
+      "@components/*": ["./src/components/*"]
+    },
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node"
   },
   "include": [
     "next-env.d.ts",
     "**/*.js",
-    "**/*.jsx"
+    "**/*.jsx",
+    "**/*.ts",
+    "**/*.tsx"
   ],
   "exclude": [
     "node_modules"

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/apiAuth';
-import DatabaseAdapter from '@/lib/database/adapter';
+import { requireAuth } from '../../../lib/apiAuth.js';
+import DatabaseAdapter from '../../../lib/database/adapter.js';
 
 // POST - Limpiar todos los datos de las tablas
 export async function POST(request) {
