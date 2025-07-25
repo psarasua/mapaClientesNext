@@ -341,18 +341,15 @@ export default function Dashboard() {
     
     // Si hay cambios detectados, los devolvemos
     if (activities.length > 0) {
-      console.log('🔄 Cambios detectados:', activities.length, 'actividades nuevas');
       return activities;
     }
 
     // Si no hay cambios y ya tenemos actividades, mantener las existentes
     if (lastDataSnapshot.current) {
-      console.log('📋 Sin cambios - manteniendo actividades existentes');
       return recentActivity; // Mantener las actividades actuales
     }
 
     // Solo generar actividades de fallback en la primera carga
-    console.log('🚀 Primera carga - generando actividades iniciales');
     const fallbackActivities = [];
     const now = new Date();
     const allData = [
@@ -507,14 +504,11 @@ export default function Dashboard() {
         lastDataSnapshot.current = JSON.parse(JSON.stringify(currentData));
         lastDataHash.current = currentHash;
         
-        console.log('📊 Dashboard actualizado - se detectaron cambios');
       } else {
-        console.log('⏭️ Sin cambios detectados - manteniendo estado actual');
       }
 
     } catch (err) {
       setError('Error al cargar los datos del dashboard');
-      console.error('Error:', err);
     } finally {
       setLoading(false);
       setIsUpdating(false);

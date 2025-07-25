@@ -29,7 +29,9 @@ export async function GET(request) {
         clientesporReparto = await db.getAllClientesporReparto();
       }
 
-      // Si no hay asignaciones, crear datos iniciales
+      // Si no hay asignaciones, retornar array vacío
+      // (comentado para evitar auto-generación de datos)
+      /*
       if (clientesporReparto.length === 0 && !reparto && !cliente) {
         await db.seedInitialClientesporReparto();
         const newClientesporReparto = await db.getAllClientesporReparto();
@@ -41,6 +43,7 @@ export async function GET(request) {
           source: 'SQLite (initialized)'
         });
       }
+      */
 
       return NextResponse.json({
         success: true,

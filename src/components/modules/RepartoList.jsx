@@ -273,78 +273,115 @@ const RepartoList = () => {
               )}
 
               {/* Vista de Matriz */}
-              <div className="table-responsive">
-                <table className="table table-bordered">
-                  <thead className="table-light">
-                    <tr>
-                      <th>Día / Camión</th>
-                      {camiones.map(camion => (
-                        <th key={camion.id} className="text-center" style={{minWidth: '120px'}}>
-                          <div className="text-truncate" title={camion.description}>
-                            <i className="bi bi-truck me-1"></i>
-                            {camion.description}
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.values(matrixView).map((row, index) => (
-                      <tr key={index}>
-                        <td className="fw-bold bg-light">
-                          <i className="bi bi-calendar-day me-2"></i>
-                          {row.dia}
-                        </td>
-                        {camiones.map(camion => {
-                          const reparto = row.camiones[camion.id];
-                          return (
-                            <td key={camion.id} className="text-center p-2">
-                              {reparto ? (
-                                <div className="d-grid gap-1">
-                                  <span className="badge bg-success">
-                                    <i className="bi bi-check-circle me-1"></i>
-                                    Asignado
-                                  </span>
-                                  <ButtonGroup size="sm">
-                                    <OverlayTrigger
-                                      placement="top"
-                                      overlay={<Tooltip>Editar</Tooltip>}
-                                    >
-                                      <Button
-                                        variant="outline-primary"
-                                        size="sm"
-                                        onClick={() => handleEdit(reparto)}
-                                      >
-                                        <i className="bi bi-pencil"></i>
-                                      </Button>
-                                    </OverlayTrigger>
-                                    <OverlayTrigger
-                                      placement="top"
-                                      overlay={<Tooltip>Eliminar</Tooltip>}
-                                    >
-                                      <Button
-                                        variant="outline-danger"
-                                        size="sm"
-                                        onClick={() => handleDelete(reparto.id, row.dia, camion.description)}
-                                      >
-                                        <i className="bi bi-trash"></i>
-                                      </Button>
-                                    </OverlayTrigger>
-                                  </ButtonGroup>
-                                </div>
-                              ) : (
-                                <span className="badge bg-light text-muted">
-                                  Sin asignar
-                                </span>
-                              )}
-                            </td>
-                          );
-                        })}
+              {repartos.length === 0 ? (
+                <div className="text-center py-5">
+                  <i className="bi bi-truck-flatbed" style={{fontSize: '3rem', color: '#6c757d'}}></i>
+                  <h5 className="mt-3 text-muted">No hay repartos configurados</h5>
+                  <p className="text-muted">Crea el primer reparto asignando un día de entrega a un camión.</p>
+                  <Button 
+                    variant="primary" 
+                    onClick={() => setShowForm(true)}
+                    className="mt-2"
+                  >
+                    <i className="bi bi-plus-lg me-2"></i>
+                    Crear Primer Reparto
+                  </Button>
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table table-bordered">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Día / Camión</th>
+                        {camiones.map(camion => (
+                          <th key={camion.id} className="text-center" style={{minWidth: '150px'}}>
+                            <div className="text-truncate" title={camion.description}>
+                              <i className="bi bi-truck me-1"></i>
+                              {camion.description}
+                            </div>
+                          </th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {Object.values(matrixView).map((row, index) => (
+                        <tr key={index}>
+                          <td className="fw-bold bg-light">
+                            <i className="bi bi-calendar-day me-2"></i>
+                            {row.dia}
+                          </td>
+                          {camiones.map(camion => {
+                            const reparto = row.camiones[camion.id];
+                            return (
+                              <td key={camion.id} className="text-center align-middle" style={{minHeight: '80px'}}>
+                                {reparto ? (
+                                  <div className="d-flex flex-column gap-2">
+                                    <Badge bg="success" className="py-2">
+                                      <i className="bi bi-check-circle me-1"></i>
+                                      Asignado
+                                    </Badge>
+                                    <ButtonGroup size="sm" className="w-100">
+                                      <OverlayTrigger
+                                        placement="top"
+                                        overlay={<Tooltip>Editar reparto</Tooltip>}
+                                      >
+                                        <Button
+                                          variant="outline-primary"
+                                          size="sm"
+                                          onClick={() => handleEdit(reparto)}
+                                          className="px-3"
+                                        >
+                                          <i className="bi bi-pencil-square"></i>
+                                        </Button>
+                                      </OverlayTrigger>
+                                      <OverlayTrigger
+                                        placement="top"
+                                        overlay={<Tooltip>Eliminar reparto</Tooltip>}
+                                      >
+                                        <Button
+                                          variant="outline-danger"
+                                          size="sm"
+                                          onClick={() => handleDelete(reparto.id, row.dia, camion.description)}
+                                          className="px-3"
+                                        >
+                                          <i className="bi bi-trash3"></i>
+                                        </Button>
+                                      </OverlayTrigger>
+                                    </ButtonGroup>
+                                  </div>
+                                ) : (
+                                  <div className="d-flex flex-column gap-2">
+                                    <Badge bg="light" text="dark" className="py-2">
+                                      <i className="bi bi-circle me-1"></i>
+                                      Sin asignar
+                                    </Badge>
+                                    <Button
+                                      variant="outline-success"
+                                      size="sm"
+                                      onClick={() => {
+                                        const diaId = diasEntrega.find(d => d.descripcion === row.dia)?.id;
+                                        setFormData({
+                                          diasEntrega_id: diaId?.toString() || '',
+                                          camion_id: camion.id.toString()
+                                        });
+                                        setShowForm(true);
+                                      }}
+                                      className="w-100"
+                                      title="Crear reparto para este día y camión"
+                                    >
+                                      <i className="bi bi-plus-lg"></i>
+                                    </Button>
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </Card.Body>
           </Card>
         </Col>

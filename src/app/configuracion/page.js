@@ -27,7 +27,13 @@ export default function ConfiguracionPage() {
     database: false,
     tables: false,
     seed: false,
-    clear: false
+    clear: false,
+    users: false,
+    clients: false,
+    trucks: false,
+    repartos: false,
+    diasEntrega: false,
+    clientesporReparto: false
   });
   const [data, setData] = useState({
     users: [],
@@ -211,7 +217,51 @@ export default function ConfiguracionPage() {
     }
   };
 
-  // Limpiar datos
+  // Limpiar datos de una tabla específica
+  const clearSpecificTable = async (tableName, displayName) => {
+    if (!confirm(`¿Estás seguro de que quieres eliminar TODOS los ${displayName}? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    setLoading(prev => ({ ...prev, [tableName]: true }));
+    try {
+      const response = await fetch('/api/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'clear',
+          tables: [tableName]
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        const tableResult = result.results?.[tableName];
+        if (tableResult) {
+          alert(`${displayName} eliminados exitosamente (${tableResult.deletedCount || 0} registros)`);
+        } else {
+          alert(`${displayName} eliminados exitosamente`);
+        }
+        // Refrescar estado de tablas
+        await testTables();
+      } else {
+        const errorMessage = result.error || result.message || result.details || 'Error desconocido';
+        const tableResult = result.results?.[tableName];
+        const specificError = tableResult?.message || errorMessage;
+        
+        alert(`Error eliminando ${displayName}: ${specificError}`);
+      }
+    } catch (error) {
+      alert(`Error eliminando ${displayName}: ` + (error.message || 'Error desconocido'));
+    } finally {
+      setLoading(prev => ({ ...prev, [tableName]: false }));
+    }
+  };
+
+  // Limpiar datos - Función general (mantener para compatibilidad)
   const clearData = async () => {
     if (!confirm('¿Estás seguro de que quieres eliminar TODOS los datos? Esta acción no se puede deshacer.')) {
       return;
@@ -443,6 +493,119 @@ export default function ConfiguracionPage() {
                   </Button>
                 </Col>
               </Row>
+            </Card.Body>
+          </Card>
+
+          {/* Panel de Limpieza Individual de Tablas */}
+          <Card className="mb-4 shadow-sm border-warning">
+            <Card.Body>
+              <h3 className="fw-semibold mb-3 text-warning">🗑️ Limpieza Individual de Tablas</h3>
+              <p className="text-muted mb-4">
+                Elimina todos los registros de una tabla específica. Útil para limpiar datos sin afectar otras tablas.
+              </p>
+              
+              <Row>
+                <Col md={4} className="mb-3">
+                  <Button
+                    variant="outline-danger"
+                    onClick={() => clearSpecificTable('users', 'usuarios')}
+                    disabled={loading.users}
+                    className="w-100 d-flex align-items-center justify-content-center py-2"
+                  >
+                    {loading.users ? (
+                      <Spinner animation="border" size="sm" className="me-2" />
+                    ) : (
+                      <FaTrash className="me-2" />
+                    )}
+                    Limpiar Usuarios
+                  </Button>
+                </Col>
+
+                <Col md={4} className="mb-3">
+                  <Button
+                    variant="outline-danger"
+                    onClick={() => clearSpecificTable('clients', 'clientes')}
+                    disabled={loading.clients}
+                    className="w-100 d-flex align-items-center justify-content-center py-2"
+                  >
+                    {loading.clients ? (
+                      <Spinner animation="border" size="sm" className="me-2" />
+                    ) : (
+                      <FaTrash className="me-2" />
+                    )}
+                    Limpiar Clientes
+                  </Button>
+                </Col>
+
+                <Col md={4} className="mb-3">
+                  <Button
+                    variant="outline-danger"
+                    onClick={() => clearSpecificTable('trucks', 'camiones')}
+                    disabled={loading.trucks}
+                    className="w-100 d-flex align-items-center justify-content-center py-2"
+                  >
+                    {loading.trucks ? (
+                      <Spinner animation="border" size="sm" className="me-2" />
+                    ) : (
+                      <FaTrash className="me-2" />
+                    )}
+                    Limpiar Camiones
+                  </Button>
+                </Col>
+
+                <Col md={4} className="mb-3">
+                  <Button
+                    variant="outline-danger"
+                    onClick={() => clearSpecificTable('repartos', 'repartos')}
+                    disabled={loading.repartos}
+                    className="w-100 d-flex align-items-center justify-content-center py-2"
+                  >
+                    {loading.repartos ? (
+                      <Spinner animation="border" size="sm" className="me-2" />
+                    ) : (
+                      <FaTrash className="me-2" />
+                    )}
+                    Limpiar Repartos
+                  </Button>
+                </Col>
+
+                <Col md={4} className="mb-3">
+                  <Button
+                    variant="outline-danger"
+                    onClick={() => clearSpecificTable('diasEntrega', 'días de entrega')}
+                    disabled={loading.diasEntrega}
+                    className="w-100 d-flex align-items-center justify-content-center py-2"
+                  >
+                    {loading.diasEntrega ? (
+                      <Spinner animation="border" size="sm" className="me-2" />
+                    ) : (
+                      <FaTrash className="me-2" />
+                    )}
+                    Limpiar Días
+                  </Button>
+                </Col>
+
+                <Col md={4} className="mb-3">
+                  <Button
+                    variant="outline-danger"
+                    onClick={() => clearSpecificTable('clientesporReparto', 'asignaciones')}
+                    disabled={loading.clientesporReparto}
+                    className="w-100 d-flex align-items-center justify-content-center py-2"
+                  >
+                    {loading.clientesporReparto ? (
+                      <Spinner animation="border" size="sm" className="me-2" />
+                    ) : (
+                      <FaTrash className="me-2" />
+                    )}
+                    Limpiar Asignaciones
+                  </Button>
+                </Col>
+              </Row>
+
+              <Alert variant="warning" className="mt-3 mb-0">
+                <strong>⚠️ Atención:</strong> La limpieza individual eliminará TODOS los registros de la tabla seleccionada. 
+                Esta acción es irreversible.
+              </Alert>
             </Card.Body>
           </Card>
 

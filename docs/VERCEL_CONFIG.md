@@ -1,104 +1,63 @@
-# Configuración de Vercel para MapaClientes
+# 🚀 Configuración de Vercel - MapaClientes
 
-## Variables de Entorno en Vercel
+## 🔧 Variables de Entorno
 
-Configurar las siguientes variables en el dashboard de Vercel:
+Configurar en el dashboard de Vercel > Settings > Environment Variables:
 
-### Base de Datos (Turso)
-```
-TURSO_DATABASE_URL=libsql://your-database-url.turso.io
-TURSO_AUTH_TOKEN=your-auth-token
-```
+```bash
+# Base de datos
+TURSO_DATABASE_URL=libsql://your-database.turso.tech
+TURSO_AUTH_TOKEN=your-turso-token
 
-### Autenticación JWT
-```
-JWT_SECRET=your-super-secret-jwt-key-here
-```
+# Autenticación
+JWT_SECRET=your-secure-jwt-secret
 
-### Configuración de Node.js
-```
+# Entorno
 NODE_ENV=production
 ```
 
-## Configuración de Build
+## ⚙️ Configuración Automática
 
-El proyecto ya está configurado para Vercel:
+El proyecto ya incluye:
 
-### `next.config.js`
+### `next.config.mjs`
 ```javascript
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['better-sqlite3']
   }
 }
-
-module.exports = nextConfig
 ```
 
-### `vercel.json` (opcional)
+### Scripts optimizados
 ```json
 {
-  "functions": {
-    "app/api/**/*": {
-      "maxDuration": 30
-    }
-  }
+  "build": "next build",
+  "start": "next start", 
+  "dev": "next dev --turbopack"
 }
 ```
 
-## Scripts de Build
-```json
-{
-  "scripts": {
-    "build": "next build",
-    "start": "next start",
-    "dev": "next dev --turbopack"
-  }
-}
-```
+## 🚀 Despliegue
 
-## Configuración Estática (Azure)
+### Automático (Recomendado)
+1. Conectar repositorio GitHub a Vercel
+2. Configurar variables de entorno
+3. Deploy automático en cada push a `main`
 
-Si se despliega en Azure Static Web Apps, usar:
-
-### `public/staticwebapp.config.json`
-```json
-{
-  "routes": [
-    {
-      "route": "/api/*",
-      "allowedRoles": ["anonymous"]
-    },
-    {
-      "route": "/*",
-      "serve": "/index.html",
-      "statusCode": 200
-    }
-  ],
-  "mimeTypes": {
-    ".json": "application/json"
-  }
-}
-```
-
-## Notas de Despliegue
-
-1. **Turso** se conecta automáticamente en producción
-2. **SQLite** se usa solo en desarrollo local
-3. Las **API Routes** funcionan como serverless functions
-4. **Bootstrap CSS** se carga desde CDN en producción
-5. **Middleware** protege rutas automáticamente
-
-## Comandos de Despliegue
-
-### Vercel CLI
+### Manual
 ```bash
 npm install -g vercel
 vercel --prod
 ```
 
-### Desde GitHub
-- Conectar repositorio a Vercel
-- Las variables de entorno se configuran en el dashboard
-- El despliegue es automático con cada push a main
+## ✅ Verificación Post-Despliegue
+- [ ] Login funciona: `admin / admin123`
+- [ ] CRUD de usuarios, clientes, camiones
+- [ ] Importación de Excel
+- [ ] Mapas se cargan correctamente
+
+---
+*Actualizado: 25/07/2025*
+---
+*Actualizado: 25/07/2025*

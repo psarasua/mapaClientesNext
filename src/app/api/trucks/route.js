@@ -15,7 +15,9 @@ export async function GET(request) {
     try {
       const trucks = await db.getAllTrucks();
       
-      // Si no hay camiones, crear datos iniciales
+      // Si no hay camiones, retornar array vacío
+      // (comentado para evitar auto-generación de datos)
+      /*
       if (trucks.length === 0) {
         await db.seedInitialTrucks();
         const newTrucks = await db.getAllTrucks();
@@ -26,6 +28,7 @@ export async function GET(request) {
           source: process.env.NODE_ENV === 'production' ? 'turso' : 'sqlite'
         });
       }
+      */
       
       return NextResponse.json({
         success: true,
@@ -222,9 +225,11 @@ export async function DELETE(request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const id = parseInt(searchParams.get('id'));
+    const idParam = searchParams.get('id');
+    
+    const id = parseInt(idParam);
 
-    if (!id || isNaN(id)) {
+    if (!idParam || isNaN(id)) {
       return NextResponse.json(
         { success: false, error: 'ID de camión válido requerido' },
         { status: 400 }
@@ -248,14 +253,12 @@ export async function DELETE(request) {
         message: 'Camión eliminado exitosamente'
       });
     } catch (dbError) {
-      console.error('Error con la base de datos al eliminar camión:', dbError);
       return NextResponse.json(
-        { success: false, error: 'Error al eliminar camión de la base de datos' },
+        { success: false, error: 'Error al eliminar camión de la base de datos', details: dbError.message },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('Error al eliminar camión:', error);
     return NextResponse.json(
       { success: false, error: 'Error al procesar la solicitud', details: error.message },
       { status: 500 }

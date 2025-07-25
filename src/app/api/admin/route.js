@@ -57,10 +57,10 @@ export async function POST(request) {
           deletedCount: result?.deletedCount || 0
         };
       } catch (error) {
-        console.error(`Error limpiando tabla ${table}:`, error);
         results[table] = { 
           success: false, 
-          message: `Error limpiando tabla ${table}: ${error.message}` 
+          message: `Error limpiando tabla ${table}: ${error.message}`,
+          error: error.message
         };
       }
     }
@@ -68,7 +68,7 @@ export async function POST(request) {
     const successCount = Object.values(results).filter(r => r.success).length;
     const totalCount = Object.keys(results).length;
 
-    return NextResponse.json({
+    const response = {
       success: successCount === totalCount,
       message: `${successCount}/${totalCount} tablas limpiadas exitosamente`,
       results,
@@ -77,7 +77,9 @@ export async function POST(request) {
         success: successCount,
         failed: totalCount - successCount
       }
-    });
+    };
+
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('Error en limpieza de datos:', error);

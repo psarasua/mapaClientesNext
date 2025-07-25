@@ -87,6 +87,16 @@ class DatabaseAdapter {
     return await this.database.seedInitialTrucks();
   }
 
+  async getTrucksCount() {
+    await this.init();
+    return await this.database.getTrucksCount();
+  }
+
+  async getRepartosCount() {
+    await this.init();
+    return await this.database.getRepartosCount();
+  }
+
   async getAllClients() {
     await this.init();
     return await this.database.getAllClients();

@@ -98,13 +98,13 @@ export default function TruckList() {
     if (!truckToDelete) return;
     
     try {
-      await truckApi.delete(truckToDelete.id);
+      const result = await truckApi.delete(truckToDelete.id);
+      
       await loadTrucks();
       setShowDeleteModal(false);
       setTruckToDelete(null);
-      console.log('Camión eliminado exitosamente');
     } catch (err) {
-      setError(handleApiError(err));
+      setError(`Error eliminando camión: ${handleApiError(err)}`);
       setShowDeleteModal(false);
     }
   };

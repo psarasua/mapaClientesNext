@@ -158,14 +158,22 @@ export const truckApi = {
 
   // Eliminar un camión
   delete: async (id) => {
-    if (!id || typeof id !== 'number') {
-      throw new Error('ID de camión inválido');
+    if (!id) {
+      throw new Error('ID de camión requerido');
     }
     
-    const response = await fetch(`${API_BASE_URL}/trucks?id=${id}`, {
+    // Convertir a número si es string
+    const numericId = parseInt(id);
+    
+    if (isNaN(numericId)) {
+      throw new Error('ID de camión debe ser un número válido');
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/trucks?id=${numericId}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
+    
     return handleResponse(response);
   },
 };
@@ -359,12 +367,22 @@ export const healthApi = {
 
 // Función helper para manejar errores de API
 export const handleApiError = (error) => {
-  if (error instanceof Error) {
-    return error.message;
+  if (!error) {
+    return 'Error desconocido (sin detalles)';
   }
-  if (typeof error === 'string') {
+  
+  if (error instanceof Error) {
+    return error.message || 'Error sin mensaje';
+  }
+  
+  if (typeof error === 'string' && error.trim() !== '') {
     return error;
   }
+  
+  if (typeof error === 'object' && error.message) {
+    return error.message;
+  }
+  
   return 'Error desconocido en la API';
 };
 

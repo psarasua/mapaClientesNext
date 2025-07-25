@@ -29,7 +29,9 @@ export async function GET(request) {
         repartos = await db.getAllRepartos();
       }
 
-      // Si no hay repartos, crear datos iniciales
+      // Si no hay repartos, retornar array vacío
+      // (comentado para evitar auto-generación de datos)
+      /*
       if (repartos.length === 0 && !dia && !camion) {
         await db.seedInitialRepartos();
         const newRepartos = await db.getAllRepartos();
@@ -41,6 +43,7 @@ export async function GET(request) {
           source: 'SQLite (initialized)'
         });
       }
+      */
 
       return NextResponse.json({
         success: true,

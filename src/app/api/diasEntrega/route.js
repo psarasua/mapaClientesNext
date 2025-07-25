@@ -15,7 +15,9 @@ export async function GET(request) {
       const db = new DatabaseAdapter();
       const diasEntrega = await db.getAllDiasEntrega();
 
-      // Si no hay días de entrega, crear datos iniciales
+      // Si no hay días de entrega, retornar array vacío
+      // (comentado para evitar auto-generación de datos)
+      /*
       if (diasEntrega.length === 0) {
         await db.seedInitialDiasEntrega();
         const newDiasEntrega = await db.getAllDiasEntrega();
@@ -27,6 +29,7 @@ export async function GET(request) {
           source: 'SQLite (initialized)'
         });
       }
+      */
 
       return NextResponse.json({
         success: true,

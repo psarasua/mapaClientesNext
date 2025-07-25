@@ -114,8 +114,8 @@ class SQLiteDatabase {
 
       console.log('✅ Base de datos SQLite inicializada correctamente');
       
-      // Inicializar datos si es necesario
-      await this.seedInitialData();
+      // Inicializar datos si es necesario (comentado para evitar regeneración automática)
+      // await this.seedInitialData();
       
       return this.db;
     } catch (error) {
@@ -1026,9 +1026,29 @@ class SQLiteDatabase {
   }
 
   async clearAllTrucks() {
-    const stmt = this.db.prepare('DELETE FROM trucks');
-    const result = stmt.run();
-    return { deletedCount: result.changes };
+    const db = await this.init();
+    
+    // Primero, eliminar las dependencias que referencian trucks
+    // 1. Limpiar tabla repartos que tiene FOREIGN KEY a trucks(id)
+    const deleteRepartos = db.prepare('DELETE FROM repartos WHERE camion_id IN (SELECT id FROM trucks)');
+    const repartosResult = deleteRepartos.run();
+    
+    // 2. Limpiar ClientesporReparto que depende de repartos (cascada)
+    const deleteClientesReparto = db.prepare('DELETE FROM ClientesporReparto WHERE reparto_id NOT IN (SELECT id FROM repartos)');
+    const clientesRepartoResult = deleteClientesReparto.run();
+    
+    // 3. Finalmente, eliminar todos los camiones
+    const deleteTrucks = db.prepare('DELETE FROM trucks');
+    const trucksResult = deleteTrucks.run();
+    
+    return { 
+      deletedCount: trucksResult.changes,
+      details: {
+        trucks: trucksResult.changes,
+        repartos: repartosResult.changes,
+        clientesReparto: clientesRepartoResult.changes
+      }
+    };
   }
 
   async clearAllRepartos() {
@@ -1044,7 +1064,7 @@ class SQLiteDatabase {
   }
 
   async clearAllClientesporReparto() {
-    const stmt = this.db.prepare('DELETE FROM clientesporReparto');
+    const stmt = this.db.prepare('DELETE FROM ClientesporReparto');
     const result = stmt.run();
     return { deletedCount: result.changes };
   }

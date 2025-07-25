@@ -1,24 +1,24 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@lib/*": ["./src/lib/*"],
-      "@types/*": ["./src/types/*"],
-      "@components/*": ["./src/components/*"]
-    },
     "target": "es5",
-    "module": "commonjs",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true
   },
   "include": [
-    "next-env.d.ts",
     "**/*.js",
-    "**/*.jsx",
-    "**/*.ts",
-    "**/*.tsx"
+    "**/*.jsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next",
+    "out"
   ]
 }

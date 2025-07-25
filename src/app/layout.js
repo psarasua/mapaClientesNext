@@ -20,6 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
   title: "MapaClientes - Sistema de Gestión Logística",
   description: "Sistema integral de gestión de clientes, camiones, repartos y entregas con Next.js, React Bootstrap y SQLite",
   keywords: "gestión logística, clientes, repartos, camiones, mapas, Next.js",
