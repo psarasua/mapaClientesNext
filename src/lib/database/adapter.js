@@ -132,9 +132,89 @@ class DatabaseAdapter {
     return await this.database.getAllRepartos();
   }
 
+  async getRepartosByDia(diaId) {
+    await this.init();
+    return await this.database.getRepartosByDia(diaId);
+  }
+
+  async getRepartosByCamion(camionId) {
+    await this.init();
+    return await this.database.getRepartosByCamion(camionId);
+  }
+
+  async getRepartoById(id) {
+    await this.init();
+    return await this.database.getRepartoById(id);
+  }
+
+  async createReparto(data) {
+    await this.init();
+    return await this.database.createReparto(data);
+  }
+
+  async updateReparto(id, data) {
+    await this.init();
+    return await this.database.updateReparto(id, data);
+  }
+
+  async deleteReparto(id) {
+    await this.init();
+    return await this.database.deleteReparto(id);
+  }
+
+  async seedInitialRepartos() {
+    await this.init();
+    return await this.database.seedInitialRepartos();
+  }
+
   async getAllClientesporReparto() {
     await this.init();
     return await this.database.getAllClientesporReparto();
+  }
+
+  async getClientesporRepartoByReparto(repartoId) {
+    await this.init();
+    return await this.database.getClientesporRepartoByReparto(repartoId);
+  }
+
+  async getClientesporRepartoByCliente(clienteId) {
+    await this.init();
+    return await this.database.getClientesporRepartoByCliente(clienteId);
+  }
+
+  async getClienteporRepartoById(id) {
+    await this.init();
+    return await this.database.getClienteporRepartoById(id);
+  }
+
+  async createClienteporReparto(data) {
+    await this.init();
+    return await this.database.createClienteporReparto(data);
+  }
+
+  async updateClienteporReparto(id, data) {
+    await this.init();
+    return await this.database.updateClienteporReparto(id, data);
+  }
+
+  async deleteClienteporReparto(id) {
+    await this.init();
+    return await this.database.deleteClienteporReparto(id);
+  }
+
+  async getClientesporRepartoCount() {
+    await this.init();
+    return await this.database.getClientesporRepartoCount();
+  }
+
+  async searchClientesporReparto(searchTerm) {
+    await this.init();
+    return await this.database.searchClientesporReparto(searchTerm);
+  }
+
+  async seedInitialClientesporReparto() {
+    await this.init();
+    return await this.database.seedInitialClientesporReparto();
   }
 
   async close() {
