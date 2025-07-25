@@ -2,3 +2,11 @@ Verificar que los logos aparezcan
 Todo:
   ☐ Verificar que los logos aparezcan en la aplicación
   PROBAR ASIGNAR CLIENTES A REPARTO
+
+  Verificar el uso de PRISMA
+  CRUD DE CLIENTES
+  CRUD DE CAMIONES
+  CRUD DE DIAS
+  CRUD DE REPARTOS
+  CRUD DE ASIGNACIONES
+  

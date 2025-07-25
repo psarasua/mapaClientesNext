@@ -19,8 +19,12 @@ export default function ClientesporRepartoList() {
   // Formulario
   const [formData, setFormData] = useState({
     reparto_id: '',
-    cliente_id: ''
+    cliente_ids: [] // Cambiado para múltiples clientes
   });
+
+  // Estados para búsqueda y selección múltiple
+  const [searchClient, setSearchClient] = useState('');
+  const [selectedClients, setSelectedClients] = useState([]);
 
   // Cargar datos iniciales
   const loadData = async () => {
@@ -84,16 +88,37 @@ export default function ClientesporRepartoList() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (!formData.reparto_id) {
+      setError('Debe seleccionar un reparto');
+      return;
+    }
+    
+    if (selectedClients.length === 0) {
+      setError('Debe seleccionar al menos un cliente');
+      return;
+    }
+
     try {
+      setError(null);
+      
       if (editingItem) {
-        await clientesporRepartoApi.update(editingItem.id, formData);
+        // Para edición, mantener el comportamiento original
+        await clientesporRepartoApi.update(editingItem.id, {
+          reparto_id: formData.reparto_id,
+          cliente_id: selectedClients[0] // Tomar el primer cliente seleccionado
+        });
       } else {
-        await clientesporRepartoApi.create(formData);
+        // Para crear, hacer múltiples asignaciones
+        const promises = selectedClients.map(clienteId => 
+          clientesporRepartoApi.create({
+            reparto_id: formData.reparto_id,
+            cliente_id: clienteId
+          })
+        );
+        await Promise.all(promises);
       }
       
-      setShowForm(false);
-      setEditingItem(null);
-      setFormData({ reparto_id: '', cliente_id: '' });
+      handleCancel();
       loadData();
     } catch (err) {
       setError(err.message);
@@ -104,9 +129,9 @@ export default function ClientesporRepartoList() {
   const handleEdit = (item) => {
     setEditingItem(item);
     setFormData({
-      reparto_id: item.reparto_id,
-      cliente_id: item.cliente_id
+      reparto_id: item.reparto_id
     });
+    setSelectedClients([item.cliente_id]);
     setShowForm(true);
   };
 
@@ -126,7 +151,43 @@ export default function ClientesporRepartoList() {
   const handleCancel = () => {
     setShowForm(false);
     setEditingItem(null);
-    setFormData({ reparto_id: '', cliente_id: '' });
+    setFormData({ reparto_id: '', cliente_ids: [] });
+    setSearchClient('');
+    setSelectedClients([]);
+  };
+
+  // Filtrar clientes por búsqueda
+  const filteredClients = clientes.filter(cliente => {
+    if (!searchClient) return true;
+    const searchTerm = searchClient.toLowerCase();
+    return (
+      (cliente.Nombre && cliente.Nombre.toLowerCase().includes(searchTerm)) ||
+      (cliente.Razon && cliente.Razon.toLowerCase().includes(searchTerm)) ||
+      (cliente.Ruc && cliente.Ruc.toLowerCase().includes(searchTerm)) ||
+      (cliente.Codigo && cliente.Codigo.toLowerCase().includes(searchTerm))
+    );
+  });
+
+  // Manejar selección de clientes
+  const handleClientSelect = (clienteId, isSelected) => {
+    setSelectedClients(prev => {
+      if (isSelected) {
+        return [...prev, clienteId];
+      } else {
+        return prev.filter(id => id !== clienteId);
+      }
+    });
+  };
+
+  // Seleccionar/deseleccionar todos los clientes filtrados
+  const handleSelectAll = (selectAll) => {
+    if (selectAll) {
+      const allFilteredIds = filteredClients.map(cliente => cliente.id);
+      setSelectedClients(prev => [...new Set([...prev, ...allFilteredIds])]);
+    } else {
+      const filteredIds = filteredClients.map(cliente => cliente.id);
+      setSelectedClients(prev => prev.filter(id => !filteredIds.includes(id)));
+    }
   };
 
   // Agrupar por reparto para vista agrupada
@@ -215,7 +276,7 @@ export default function ClientesporRepartoList() {
                 <option value="">Todos los clientes</option>
                 {clientes.map(cliente => (
                   <option key={cliente.id} value={cliente.id}>
-                    {cliente.nombre} - {cliente.razonsocial}
+                    {cliente.nombre || cliente.Nombre || 'Sin nombre'} - {cliente.razon || cliente.Razon || 'Sin razón social'}
                   </option>
                 ))}
               </select>
@@ -363,68 +424,139 @@ export default function ClientesporRepartoList() {
           )}
 
           {/* Formulario Modal */}
-          {showForm && (
-            <div className="modal fade show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
-              <div className="modal-dialog">
-                <div className="modal-content">
-                  <div className="modal-header">
-                    <h5 className="modal-title">
-                      {editingItem ? 'Editar Asignación' : 'Nueva Asignación'}
-                    </h5>
-                  </div>
-                  <form onSubmit={handleSubmit}>
-                    <div className="modal-body">
-                      <div className="mb-3">
-                        <label className="form-label">Reparto *</label>
-                        <select
-                          className="form-select"
-                          value={formData.reparto_id}
-                          onChange={(e) => setFormData({...formData, reparto_id: e.target.value})}
-                          required
-                        >
-                          <option value="">Seleccionar reparto</option>
-                          {repartos.map(reparto => (
-                            <option key={reparto.id} value={reparto.id}>
-                              {reparto.dia_descripcion} - {reparto.camion_descripcion}
-                            </option>
-                          ))}
-                        </select>
+          <Modal show={showForm} onHide={handleCancel} size="lg">
+            <Modal.Header closeButton>
+              <Modal.Title>
+                {editingItem ? 'Editar Asignación' : 'Nueva Asignación'}
+              </Modal.Title>
+            </Modal.Header>
+            <Form onSubmit={handleSubmit}>
+              <Modal.Body>
+                {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
+                
+                <Row>
+                  <Col md={12}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Reparto *</Form.Label>
+                      <Form.Select
+                        value={formData.reparto_id}
+                        onChange={(e) => setFormData({...formData, reparto_id: e.target.value})}
+                        required
+                      >
+                        <option value="">Seleccionar reparto</option>
+                        {repartos.map(reparto => (
+                          <option key={reparto.id} value={reparto.id}>
+                            {reparto.dia_descripcion} - {reparto.camion_descripcion}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={12}>
+                    <Form.Group className="mb-3">
+                      <Form.Label>
+                        Clientes * 
+                        <Badge bg="secondary" className="ms-2">
+                          {selectedClients.length} seleccionados
+                        </Badge>
+                      </Form.Label>
+                      
+                      {/* Barra de búsqueda */}
+                      <div className="input-group mb-2">
+                        <span className="input-group-text">
+                          <i className="bi bi-search"></i>
+                        </span>
+                        <Form.Control
+                          type="text"
+                          placeholder="Buscar cliente por nombre, razón social, RUT o código..."
+                          value={searchClient}
+                          onChange={(e) => setSearchClient(e.target.value)}
+                        />
                       </div>
 
-                      <div className="mb-3">
-                        <label className="form-label">Cliente *</label>
-                        <select
-                          className="form-select"
-                          value={formData.cliente_id}
-                          onChange={(e) => setFormData({...formData, cliente_id: e.target.value})}
-                          required
+                      {/* Botones de selección */}
+                      <div className="d-flex gap-2 mb-2">
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          onClick={() => handleSelectAll(true)}
+                          disabled={filteredClients.length === 0}
                         >
-                          <option value="">Seleccionar cliente</option>
-                          {clientes.map(cliente => (
-                            <option key={cliente.id} value={cliente.id}>
-                              {cliente.nombre} - {cliente.razonsocial}
-                            </option>
-                          ))}
-                        </select>
+                          <i className="bi bi-check-all me-1"></i>
+                          Seleccionar todos
+                        </Button>
+                        <Button
+                          variant="outline-secondary"
+                          size="sm"
+                          onClick={() => handleSelectAll(false)}
+                          disabled={selectedClients.length === 0}
+                        >
+                          <i className="bi bi-x-square me-1"></i>
+                          Deseleccionar todos
+                        </Button>
                       </div>
-                    </div>
-                    <div className="modal-footer">
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        onClick={handleCancel}
-                      >
-                        Cancelar
-                      </button>
-                      <button type="submit" className="btn btn-primary">
-                        {editingItem ? 'Actualizar' : 'Crear'}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          )}
+
+                      {/* Lista de clientes con checkboxes */}
+                      <div className="border rounded p-2" style={{maxHeight: '300px', overflowY: 'auto'}}>
+                        {filteredClients.length === 0 ? (
+                          <div className="text-center text-muted py-3">
+                            {searchClient ? 'No se encontraron clientes' : 'No hay clientes disponibles'}
+                          </div>
+                        ) : (
+                          filteredClients.map(cliente => (
+                            <div key={cliente.id} className="form-check py-1">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id={`cliente-${cliente.id}`}
+                                checked={selectedClients.includes(cliente.id)}
+                                onChange={(e) => handleClientSelect(cliente.id, e.target.checked)}
+                              />
+                              <label className="form-check-label" htmlFor={`cliente-${cliente.id}`}>
+                                <div>
+                                  <strong>{cliente.Nombre || 'Sin nombre'}</strong>
+                                  {cliente.Razon && (
+                                    <div className="text-muted small">
+                                      {cliente.Razon}
+                                    </div>
+                                  )}
+                                  {cliente.Ruc && (
+                                    <div className="text-muted small">
+                                      RUT: {cliente.Ruc}
+                                    </div>
+                                  )}
+                                  {cliente.Codigo && (
+                                    <div className="text-muted small">
+                                      Código: {cliente.Codigo}
+                                    </div>
+                                  )}
+                                </div>
+                              </label>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={handleCancel}>
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  variant="primary"
+                  disabled={!formData.reparto_id || selectedClients.length === 0}
+                >
+                  {editingItem ? 'Actualizar' : `Crear ${selectedClients.length} asignación${selectedClients.length !== 1 ? 'es' : ''}`}
+                </Button>
+              </Modal.Footer>
+            </Form>
+          </Modal>
             </Card.Body>
           </Card>
         </Col>
