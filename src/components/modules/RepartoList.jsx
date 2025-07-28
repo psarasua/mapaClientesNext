@@ -1,14 +1,44 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { repartoApi, diaEntregaApi, truckApi, handleApiError } from '../../lib/api.js';
+import { handleApiError } from '../../lib/api.js';
+import { useRepartos, useCreateReparto, useUpdateReparto, useDeleteReparto } from '../../hooks/useRepartos';
+import { useDiasEntrega } from '../../hooks/useDiasEntrega';
+import { useTrucks } from '../../hooks/useTrucks';
 
 const RepartoList = () => {
-  const [repartos, setRepartos] = useState([]);
-  const [diasEntrega, setDiasEntrega] = useState([]);
-  const [camiones, setCamiones] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // React Query hooks
+  const { 
+    data: repartosData = [], 
+    isLoading: repartosLoading, 
+    error: repartosError, 
+    refetch: refetchRepartos 
+  } = useRepartos();
+  
+  const { 
+    data: diasEntregaData = [], 
+    isLoading: diasLoading 
+  } = useDiasEntrega();
+  
+  const { 
+    data: camionesData = [], 
+    isLoading: camionesLoading 
+  } = useTrucks();
+  
+  const createRepartoMutation = useCreateReparto();
+  const updateRepartoMutation = useUpdateReparto();
+  const deleteRepartoMutation = useDeleteReparto();
+
+  // Procesar datos
+  const repartos = repartosData;
+  const diasEntrega = diasEntregaData;
+  const camiones = camionesData;
+  
+  // Loading combinado
+  const isLoading = repartosLoading || diasLoading || camionesLoading;
+
+  // Estados locales para el formulario y UI
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -18,41 +48,6 @@ const RepartoList = () => {
     diasEntrega_id: '',
     camion_id: ''
   });
-
-  // Cargar datos al montar el componente
-  useEffect(() => {
-    loadAllData();
-  }, []);
-
-  const loadAllData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      
-      // Cargar repartos, días y camiones en paralelo
-      const [repartosResponse, diasResponse, camionesResponse] = await Promise.all([
-        repartoApi.getAll(),
-        diaEntregaApi.getAll(),
-        truckApi.getAll()
-      ]);
-
-      if (repartosResponse.success) {
-        setRepartos(repartosResponse.repartos || []);
-      }
-      if (diasResponse.success) {
-        setDiasEntrega(diasResponse.diasEntrega || []);
-      }
-      if (camionesResponse.success) {
-        setCamiones(camionesResponse.trucks || []);
-      }
-
-    } catch (error) {
-      console.error('Error loading data:', error);
-      setError(handleApiError(error));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Manejar cambios en el formulario
   const handleInputChange = (e) => {
@@ -73,26 +68,24 @@ const RepartoList = () => {
     }
 
     try {
-      setLoading(true);
       setError('');
       setSuccess('');
 
-      const response = editingReparto 
-        ? await repartoApi.update({ id: editingReparto.id, ...formData })
-        : await repartoApi.create(formData);
-
-      if (response.success) {
-        setSuccess(editingReparto ? 'Reparto actualizado exitosamente' : 'Reparto creado exitosamente');
-        resetForm();
-        loadAllData();
+      if (editingReparto) {
+        await updateRepartoMutation.mutateAsync({
+          ...editingReparto,
+          ...formData
+        });
+        setSuccess('Reparto actualizado exitosamente');
       } else {
-        throw new Error(response.error || 'Error al procesar reparto');
+        await createRepartoMutation.mutateAsync(formData);
+        setSuccess('Reparto creado exitosamente');
       }
+      
+      resetForm();
     } catch (error) {
       console.error('Error:', error);
       setError(handleApiError(error));
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -125,23 +118,14 @@ const RepartoList = () => {
     }
 
     try {
-      setLoading(true);
       setError('');
       setSuccess('');
 
-      const response = await repartoApi.delete(id);
-
-      if (response.success) {
-        setSuccess('Reparto eliminado exitosamente');
-        loadAllData();
-      } else {
-        throw new Error(response.error || 'Error eliminando reparto');
-      }
+      await deleteRepartoMutation.mutateAsync(id);
+      setSuccess('Reparto eliminado exitosamente');
     } catch (error) {
       console.error('Error:', error);
       setError(handleApiError(error));
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -167,6 +151,17 @@ const RepartoList = () => {
 
   const matrixView = getMatrixView();
 
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center py-5">
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" className="mb-3" />
+          <p className="text-muted">Cargando repartos...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Container fluid className="py-4">
       <Row>
@@ -184,7 +179,7 @@ const RepartoList = () => {
                   <Button 
                     variant={showForm ? 'outline-secondary' : 'primary'}
                     onClick={() => setShowForm(!showForm)}
-                    disabled={loading}
+                    disabled={isLoading}
                   >
                     <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
                     {showForm ? 'Cancelar' : 'Agregar Reparto'}
@@ -195,10 +190,10 @@ const RepartoList = () => {
 
             <Card.Body>
               {/* Mensajes */}
-              {error && (
+              {(error || repartosError) && (
                 <div className="alert alert-danger alert-dismissible fade show" role="alert">
                   <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                  {error}
+                  {error || repartosError?.message || 'Error desconocido'}
                   <button type="button" className="btn-close" onClick={() => setError('')}></button>
                 </div>
               )}
@@ -233,8 +228,8 @@ const RepartoList = () => {
                             required
                           >
                             <option value="">Selecciona un día</option>
-                            {diasEntrega.map(dia => (
-                              <option key={dia.id} value={dia.id}>{dia.descripcion}</option>
+                            {diasEntrega.map((dia, index) => (
+                              <option key={`dia-form-${dia.id || index}`} value={dia.id}>{dia.descripcion}</option>
                             ))}
                           </select>
                         </div>
@@ -252,18 +247,34 @@ const RepartoList = () => {
                             required
                           >
                             <option value="">Selecciona un camión</option>
-                            {camiones.map(camion => (
-                              <option key={camion.id} value={camion.id}>{camion.description}</option>
+                            {camiones.map((camion, index) => (
+                              <option key={`camion-form-${camion.id || index}`} value={camion.id}>{camion.description}</option>
                             ))}
                           </select>
                         </div>
                       </div>
 
                       <div className="d-flex gap-2">
-                        <button type="submit" className="btn btn-primary" disabled={loading}>
-                          {loading ? 'Procesando...' : editingReparto ? 'Actualizar' : 'Crear'}
+                        <button 
+                          type="submit" 
+                          className="btn btn-primary" 
+                          disabled={createRepartoMutation.isPending || updateRepartoMutation.isPending}
+                        >
+                          {(createRepartoMutation.isPending || updateRepartoMutation.isPending) ? (
+                            <>
+                              <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                              {editingReparto ? 'Actualizando...' : 'Creando...'}
+                            </>
+                          ) : (
+                            editingReparto ? 'Actualizar' : 'Crear'
+                          )}
                         </button>
-                        <button type="button" className="btn btn-secondary" onClick={resetForm}>
+                        <button 
+                          type="button" 
+                          className="btn btn-secondary" 
+                          onClick={resetForm}
+                          disabled={createRepartoMutation.isPending || updateRepartoMutation.isPending}
+                        >
                           Cancelar
                         </button>
                       </div>
@@ -293,8 +304,8 @@ const RepartoList = () => {
                     <thead className="table-light">
                       <tr>
                         <th>Día / Camión</th>
-                        {camiones.map(camion => (
-                          <th key={camion.id} className="text-center" style={{minWidth: '150px'}}>
+                        {camiones.map((camion, index) => (
+                          <th key={`camion-header-${camion.id || index}`} className="text-center" style={{minWidth: '150px'}}>
                             <div className="text-truncate" title={camion.description}>
                               <i className="bi bi-truck me-1"></i>
                               {camion.description}
@@ -310,10 +321,10 @@ const RepartoList = () => {
                             <i className="bi bi-calendar-day me-2"></i>
                             {row.dia}
                           </td>
-                          {camiones.map(camion => {
+                          {camiones.map((camion, index) => {
                             const reparto = row.camiones[camion.id];
                             return (
-                              <td key={camion.id} className="text-center align-middle" style={{minHeight: '80px'}}>
+                              <td key={`camion-cell-${camion.id || index}-${row.id || index}`} className="text-center align-middle" style={{minHeight: '80px'}}>
                                 {reparto ? (
                                   <div className="d-flex flex-column gap-2">
                                     <Badge bg="success" className="py-2">
@@ -330,6 +341,7 @@ const RepartoList = () => {
                                           size="sm"
                                           onClick={() => handleEdit(reparto)}
                                           className="px-3"
+                                          disabled={updateRepartoMutation.isPending || deleteRepartoMutation.isPending}
                                         >
                                           <i className="bi bi-pencil-square"></i>
                                         </Button>
@@ -343,8 +355,13 @@ const RepartoList = () => {
                                           size="sm"
                                           onClick={() => handleDelete(reparto.id, row.dia, camion.description)}
                                           className="px-3"
+                                          disabled={updateRepartoMutation.isPending || deleteRepartoMutation.isPending}
                                         >
-                                          <i className="bi bi-trash3"></i>
+                                          {deleteRepartoMutation.isPending && deleteRepartoMutation.variables === reparto.id ? (
+                                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                          ) : (
+                                            <i className="bi bi-trash3"></i>
+                                          )}
                                         </Button>
                                       </OverlayTrigger>
                                     </ButtonGroup>

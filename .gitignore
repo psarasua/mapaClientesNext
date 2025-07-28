@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# Prevent auto-generated TypeScript config
+tsconfig.json
+
 # production
 /build
 

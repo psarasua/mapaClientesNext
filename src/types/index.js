@@ -182,7 +182,8 @@ export const validateCreateTruckData = (data) => {
 // Funciones de validación para clientes
 export const validateCreateClientData = (data) => {
   return data && 
-         typeof data.nombre === 'string' && data.nombre.length > 0;
+         typeof data.Nombre === 'string' && data.Nombre.length > 0 &&
+         typeof data.Direccion === 'string' && data.Direccion.length > 0;
 };
 
 // Funciones de validación para días de entrega

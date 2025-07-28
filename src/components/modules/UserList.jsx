@@ -1,13 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { userApi, handleApiError, localStorageApi } from '../../lib/api';
+import { handleApiError, localStorageApi } from '../../lib/api';
 import { validateCreateUserData } from '../../types';
+import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from '../../hooks/useUsers';
 
 export default function UserList() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // React Query hooks
+  const { 
+    data: usersData = [], 
+    isLoading, 
+    error: queryError, 
+    refetch 
+  } = useUsers();
+  
+  const createUserMutation = useCreateUser();
+  const updateUserMutation = useUpdateUser();
+  const deleteUserMutation = useDeleteUser();
+
+  // Procesar y filtrar datos únicos
+  const processedUsers = (usersData || [])
+    .filter((user, index, array) => 
+      user && 
+      user.id && 
+      array.findIndex(u => u.id === user.id) === index
+    )
+    .sort((a, b) => (a.id || 0) - (b.id || 0));
+
+  // Estados locales para el formulario y UI
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -20,42 +41,8 @@ export default function UserList() {
     password: ''
   });
 
-  // Cargar usuarios al montar el componente
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
-    try {
-      setLoading(true);
-      const response = await userApi.getAll();
-      
-      // userApi.getAll() devuelve el objeto completo con { success, users, total, source }
-      if (response && response.users) {
-        setUsers(response.users);
-      } else {
-        setUsers(Array.isArray(response) ? response : []);
-      }
-      setError(null);
-    } catch (err) {
-      console.error('Error cargando usuarios:', err);
-      
-      // Intentar cargar desde localStorage como fallback
-      try {
-        const localUsers = localStorageApi.getUsers();
-        if (localUsers.length > 0) {
-          setUsers(localUsers);
-          setError('Usando datos guardados localmente (sin conexión al servidor)');
-        } else {
-          setError(handleApiError(err));
-        }
-      } catch (localErr) {
-        setError(handleApiError(err));
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Combinar errores de React Query con errores locales
+  const combinedError = queryError || error;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -67,16 +54,17 @@ export default function UserList() {
     }
 
     try {
+      setError(null); // Limpiar errores previos
+      
       if (editingUser) {
         // Actualizar usuario existente
-        await userApi.update({ ...formData, id: editingUser.id });
+        await updateUserMutation.mutateAsync({ ...formData, id: editingUser.id });
       } else {
         // Crear nuevo usuario
-        await userApi.create(formData);
+        await createUserMutation.mutateAsync(formData);
       }
       
-      // Recargar la lista y resetear el formulario
-      await loadUsers();
+      // Resetear el formulario después del éxito
       resetForm();
       
       // Mostrar mensaje de éxito (podrías usar un toast aquí)
@@ -105,8 +93,8 @@ export default function UserList() {
     if (!userToDelete) return;
     
     try {
-      await userApi.delete(userToDelete.id);
-      await loadUsers();
+      setError(null); // Limpiar errores previos
+      await deleteUserMutation.mutateAsync(userToDelete.id);
       setShowDeleteModal(false);
       setUserToDelete(null);
       console.log('Usuario eliminado exitosamente');
@@ -125,7 +113,7 @@ export default function UserList() {
     setShowForm(false);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
         <div className="text-center">
@@ -146,20 +134,22 @@ export default function UserList() {
                 <i className="bi bi-people-fill me-2"></i>
                 Gestión de Usuarios
               </h4>
-              <small className="text-muted">{users.length} usuario(s) registrado(s)</small>
+              <small className="text-muted">{processedUsers.length} usuario(s) registrado(s)</small>
             </div>
-            <Button
-              onClick={() => setShowForm(!showForm)}
-              variant={showForm ? 'outline-secondary' : 'primary'}
-            >
-              <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
-              {showForm ? 'Cancelar' : 'Nuevo Usuario'}
-            </Button>
+            <div>
+              <Button
+                onClick={() => setShowForm(!showForm)}
+                variant={showForm ? 'outline-secondary' : 'primary'}
+              >
+                <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
+                {showForm ? 'Cancelar' : 'Nuevo Usuario'}
+              </Button>
+            </div>
           </div>
         </Card.Header>
 
         <Card.Body>
-          {error && (
+          {combinedError && (
             <Alert 
               variant="warning" 
               dismissible 
@@ -167,7 +157,7 @@ export default function UserList() {
               className="fade show"
             >
               <i className="bi bi-exclamation-triangle-fill me-2"></i>
-              {error}
+              {typeof combinedError === 'string' ? combinedError : handleApiError(combinedError)}
             </Alert>
           )}
 
@@ -221,9 +211,22 @@ export default function UserList() {
                     </Col>
                   </Row>
                   <div className="d-flex gap-2 mt-3">
-                    <Button type="submit" variant="success">
-                      <i className={`bi ${editingUser ? 'bi-check-lg' : 'bi-plus-lg'} me-1`}></i>
-                      {editingUser ? 'Actualizar' : 'Crear'}
+                    <Button 
+                      type="submit" 
+                      variant="success"
+                      disabled={createUserMutation.isPending || updateUserMutation.isPending}
+                    >
+                      {(createUserMutation.isPending || updateUserMutation.isPending) ? (
+                        <>
+                          <Spinner animation="border" size="sm" className="me-1" />
+                          {editingUser ? 'Actualizando...' : 'Creando...'}
+                        </>
+                      ) : (
+                        <>
+                          <i className={`bi ${editingUser ? 'bi-check-lg' : 'bi-plus-lg'} me-1`}></i>
+                          {editingUser ? 'Actualizar' : 'Crear'}
+                        </>
+                      )}
                     </Button>
                     <Button type="button" onClick={resetForm} variant="secondary">
                       <i className="bi bi-x-lg me-1"></i>
@@ -247,12 +250,12 @@ export default function UserList() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
+                {processedUsers.map((user, index) => (
+                  <tr key={`user-${user.id || index}-${user.usuario?.slice(0, 10) || 'unknown'}`}>
                     <td>
-                      <Badge bg="light" text="dark">{user.id}</Badge>
+                      <Badge bg="light" text="dark">{user.id || 'N/A'}</Badge>
                     </td>
-                    <td className="fw-medium">{user.usuario}</td>
+                    <td className="fw-medium">{user.usuario || 'Sin usuario'}</td>
                     <td>
                       <span className="text-muted">••••••••</span>
                     </td>
@@ -276,8 +279,13 @@ export default function UserList() {
                           <Button
                             onClick={() => handleDeleteClick(user)}
                             variant="outline-danger"
+                            disabled={deleteUserMutation.isPending}
                           >
-                            <i className="bi bi-trash"></i>
+                            {deleteUserMutation.isPending && deleteUserMutation.variables === user.id ? (
+                              <Spinner animation="border" size="sm" />
+                            ) : (
+                              <i className="bi bi-trash"></i>
+                            )}
                           </Button>
                         </OverlayTrigger>
                       </ButtonGroup>
@@ -287,7 +295,7 @@ export default function UserList() {
               </tbody>
             </Table>
             
-            {users.length === 0 && (
+            {processedUsers.length === 0 && (
               <div className="text-center py-5">
                 <div className="text-muted">
                   <i className="bi bi-person-x display-1 mb-3"></i>
@@ -320,9 +328,19 @@ export default function UserList() {
           <Button 
             variant="danger"
             onClick={confirmDelete}
+            disabled={deleteUserMutation.isPending}
           >
-            <i className="bi bi-trash me-1"></i>
-            Eliminar
+            {deleteUserMutation.isPending ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-1" />
+                Eliminando...
+              </>
+            ) : (
+              <>
+                <i className="bi bi-trash me-1"></i>
+                Eliminar
+              </>
+            )}
           </Button>
         </Modal.Footer>
       </Modal>

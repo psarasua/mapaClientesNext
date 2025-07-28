@@ -1,7 +1,48 @@
 /* Estilos globales para la aplicación Next.js con Bootstrap Flatly Theme */
 
-/* Estilos para Leaflet */
+/* Estilos para Leaflet Maps */
 @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+
+/* Asegurar que los mapas de Leaflet se rendericen correctamente */
+.leaflet-container {
+  background: #f8f9fa;
+  outline: 0;
+}
+
+.leaflet-tile-pane {
+  filter: none;
+}
+
+.leaflet-map-pane,
+.leaflet-tile,
+.leaflet-marker-pane img,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box {
+  pointer-events: auto;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* Corregir problema de overflow en cards */
+.card-body {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Mejoras para gráficos */
+.recharts-wrapper {
+  overflow: visible !important;
+}
+
+/* Dashboard específico */
+.dashboard-map-container {
+  border-radius: 0.375rem;
+  overflow: hidden;
+  height: 100%;
+}
 
 /* Variables CSS personalizadas - Tema Flatly */
 :root {
@@ -173,13 +214,6 @@ a:hover {
    ESTILOS PARA DASHBOARD Y MAPAS
    =========================================== */
 
-/* Contenedor del mapa Leaflet */
-.leaflet-container {
-  height: 100%;
-  width: 100%;
-  border-radius: 0.375rem;
-}
-
 /* Estilos para las tarjetas de estadísticas */
 .stats-card {
   transition: all 0.3s ease;
@@ -278,16 +312,6 @@ a:hover {
 
 .card {
   animation: slideUp 0.4s ease-out;
-}
-
-/* Estilos para tooltips de mapas */
-.leaflet-popup-content {
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.leaflet-popup-content strong {
-  color: #495057;
 }
 
 /* Responsive adjustments */
@@ -398,4 +422,142 @@ a:hover {
   .login-form-container {
     padding-top: 2rem;
   }
+}
+
+/* Estilos para tablas responsivas mejoradas */
+.table-responsive {
+  border-radius: 0.375rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  overflow-x: auto;
+}
+
+.table {
+  margin-bottom: 0;
+  font-size: 0.875rem;
+  width: 100% !important;
+  table-layout: auto;
+}
+
+.table td {
+  vertical-align: middle;
+  padding: 0.5rem 0.4rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table th {
+  padding: 0.75rem 0.4rem;
+  font-weight: 600;
+  background-color: var(--bs-gray-100) !important;
+  border-bottom: 2px solid var(--bs-gray-300);
+  white-space: nowrap;
+}
+
+.table tbody tr:hover {
+  background-color: var(--bs-gray-50);
+}
+
+/* Mejorar legibilidad en tablas densas */
+.table-striped > tbody > tr:nth-of-type(odd) > td {
+  background-color: rgba(0, 123, 255, 0.02);
+}
+
+/* Botones en tablas más compactos */
+.table .btn-sm {
+  padding: 0.25rem 0.4rem;
+  font-size: 0.75rem;
+}
+
+.table .badge {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.4rem;
+}
+
+/* Responsive behavior for table cells */
+@media (max-width: 1200px) {
+  .table td.text-truncate,
+  .table th {
+    max-width: none;
+  }
+  
+  .table-responsive {
+    overflow-x: scroll;
+  }
+}
+
+/* Mejorar tabla en pantallas pequeñas */
+@media (max-width: 768px) {
+  .table {
+    font-size: 0.8rem;
+  }
+  
+  .table td,
+  .table th {
+    padding: 0.4rem 0.3rem;
+  }
+  
+  .table .btn-sm {
+    padding: 0.2rem 0.3rem;
+    font-size: 0.7rem;
+  }
+}
+
+/* Mejorar ButtonGroup en tablas */
+.table .btn-group .btn {
+  border-radius: 0.25rem;
+  margin: 0 1px;
+}
+
+.table .btn-group .btn:first-child {
+  margin-left: 0;
+}
+
+.table .btn-group .btn:last-child {
+  margin-right: 0;
+}
+
+/* Estilos para paginación */
+.pagination {
+  font-size: 0.875rem;
+}
+
+.pagination .page-link {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  margin: 0 2px;
+  border: 1px solid var(--bs-gray-300);
+  color: var(--bs-primary);
+  transition: all 0.2s ease-in-out;
+}
+
+.pagination .page-link:hover {
+  background-color: var(--bs-primary);
+  color: white;
+  border-color: var(--bs-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.pagination .page-item.disabled .page-link {
+  color: var(--bs-gray-500);
+  background-color: var(--bs-gray-100);
+  border-color: var(--bs-gray-300);
+  cursor: not-allowed;
+}
+
+/* Info de paginación */
+.pagination-info {
+  font-size: 0.875rem;
+  color: var(--bs-gray-600);
+  display: flex;
+  align-items: center;
 }

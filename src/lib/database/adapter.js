@@ -193,6 +193,17 @@ class DatabaseAdapter {
     return await db.clearAllRepartos();
   }
 
+  // Métodos adicionales para filtros específicos
+  async getRepartosByDia(diaEntregaId) {
+    const db = await this.init();
+    return await db.getRepartosByDia(diaEntregaId);
+  }
+
+  async getRepartosByCamion(camionId) {
+    const db = await this.init();
+    return await db.getRepartosByCamion(camionId);
+  }
+
   // Clientes por reparto
   async getAllClientesporReparto() {
     const db = await this.init();
@@ -202,6 +213,16 @@ class DatabaseAdapter {
   async getClienteporRepartoById(id) {
     const db = await this.init();
     return await db.getClienteporRepartoById(id);
+  }
+
+  async getClientesporRepartoByReparto(repartoId) {
+    const db = await this.init();
+    return await db.getClientesporRepartoByReparto(repartoId);
+  }
+
+  async getClientesporRepartoByCliente(clienteId) {
+    const db = await this.init();
+    return await db.getClientesporRepartoByCliente(clienteId);
   }
 
   async createClienteporReparto(data) {

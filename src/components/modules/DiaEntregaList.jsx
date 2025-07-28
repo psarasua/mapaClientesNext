@@ -1,12 +1,27 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { diaEntregaApi, handleApiError } from '../../lib/api.js';
+import { handleApiError } from '../../lib/api.js';
+import { useDiasEntrega, useCreateDiaEntrega, useUpdateDiaEntrega, useDeleteDiaEntrega } from '../../hooks/useDiasEntrega';
 
 const DiaEntregaList = () => {
-  const [diasEntrega, setDiasEntrega] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // React Query hooks
+  const { 
+    data: diasEntregaData = [], 
+    isLoading, 
+    error: queryError, 
+    refetch 
+  } = useDiasEntrega();
+  
+  const createDiaEntregaMutation = useCreateDiaEntrega();
+  const updateDiaEntregaMutation = useUpdateDiaEntrega();
+  const deleteDiaEntregaMutation = useDeleteDiaEntrega();
+
+  // Procesar datos
+  const diasEntrega = diasEntregaData;
+
+  // Estados locales para el formulario y UI
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -18,33 +33,6 @@ const DiaEntregaList = () => {
 
   const [filterText, setFilterText] = useState('');
   const [sortDirection, setSortDirection] = useState('asc');
-
-  // Cargar días de entrega al montar el componente
-  useEffect(() => {
-    loadDiasEntrega();
-  }, []);
-
-  const loadDiasEntrega = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await diaEntregaApi.getAll();
-      
-      if (response.success) {
-        setDiasEntrega(response.diasEntrega || []);
-        if (response.source) {
-          console.log('Fuente de datos:', response.source);
-        }
-      } else {
-        throw new Error(response.error || 'Error cargando días de entrega');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setError(handleApiError(error));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Manejar cambios en el formulario
   const handleInputChange = (e) => {
@@ -66,29 +54,24 @@ const DiaEntregaList = () => {
     }
 
     try {
-      setLoading(true);
       setError('');
+      setSuccess('');
       
-      let response;
       if (editingDiaEntrega) {
-        response = await diaEntregaApi.update({ ...formData, id: editingDiaEntrega.id });
+        await updateDiaEntregaMutation.mutateAsync({
+          ...editingDiaEntrega,
+          ...formData
+        });
         setSuccess('Día de entrega actualizado exitosamente');
       } else {
-        response = await diaEntregaApi.create(formData);
+        await createDiaEntregaMutation.mutateAsync(formData);
         setSuccess('Día de entrega creado exitosamente');
       }
 
-      if (response.success) {
-        resetForm();
-        await loadDiasEntrega();
-      } else {
-        throw new Error(response.error || 'Error en la operación');
-      }
+      resetForm();
     } catch (error) {
       console.error('Error:', error);
       setError(handleApiError(error));
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -99,6 +82,8 @@ const DiaEntregaList = () => {
     });
     setEditingDiaEntrega(null);
     setShowForm(false);
+    setError('');
+    setSuccess('');
   };
 
   // Editar día de entrega
@@ -117,22 +102,14 @@ const DiaEntregaList = () => {
     }
 
     try {
-      setLoading(true);
       setError('');
+      setSuccess('');
       
-      const response = await diaEntregaApi.delete(id);
-      
-      if (response.success) {
-        setSuccess('Día de entrega eliminado exitosamente');
-        await loadDiasEntrega();
-      } else {
-        throw new Error(response.error || 'Error eliminando día de entrega');
-      }
+      await deleteDiaEntregaMutation.mutateAsync(id);
+      setSuccess('Día de entrega eliminado exitosamente');
     } catch (error) {
       console.error('Error:', error);
       setError(handleApiError(error));
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -163,6 +140,17 @@ const DiaEntregaList = () => {
 
   const filteredDiasEntrega = getFilteredAndSortedDiasEntrega();
 
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center py-5">
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" className="mb-3" />
+          <p className="text-muted">Cargando días de entrega...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container-fluid py-4">
       <div className="row">
@@ -180,28 +168,21 @@ const DiaEntregaList = () => {
                   <Button 
                     variant={showForm ? 'outline-secondary' : 'primary'}
                     onClick={() => setShowForm(!showForm)}
-                    disabled={loading}
+                    disabled={isLoading}
                   >
                     <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
                     {showForm ? 'Cancelar' : 'Agregar Día'}
                   </Button>
-                  <button 
-                    className="btn btn-outline-light ms-2"
-                    onClick={loadDiasEntrega}
-                    disabled={loading}
-                  >
-                    {loading ? 'Cargando...' : 'Actualizar'}
-                  </button>
                 </div>
               </div>
             </div>
 
             <div className="card-body">
               {/* Mensajes */}
-              {error && (
+              {(error || queryError) && (
                 <div className="alert alert-danger alert-dismissible fade show" role="alert">
                   <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                  {error}
+                  {error || queryError?.message || 'Error desconocido'}
                   <button type="button" className="btn-close" onClick={() => setError('')}></button>
                 </div>
               )}
@@ -239,10 +220,26 @@ const DiaEntregaList = () => {
                       </div>
 
                       <div className="d-flex gap-2">
-                        <button type="submit" className="btn btn-success" disabled={loading}>
-                          {loading ? 'Procesando...' : editingDiaEntrega ? 'Actualizar' : 'Crear'}
+                        <button 
+                          type="submit" 
+                          className="btn btn-success" 
+                          disabled={createDiaEntregaMutation.isPending || updateDiaEntregaMutation.isPending}
+                        >
+                          {(createDiaEntregaMutation.isPending || updateDiaEntregaMutation.isPending) ? (
+                            <>
+                              <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                              {editingDiaEntrega ? 'Actualizando...' : 'Creando...'}
+                            </>
+                          ) : (
+                            editingDiaEntrega ? 'Actualizar' : 'Crear'
+                          )}
                         </button>
-                        <button type="button" className="btn btn-secondary" onClick={resetForm}>
+                        <button 
+                          type="button" 
+                          className="btn btn-secondary" 
+                          onClick={resetForm}
+                          disabled={createDiaEntregaMutation.isPending || updateDiaEntregaMutation.isPending}
+                        >
                           Cancelar
                         </button>
                       </div>
@@ -304,15 +301,15 @@ const DiaEntregaList = () => {
                         </td>
                       </tr>
                     ) : (
-                      filteredDiasEntrega.map((diaEntrega) => (
-                        <tr key={diaEntrega.id}>
+                      filteredDiasEntrega.map((diaEntrega, index) => (
+                        <tr key={`dia-${diaEntrega.id || index}-${diaEntrega.descripcion?.slice(0, 10) || 'unknown'}`}>
                           <td className="text-center">
-                            <span className="badge bg-secondary">{diaEntrega.id}</span>
+                            <span className="badge bg-secondary">{diaEntrega.id || 'N/A'}</span>
                           </td>
                           <td>
                             <div className="d-flex align-items-center">
                               <i className="bi bi-calendar-day me-2 text-success"></i>
-                              <strong>{diaEntrega.descripcion}</strong>
+                              <strong>{diaEntrega.descripcion || 'Sin descripción'}</strong>
                             </div>
                           </td>
                           <td className="text-center">
@@ -325,7 +322,7 @@ const DiaEntregaList = () => {
                                   onClick={() => handleEdit(diaEntrega)}
                                   variant="outline-primary"
                                   size="sm"
-                                  disabled={loading}
+                                  disabled={updateDiaEntregaMutation.isPending || deleteDiaEntregaMutation.isPending}
                                 >
                                   <i className="bi bi-pencil"></i>
                                 </Button>
@@ -338,9 +335,13 @@ const DiaEntregaList = () => {
                                   onClick={() => handleDelete(diaEntrega.id, diaEntrega.descripcion)}
                                   variant="outline-danger"
                                   size="sm"
-                                  disabled={loading}
+                                  disabled={updateDiaEntregaMutation.isPending || deleteDiaEntregaMutation.isPending}
                                 >
-                                  <i className="bi bi-trash"></i>
+                                  {deleteDiaEntregaMutation.isPending && deleteDiaEntregaMutation.variables === diaEntrega.id ? (
+                                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                  ) : (
+                                    <i className="bi bi-trash"></i>
+                                  )}
                                 </Button>
                               </OverlayTrigger>
                             </ButtonGroup>

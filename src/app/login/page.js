@@ -113,7 +113,7 @@ export default function LoginPage() {
           
           <div className="bg-white bg-opacity-10 rounded-4 p-4 border border-white border-opacity-20">
             <small className="opacity-75">
-              <strong>Tecnología:</strong> Next.js • React Bootstrap • Leaflet Maps • SQLite/Turso
+              <strong>Tecnología:</strong> Next.js • React Bootstrap • Maps Integration • SQLite/Turso
             </small>
           </div>
         </div>

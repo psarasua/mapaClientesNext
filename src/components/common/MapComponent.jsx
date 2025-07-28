@@ -1,172 +1,183 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
+import React, { useState, useEffect } from 'react';
 
-// Importar Leaflet dinámicamente para evitar problemas de SSR
-const MapContainer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.MapContainer),
-  { ssr: false }
-);
+// Coordenadas por defecto para Santa Rosa, Canelones, Uruguay
+const DEFAULT_CENTER = [-34.5617, -56.0417];
 
-const TileLayer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.TileLayer),
-  { ssr: false }
-);
-
-const Marker = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Marker),
-  { ssr: false }
-);
-
-const Popup = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Popup),
-  { ssr: false }
-);
-
-export default function MapComponent() {
+const MapComponent = ({ clients = [], trucks = [], showClients = true, showTrucks = true }) => {
   const [isClient, setIsClient] = useState(false);
-  const [clients, setClients] = useState([]);
-  const [trucks, setTrucks] = useState([]);
-  
-  // Coordenadas por defecto (Madrid, España)
-  const defaultPosition = [40.4168, -3.7038];
-  
+  const [mapComponents, setMapComponents] = useState(null);
+
+  // Verificar si estamos en el cliente
   useEffect(() => {
     setIsClient(true);
-    fetchLocationData();
   }, []);
 
-  const fetchLocationData = async () => {
-    try {
-      const [clientsRes, trucksRes] = await Promise.all([
-        fetch('/api/clients'),
-        fetch('/api/trucks')
-      ]);
+  // Cargar componentes de Leaflet dinámicamente
+  useEffect(() => {
+    if (isClient) {
+      const loadLeaflet = async () => {
+        try {
+          const leafletModule = await import('react-leaflet');
+          setMapComponents({
+            MapContainer: leafletModule.MapContainer,
+            TileLayer: leafletModule.TileLayer,
+            Marker: leafletModule.Marker,
+            Popup: leafletModule.Popup
+          });
+        } catch (error) {
+          console.error('Error cargando Leaflet:', error);
+        }
+      };
       
-      const clientsData = await clientsRes.json();
-      const trucksData = await trucksRes.json();
-      
-      // Extraer los arrays de las respuestas
-      const clients = clientsData.clients || [];
-      const trucks = trucksData.trucks || [];
-      
-      // Agregar coordenadas aleatorias para demostración
-      const clientsWithCoords = clients.map((client, index) => ({
-        ...client,
-        lat: 40.4168 + (Math.random() - 0.5) * 0.1,
-        lng: -3.7038 + (Math.random() - 0.5) * 0.1,
-        type: 'client'
-      }));
-      
-      const trucksWithCoords = trucks.map((truck, index) => ({
-        ...truck,
-        lat: 40.4168 + (Math.random() - 0.5) * 0.15,
-        lng: -3.7038 + (Math.random() - 0.5) * 0.15,
-        type: 'truck'
-      }));
-      
-      setClients(clientsWithCoords);
-      setTrucks(trucksWithCoords);
-    } catch (error) {
-      console.error('Error fetching location data:', error);
+      loadLeaflet();
     }
-  };
+  }, [isClient]);
 
-  // Función para crear iconos personalizados
-  const createCustomIcon = (type) => {
-    if (typeof window === 'undefined') return null;
-    
-    const L = require('leaflet');
-    
-    const iconConfig = {
-      client: {
-        iconUrl: 'data:image/svg+xml;base64,' + btoa(`
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#dc3545" width="24" height="24">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
-        `),
-        iconSize: [24, 24],
-        iconAnchor: [12, 24],
-        popupAnchor: [0, -24]
-      },
-      truck: {
-        iconUrl: 'data:image/svg+xml;base64,' + btoa(`
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#198754" width="24" height="24">
-            <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-          </svg>
-        `),
-        iconSize: [24, 24],
-        iconAnchor: [12, 24],
-        popupAnchor: [0, -24]
-      }
-    };
-    
-    return L.icon(iconConfig[type]);
-  };
+  // Filtrar elementos con coordenadas válidas
+  const validClients = clients.filter(client => 
+    client.latitude && client.longitude && 
+    !isNaN(parseFloat(client.latitude)) && !isNaN(parseFloat(client.longitude))
+  );
+  
+  const validTrucks = trucks.filter(truck => 
+    truck.latitude && truck.longitude && 
+    !isNaN(parseFloat(truck.latitude)) && !isNaN(parseFloat(truck.longitude))
+  );
 
-  if (!isClient) {
+  // Determinar centro del mapa
+  let mapCenter = DEFAULT_CENTER;
+  let mapZoom = 12;
+
+  const allItems = [];
+  if (showClients) {
+    allItems.push(...validClients.map(client => [
+      parseFloat(client.latitude), 
+      parseFloat(client.longitude)
+    ]));
+  }
+  if (showTrucks) {
+    allItems.push(...validTrucks.map(truck => [
+      parseFloat(truck.latitude), 
+      parseFloat(truck.longitude)
+    ]));
+  }
+
+  if (allItems.length > 0) {
+    const avgLat = allItems.reduce((sum, item) => sum + item[0], 0) / allItems.length;
+    const avgLng = allItems.reduce((sum, item) => sum + item[1], 0) / allItems.length;
+    mapCenter = [avgLat, avgLng];
+    mapZoom = allItems.length === 1 ? 15 : 12;
+  }
+
+  // Mostrar loading mientras se cargan los componentes
+  if (!isClient || !mapComponents) {
     return (
-      <div className="d-flex align-items-center justify-content-center" style={{ height: '250px' }}>
+      <div style={{ 
+        height: '400px', 
+        width: '100%',
+        backgroundColor: '#f8f9fa',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
         <div className="text-center">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Cargando mapa...</span>
           </div>
-          <p className="mt-2 mb-0">Cargando mapa...</p>
+          <p className="text-muted mt-2 small">Cargando mapa...</p>
         </div>
       </div>
     );
   }
 
+  const { MapContainer, TileLayer, Marker, Popup } = mapComponents;
+
   return (
-    <div style={{ height: '250px', width: '100%' }}>
+    <div style={{ 
+      height: '400px', 
+      width: '100%',
+      backgroundColor: '#f8f9fa',
+      position: 'relative'
+    }}>
       <MapContainer
-        center={defaultPosition}
-        zoom={11}
-        style={{ height: '100%', width: '100%' }}
-        className="leaflet-container"
+        center={mapCenter}
+        zoom={mapZoom}
+        style={{ 
+          height: '100%', 
+          width: '100%',
+          zIndex: 1
+        }}
+        scrollWheelZoom={true}
+        zoomControl={true}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
         />
         
-        {/* Marcadores de Clientes */}
-        {clients.map((client) => (
+        {/* Marcadores de clientes */}
+        {showClients && validClients.map((client) => (
           <Marker
             key={`client-${client.id}`}
-            position={[client.lat, client.lng]}
-            icon={createCustomIcon('client')}
+            position={[parseFloat(client.latitude), parseFloat(client.longitude)]}
           >
             <Popup>
               <div>
-                <strong>👤 Cliente</strong><br />
-                <strong>{client.name}</strong><br />
-                📧 {client.email}<br />
-                📞 {client.phone}
+                <h6 className="mb-2">👤 {client.name}</h6>
+                <p className="mb-1 small text-muted">{client.address}</p>
+                <p className="mb-1 small">
+                  <strong>Reparto:</strong> {client.reparto || 'No asignado'}
+                </p>
+                <p className="mb-0 small">
+                  <strong>Día:</strong> {client.diaEntrega || 'No definido'}
+                </p>
               </div>
             </Popup>
           </Marker>
         ))}
         
-        {/* Marcadores de Camiones */}
-        {trucks.map((truck) => (
+        {/* Marcadores de camiones */}
+        {showTrucks && validTrucks.map((truck) => (
           <Marker
             key={`truck-${truck.id}`}
-            position={[truck.lat, truck.lng]}
-            icon={createCustomIcon('truck')}
+            position={[parseFloat(truck.latitude), parseFloat(truck.longitude)]}
           >
             <Popup>
               <div>
-                <strong>🚛 Camión</strong><br />
-                <strong>{truck.name}</strong><br />
-                📋 {truck.description}<br />
-                🔧 Estado: {truck.status || 'Disponible'}
+                <h6 className="mb-2">🚛 {truck.name}</h6>
+                <p className="mb-1 small text-muted">{truck.description}</p>
+                <p className="mb-0 small">
+                  <strong>Estado:</strong> {truck.status || 'Activo'}
+                </p>
               </div>
             </Popup>
           </Marker>
         ))}
       </MapContainer>
+      
+      {/* Overlay con información si no hay datos */}
+      {(validClients.length === 0 && validTrucks.length === 0) && (
+        <div style={{
+          position: 'absolute',
+          bottom: '10px',
+          left: '10px',
+          right: '10px',
+          zIndex: 1000,
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          padding: '8px 12px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          textAlign: 'center'
+        }}>
+          <i className="bi bi-info-circle me-2"></i>
+          Mostrando Santa Rosa, Canelones, Uruguay como ubicación por defecto
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default MapComponent;

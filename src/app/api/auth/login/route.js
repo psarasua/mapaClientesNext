@@ -21,7 +21,7 @@ export async function POST(request) {
     
     try {
       // Buscar usuario por nombre de usuario
-      const user = await db.getUserByUsernameOrEmail(usuario);
+      const user = await db.getUserByUsername(usuario);
       
       if (!user) {
         return NextResponse.json({

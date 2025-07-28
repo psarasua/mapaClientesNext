@@ -3,6 +3,7 @@ import 'bootswatch/dist/flatly/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import "./globals.css";
 import { AuthProvider } from '../contexts/AuthContext';
+import { QueryProvider } from '../components/providers/QueryProvider';
 
 // Cargar variables de entorno en el servidor
 if (typeof window === 'undefined') {
@@ -67,9 +68,11 @@ export default function RootLayout({ children }) {
         <link rel="shortcut icon" href="/favicon.svg?v=2" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

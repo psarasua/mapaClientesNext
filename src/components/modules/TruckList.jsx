@@ -1,13 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { truckApi, handleApiError } from '../../lib/api';
+import { handleApiError } from '../../lib/api';
 import { validateCreateTruckData } from '../../types';
+import { useTrucks, useCreateTruck, useUpdateTruck, useDeleteTruck } from '../../hooks/useTrucks';
 
 export default function TruckList() {
-  const [trucks, setTrucks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // React Query hooks
+  const { 
+    data: trucksData = [], 
+    isLoading, 
+    error: queryError, 
+    refetch 
+  } = useTrucks();
+  
+  const createTruckMutation = useCreateTruck();
+  const updateTruckMutation = useUpdateTruck();
+  const deleteTruckMutation = useDeleteTruck();
+
+  // Procesar y ordenar los datos, filtrar duplicados y validar IDs
+  const trucks = trucksData
+    .filter((truck, index, array) => 
+      truck && 
+      truck.id && 
+      array.findIndex(t => t.id === truck.id) === index
+    )
+    .sort((a, b) => (a.id || 0) - (b.id || 0));
+
+  // Estados locales para el formulario y UI
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingTruck, setEditingTruck] = useState(null);
@@ -18,38 +39,6 @@ export default function TruckList() {
   const [formData, setFormData] = useState({
     description: ''
   });
-
-  // Cargar camiones al montar el componente
-  useEffect(() => {
-    loadTrucks();
-  }, []);
-
-  const loadTrucks = async () => {
-    try {
-      setLoading(true);
-      const response = await truckApi.getAll();
-      
-      let trucksData = [];
-      
-      // truckApi.getAll() devuelve el objeto completo con { success, trucks, total, source }
-      if (response && response.trucks) {
-        trucksData = response.trucks;
-      } else {
-        trucksData = Array.isArray(response) ? response : [];
-      }
-      
-      // Ordenar camiones por ID de forma ascendente
-      trucksData.sort((a, b) => a.id - b.id);
-      
-      setTrucks(trucksData);
-      setError(null);
-    } catch (err) {
-      console.error('Error cargando camiones:', err);
-      setError(handleApiError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,14 +52,15 @@ export default function TruckList() {
     try {
       if (editingTruck) {
         // Actualizar camión existente
-        await truckApi.update({ ...formData, id: editingTruck.id });
+        await updateTruckMutation.mutateAsync({
+          ...editingTruck,
+          ...formData
+        });
       } else {
         // Crear nuevo camión
-        await truckApi.create(formData);
+        await createTruckMutation.mutateAsync(formData);
       }
       
-      // Recargar la lista y resetear el formulario
-      await loadTrucks();
       resetForm();
       
       // Mostrar mensaje de éxito
@@ -98,9 +88,7 @@ export default function TruckList() {
     if (!truckToDelete) return;
     
     try {
-      const result = await truckApi.delete(truckToDelete.id);
-      
-      await loadTrucks();
+      await deleteTruckMutation.mutateAsync(truckToDelete.id);
       setShowDeleteModal(false);
       setTruckToDelete(null);
     } catch (err) {
@@ -115,9 +103,10 @@ export default function TruckList() {
     });
     setEditingTruck(null);
     setShowForm(false);
+    setError(null);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
         <div className="text-center">
@@ -140,18 +129,20 @@ export default function TruckList() {
               </h4>
               <small className="text-muted">{trucks.length} camión(es) registrado(s)</small>
             </div>
-            <Button
-              onClick={() => setShowForm(!showForm)}
-              variant={showForm ? 'outline-secondary' : 'primary'}
-            >
-              <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
-              {showForm ? 'Cancelar' : 'Nuevo Camión'}
-            </Button>
+            <div>
+              <Button
+                onClick={() => setShowForm(!showForm)}
+                variant={showForm ? 'outline-secondary' : 'primary'}
+              >
+                <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
+                {showForm ? 'Cancelar' : 'Nuevo Camión'}
+              </Button>
+            </div>
           </div>
         </Card.Header>
 
         <Card.Body>
-          {error && (
+          {(error || queryError) && (
             <Alert 
               variant="warning" 
               dismissible 
@@ -159,7 +150,7 @@ export default function TruckList() {
               className="fade show"
             >
               <i className="bi bi-exclamation-triangle-fill me-2"></i>
-              {error}
+              {error || queryError?.message || 'Error desconocido'}
             </Alert>
           )}
 
@@ -192,11 +183,29 @@ export default function TruckList() {
                     </Col>
                   </Row>
                   <div className="d-flex gap-2">
-                    <Button type="submit" variant="success">
-                      <i className={`bi ${editingTruck ? 'bi-check-lg' : 'bi-plus-lg'} me-1`}></i>
-                      {editingTruck ? 'Actualizar' : 'Crear'}
+                    <Button 
+                      type="submit" 
+                      variant="success"
+                      disabled={createTruckMutation.isPending || updateTruckMutation.isPending}
+                    >
+                      {(createTruckMutation.isPending || updateTruckMutation.isPending) ? (
+                        <>
+                          <Spinner animation="border" size="sm" className="me-1" />
+                          {editingTruck ? 'Actualizando...' : 'Creando...'}
+                        </>
+                      ) : (
+                        <>
+                          <i className={`bi ${editingTruck ? 'bi-check-lg' : 'bi-plus-lg'} me-1`}></i>
+                          {editingTruck ? 'Actualizar' : 'Crear'}
+                        </>
+                      )}
                     </Button>
-                    <Button type="button" onClick={resetForm} variant="secondary">
+                    <Button 
+                      type="button" 
+                      onClick={resetForm} 
+                      variant="secondary"
+                      disabled={createTruckMutation.isPending || updateTruckMutation.isPending}
+                    >
                       <i className="bi bi-x-lg me-1"></i>
                       Cancelar
                     </Button>
@@ -217,14 +226,14 @@ export default function TruckList() {
                 </tr>
               </thead>
               <tbody>
-                {trucks.map((truck) => (
-                  <tr key={truck.id}>
+                {trucks.map((truck, index) => (
+                  <tr key={`truck-${truck.id || index}-${truck.description?.slice(0, 10) || 'unknown'}`}>
                     <td>
-                      <Badge bg="primary">{truck.id}</Badge>
+                      <Badge bg="primary">{truck.id || 'N/A'}</Badge>
                     </td>
                     <td className="fw-medium">
-                      <div title={truck.description}>
-                        {truck.description}
+                      <div title={truck.description || 'Sin descripción'}>
+                        {truck.description || 'Sin descripción'}
                       </div>
                     </td>
                     <td>
@@ -236,6 +245,7 @@ export default function TruckList() {
                           <Button
                             onClick={() => handleEdit(truck)}
                             variant="outline-primary"
+                            disabled={updateTruckMutation.isPending || deleteTruckMutation.isPending}
                           >
                             <i className="bi bi-pencil"></i>
                           </Button>
@@ -247,8 +257,13 @@ export default function TruckList() {
                           <Button
                             onClick={() => handleDeleteClick(truck)}
                             variant="outline-danger"
+                            disabled={updateTruckMutation.isPending || deleteTruckMutation.isPending}
                           >
-                            <i className="bi bi-trash"></i>
+                            {deleteTruckMutation.isPending && deleteTruckMutation.variables === truck.id ? (
+                              <Spinner animation="border" size="sm" />
+                            ) : (
+                              <i className="bi bi-trash"></i>
+                            )}
                           </Button>
                         </OverlayTrigger>
                       </ButtonGroup>
@@ -293,15 +308,26 @@ export default function TruckList() {
           <Button 
             variant="secondary"
             onClick={() => setShowDeleteModal(false)}
+            disabled={deleteTruckMutation.isPending}
           >
             Cancelar
           </Button>
           <Button 
             variant="danger"
             onClick={confirmDelete}
+            disabled={deleteTruckMutation.isPending}
           >
-            <i className="bi bi-trash me-1"></i>
-            Eliminar
+            {deleteTruckMutation.isPending ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-1" />
+                Eliminando...
+              </>
+            ) : (
+              <>
+                <i className="bi bi-trash me-1"></i>
+                Eliminar
+              </>
+            )}
           </Button>
         </Modal.Footer>
       </Modal>

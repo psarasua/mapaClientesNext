@@ -305,6 +305,47 @@ class PrismaAdapter {
     return { deletedCount: result.count };
   }
 
+  // Métodos adicionales para filtros específicos
+  async getRepartosByDia(diaEntregaId) {
+    const repartos = await this.prisma.reparto.findMany({
+      where: {
+        diasEntrega_id: parseInt(diaEntregaId)
+      },
+      include: {
+        diaEntrega: true,
+        camion: true
+      },
+      orderBy: { created_at: 'desc' }
+    });
+
+    // Transformar los datos para mantener compatibilidad
+    return repartos.map(reparto => ({
+      ...reparto,
+      dia_descripcion: reparto.diaEntrega.descripcion,
+      camion_descripcion: reparto.camion.description
+    }));
+  }
+
+  async getRepartosByCamion(camionId) {
+    const repartos = await this.prisma.reparto.findMany({
+      where: {
+        camion_id: parseInt(camionId)
+      },
+      include: {
+        diaEntrega: true,
+        camion: true
+      },
+      orderBy: { created_at: 'desc' }
+    });
+
+    // Transformar los datos para mantener compatibilidad
+    return repartos.map(reparto => ({
+      ...reparto,
+      dia_descripcion: reparto.diaEntrega.descripcion,
+      camion_descripcion: reparto.camion.description
+    }));
+  }
+
   // ===== MÉTODOS PARA CLIENTES POR REPARTO =====
   
   async getAllClientesporReparto() {
@@ -347,6 +388,62 @@ class PrismaAdapter {
         cliente: true
       }
     });
+  }
+
+  async getClientesporRepartoByReparto(repartoId) {
+    const clientesporReparto = await this.prisma.clienteporReparto.findMany({
+      where: { reparto_id: parseInt(repartoId) },
+      include: {
+        reparto: {
+          include: {
+            diaEntrega: true,
+            camion: true
+          }
+        },
+        cliente: true
+      },
+      orderBy: { created_at: 'desc' }
+    });
+
+    // Transformar los datos para mantener compatibilidad con el frontend
+    return clientesporReparto.map(item => ({
+      ...item,
+      dia_descripcion: item.reparto.diaEntrega.descripcion,
+      camion_descripcion: item.reparto.camion.description,
+      cliente_nombre: item.cliente.nombre,
+      cliente_razonsocial: item.cliente.razon,
+      cliente_direccion: item.cliente.direccion,
+      cliente_telefono: item.cliente.telefono1,
+      cliente_rut: item.cliente.ruc
+    }));
+  }
+
+  async getClientesporRepartoByCliente(clienteId) {
+    const clientesporReparto = await this.prisma.clienteporReparto.findMany({
+      where: { cliente_id: parseInt(clienteId) },
+      include: {
+        reparto: {
+          include: {
+            diaEntrega: true,
+            camion: true
+          }
+        },
+        cliente: true
+      },
+      orderBy: { created_at: 'desc' }
+    });
+
+    // Transformar los datos para mantener compatibilidad con el frontend
+    return clientesporReparto.map(item => ({
+      ...item,
+      dia_descripcion: item.reparto.diaEntrega.descripcion,
+      camion_descripcion: item.reparto.camion.description,
+      cliente_nombre: item.cliente.nombre,
+      cliente_razonsocial: item.cliente.razon,
+      cliente_direccion: item.cliente.direccion,
+      cliente_telefono: item.cliente.telefono1,
+      cliente_rut: item.cliente.ruc
+    }));
   }
 
   async createClienteporReparto(data) {
@@ -394,6 +491,33 @@ class PrismaAdapter {
 
   async clearAllClientesporReparto() {
     const result = await this.prisma.clienteporReparto.deleteMany();
+    return { deletedCount: result.count };
+  }
+
+  // ===== MÉTODOS DE LIMPIEZA =====
+
+  async clearAllUsers() {
+    const result = await this.prisma.user.deleteMany();
+    return { deletedCount: result.count };
+  }
+
+  async clearAllClients() {
+    const result = await this.prisma.client.deleteMany();
+    return { deletedCount: result.count };
+  }
+
+  async clearAllTrucks() {
+    const result = await this.prisma.truck.deleteMany();
+    return { deletedCount: result.count };
+  }
+
+  async clearAllRepartos() {
+    const result = await this.prisma.reparto.deleteMany();
+    return { deletedCount: result.count };
+  }
+
+  async clearAllDiasEntrega() {
+    const result = await this.prisma.diaEntrega.deleteMany();
     return { deletedCount: result.count };
   }
 

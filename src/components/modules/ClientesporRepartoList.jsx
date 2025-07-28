@@ -1,14 +1,43 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { clientesporRepartoApi, clientApi, repartoApi } from '../../lib/api.js';
+import { useClientesporReparto, useCreateClienteReparto, useUpdateClienteReparto, useDeleteClienteReparto } from '../../hooks/useClientesporReparto';
+import { useClients } from '../../hooks/useClients';
+import { useRepartos } from '../../hooks/useRepartos';
 
 export default function ClientesporRepartoList() {
-  const [clientesporReparto, setClientesporReparto] = useState([]);
-  const [clientes, setClientes] = useState([]);
-  const [repartos, setRepartos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // React Query hooks
+  const { 
+    data: clientesporRepartoData = [], 
+    isLoading: clientesporRepartoLoading, 
+    error: clientesporRepartoError, 
+    refetch: refetchClientesporReparto 
+  } = useClientesporReparto();
+  
+  const { 
+    data: clientesData = [], 
+    isLoading: clientesLoading 
+  } = useClients();
+  
+  const { 
+    data: repartosData = [], 
+    isLoading: repartosLoading 
+  } = useRepartos();
+  
+  const createClienteRepartoMutation = useCreateClienteReparto();
+  const updateClienteRepartoMutation = useUpdateClienteReparto();
+  const deleteClienteRepartoMutation = useDeleteClienteReparto();
+
+  // Procesar datos
+  const clientesporReparto = clientesporRepartoData;
+  const clientes = clientesData;
+  const repartos = repartosData;
+  
+  // Loading combinado
+  const isLoading = clientesporRepartoLoading || clientesLoading || repartosLoading;
+
+  // Estados locales para el formulario y UI
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -25,64 +54,6 @@ export default function ClientesporRepartoList() {
   // Estados para búsqueda y selección múltiple
   const [searchClient, setSearchClient] = useState('');
   const [selectedClients, setSelectedClients] = useState([]);
-
-  // Cargar datos iniciales
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const [clientesporRepartoData, clientesData, repartosData] = await Promise.all([
-        clientesporRepartoApi.getAll(),
-        clientApi.getAll(),
-        repartoApi.getAll()
-      ]);
-      
-      setClientesporReparto(Array.isArray(clientesporRepartoData) ? clientesporRepartoData : []);
-      setClientes(Array.isArray(clientesData) ? clientesData : []);
-      setRepartos(Array.isArray(repartosData) ? repartosData : []);
-    } catch (err) {
-      console.error('Error cargando datos:', err);
-      setError(err.message || 'Error al cargar los datos');
-      setClientesporReparto([]);
-      setClientes([]);
-      setRepartos([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Aplicar filtros
-  const loadFilteredData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const filters = {};
-      if (filterReparto) filters.reparto = filterReparto;
-      if (filterCliente) filters.cliente = filterCliente;
-      
-      const data = await clientesporRepartoApi.getAll(filters);
-      setClientesporReparto(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Error aplicando filtros:', err);
-      setError(err.message || 'Error al filtrar los datos');
-      setClientesporReparto([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  // Aplicar filtros cuando cambien
-  useEffect(() => {
-    if (filterReparto || filterCliente) {
-      loadFilteredData();
-    } else {
-      loadData();
-    }
-  }, [filterReparto, filterCliente]);
 
   // Manejar envío del formulario
   const handleSubmit = async (e) => {
@@ -103,14 +74,15 @@ export default function ClientesporRepartoList() {
       
       if (editingItem) {
         // Para edición, mantener el comportamiento original
-        await clientesporRepartoApi.update(editingItem.id, {
+        await updateClienteRepartoMutation.mutateAsync({
+          ...editingItem,
           reparto_id: formData.reparto_id,
           cliente_id: selectedClients[0] // Tomar el primer cliente seleccionado
         });
       } else {
         // Para crear, hacer múltiples asignaciones
         const promises = selectedClients.map(clienteId => 
-          clientesporRepartoApi.create({
+          createClienteRepartoMutation.mutateAsync({
             reparto_id: formData.reparto_id,
             cliente_id: clienteId
           })
@@ -119,9 +91,8 @@ export default function ClientesporRepartoList() {
       }
       
       handleCancel();
-      loadData();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Error en la operación');
     }
   };
 
@@ -139,10 +110,9 @@ export default function ClientesporRepartoList() {
   const handleDelete = async (id) => {
     if (window.confirm('¿Está seguro de que desea eliminar esta asignación?')) {
       try {
-        await clientesporRepartoApi.delete(id);
-        loadData();
+        await deleteClienteRepartoMutation.mutateAsync(id);
       } catch (err) {
-        setError(err.message);
+        setError(err.message || 'Error eliminando la asignación');
       }
     }
   };
@@ -203,8 +173,16 @@ export default function ClientesporRepartoList() {
     return groups;
   }, {}) : {};
 
-  if (loading) return <div className="text-center py-4"><Spinner animation="border" /> Cargando asignaciones de clientes...</div>;
-  if (error) return <Alert variant="danger">Error: {error}</Alert>;
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center py-5">
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" className="mb-3" />
+          <p className="text-muted">Cargando asignaciones de clientes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Container fluid className="py-4">
@@ -225,12 +203,14 @@ export default function ClientesporRepartoList() {
                       <Button
                         variant={viewMode === 'table' ? 'primary' : 'outline-primary'}
                         onClick={() => setViewMode('table')}
+                        size="sm"
                       >
                         Vista Tabla
                       </Button>
                       <Button
                         variant={viewMode === 'grouped' ? 'primary' : 'outline-primary'}
                         onClick={() => setViewMode('grouped')}
+                        size="sm"
                       >
                         Vista Agrupada
                       </Button>
@@ -238,6 +218,7 @@ export default function ClientesporRepartoList() {
                     <Button
                       variant={showForm ? 'outline-secondary' : 'primary'}
                       onClick={() => setShowForm(!showForm)}
+                      disabled={isLoading}
                     >
                       <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
                       {showForm ? 'Cancelar' : 'Agregar Asignación'}
@@ -259,8 +240,8 @@ export default function ClientesporRepartoList() {
                 onChange={(e) => setFilterReparto(e.target.value)}
               >
                 <option value="">Todos los repartos</option>
-                {repartos.map(reparto => (
-                  <option key={reparto.id} value={reparto.id}>
+                {repartos.map((reparto, index) => (
+                  <option key={`reparto-filter-${reparto.id || index}`} value={reparto.id}>
                     {reparto.dia_descripcion} - {reparto.camion_descripcion}
                   </option>
                 ))}
@@ -274,8 +255,8 @@ export default function ClientesporRepartoList() {
                 onChange={(e) => setFilterCliente(e.target.value)}
               >
                 <option value="">Todos los clientes</option>
-                {clientes.map(cliente => (
-                  <option key={cliente.id} value={cliente.id}>
+                {clientes.map((cliente, index) => (
+                  <option key={`cliente-filter-${cliente.id || index}`} value={cliente.id}>
                     {cliente.nombre || cliente.Nombre || 'Sin nombre'} - {cliente.razon || cliente.Razon || 'Sin razón social'}
                   </option>
                 ))}
@@ -308,9 +289,9 @@ export default function ClientesporRepartoList() {
                       </td>
                     </tr>
                   ) : (
-                    clientesporReparto.map((item) => (
-                      <tr key={item.id}>
-                        <td>{item.id}</td>
+                    clientesporReparto.map((item, index) => (
+                      <tr key={`asignacion-${item.id || index}-${item.cliente_id || ''}-${item.reparto_id || ''}`}>
+                        <td>{item.id || 'N/A'}</td>
                         <td>
                           <span className="badge bg-info">{item.dia_descripcion}</span>
                         </td>
@@ -331,6 +312,7 @@ export default function ClientesporRepartoList() {
                               <Button
                                 variant="outline-warning"
                                 onClick={() => handleEdit(item)}
+                                disabled={updateClienteRepartoMutation.isPending || deleteClienteRepartoMutation.isPending}
                               >
                                 <i className="bi bi-pencil"></i>
                               </Button>
@@ -342,8 +324,13 @@ export default function ClientesporRepartoList() {
                               <Button
                                 variant="outline-danger"
                                 onClick={() => handleDelete(item.id)}
+                                disabled={updateClienteRepartoMutation.isPending || deleteClienteRepartoMutation.isPending}
                               >
-                                <i className="bi bi-trash"></i>
+                                {deleteClienteRepartoMutation.isPending && deleteClienteRepartoMutation.variables === item.id ? (
+                                  <Spinner animation="border" size="sm" />
+                                ) : (
+                                  <i className="bi bi-trash"></i>
+                                )}
                               </Button>
                             </OverlayTrigger>
                           </ButtonGroup>
@@ -374,8 +361,8 @@ export default function ClientesporRepartoList() {
                       <div className="card-body">
                         <h6>Clientes Asignados ({data.clientes.length}):</h6>
                         <ul className="list-group list-group-flush">
-                          {data.clientes.map((cliente) => (
-                            <li key={cliente.id} className="list-group-item d-flex justify-content-between align-items-start px-0">
+                          {data.clientes.map((cliente, index) => (
+                            <li key={`cliente-reparto-${cliente.id || index}-${data.id || ''}`} className="list-group-item d-flex justify-content-between align-items-start px-0">
                               <div className="flex-grow-1">
                                 <div className="fw-bold">{cliente.cliente_nombre}</div>
                                 <small className="text-muted">{cliente.cliente_razonsocial}</small>
@@ -395,6 +382,7 @@ export default function ClientesporRepartoList() {
                                     variant="outline-warning"
                                     size="sm"
                                     onClick={() => handleEdit(cliente)}
+                                    disabled={updateClienteRepartoMutation.isPending || deleteClienteRepartoMutation.isPending}
                                   >
                                     <i className="bi bi-pencil"></i>
                                   </Button>
@@ -407,8 +395,13 @@ export default function ClientesporRepartoList() {
                                     variant="outline-danger"
                                     size="sm"
                                     onClick={() => handleDelete(cliente.id)}
+                                    disabled={updateClienteRepartoMutation.isPending || deleteClienteRepartoMutation.isPending}
                                   >
-                                    <i className="bi bi-trash"></i>
+                                    {deleteClienteRepartoMutation.isPending && deleteClienteRepartoMutation.variables === cliente.id ? (
+                                      <Spinner animation="border" size="sm" />
+                                    ) : (
+                                      <i className="bi bi-trash"></i>
+                                    )}
                                   </Button>
                                 </OverlayTrigger>
                               </ButtonGroup>
@@ -432,7 +425,11 @@ export default function ClientesporRepartoList() {
             </Modal.Header>
             <Form onSubmit={handleSubmit}>
               <Modal.Body>
-                {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
+                {(error || clientesporRepartoError) && (
+                  <Alert variant="danger" className="mb-3">
+                    {error || clientesporRepartoError?.message || 'Error desconocido'}
+                  </Alert>
+                )}
                 
                 <Row>
                   <Col md={12}>
@@ -444,8 +441,8 @@ export default function ClientesporRepartoList() {
                         required
                       >
                         <option value="">Seleccionar reparto</option>
-                        {repartos.map(reparto => (
-                          <option key={reparto.id} value={reparto.id}>
+                        {repartos.map((reparto, index) => (
+                          <option key={`reparto-form-${reparto.id || index}`} value={reparto.id}>
                             {reparto.dia_descripcion} - {reparto.camion_descripcion}
                           </option>
                         ))}
@@ -506,16 +503,16 @@ export default function ClientesporRepartoList() {
                             {searchClient ? 'No se encontraron clientes' : 'No hay clientes disponibles'}
                           </div>
                         ) : (
-                          filteredClients.map(cliente => (
-                            <div key={cliente.id} className="form-check py-1">
+                          filteredClients.map((cliente, index) => (
+                            <div key={`cliente-checkbox-${cliente.id || index}`} className="form-check py-1">
                               <input
                                 className="form-check-input"
                                 type="checkbox"
-                                id={`cliente-${cliente.id}`}
+                                id={`cliente-${cliente.id || index}`}
                                 checked={selectedClients.includes(cliente.id)}
                                 onChange={(e) => handleClientSelect(cliente.id, e.target.checked)}
                               />
-                              <label className="form-check-label" htmlFor={`cliente-${cliente.id}`}>
+                              <label className="form-check-label" htmlFor={`cliente-${cliente.id || index}`}>
                                 <div>
                                   <strong>{cliente.Nombre || 'Sin nombre'}</strong>
                                   {cliente.Razon && (
@@ -544,15 +541,26 @@ export default function ClientesporRepartoList() {
                 </Row>
               </Modal.Body>
               <Modal.Footer>
-                <Button variant="secondary" onClick={handleCancel}>
+                <Button 
+                  variant="secondary" 
+                  onClick={handleCancel}
+                  disabled={createClienteRepartoMutation.isPending || updateClienteRepartoMutation.isPending}
+                >
                   Cancelar
                 </Button>
                 <Button 
                   type="submit" 
                   variant="primary"
-                  disabled={!formData.reparto_id || selectedClients.length === 0}
+                  disabled={!formData.reparto_id || selectedClients.length === 0 || createClienteRepartoMutation.isPending || updateClienteRepartoMutation.isPending}
                 >
-                  {editingItem ? 'Actualizar' : `Crear ${selectedClients.length} asignación${selectedClients.length !== 1 ? 'es' : ''}`}
+                  {(createClienteRepartoMutation.isPending || updateClienteRepartoMutation.isPending) ? (
+                    <>
+                      <Spinner animation="border" size="sm" className="me-1" />
+                      {editingItem ? 'Actualizando...' : 'Creando...'}
+                    </>
+                  ) : (
+                    editingItem ? 'Actualizar' : `Crear ${selectedClients.length} asignación${selectedClients.length !== 1 ? 'es' : ''}`
+                  )}
                 </Button>
               </Modal.Footer>
             </Form>

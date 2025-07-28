@@ -1,24 +1,32 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip, Pagination } from 'react-bootstrap';
 import dynamic from 'next/dynamic';
-import { clientApi, handleApiError } from '../../lib/api.js';
+import { handleApiError } from '../../lib/api.js';
+import { useClients, useCreateClient, useUpdateClient, useDeleteClient } from '../../hooks/useClients';
+import LocationPickerMap from './LocationPickerMap.jsx';
 
 // Importar el mapa de forma dinámica para evitar errores de SSR
-const MapComponent = dynamic(() => import('./MapComponent.jsx'), {
+const MapComponent = dynamic(() => import('./ClientMapComponent.jsx'), {
   ssr: false,
   loading: () => <div className="text-center p-4"><Spinner animation="border" /></div>
 });
 
-const LocationPickerMap = dynamic(() => import('./LocationPickerMap.jsx'), {
-  ssr: false,
-  loading: () => <div className="text-center p-2"><Spinner animation="border" size="sm" /></div>
-});
-
 const ClientList = () => {
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // React Query hooks
+  const { 
+    data: clients = [], 
+    isLoading, 
+    error: queryError, 
+    refetch 
+  } = useClients();
+  
+  const createClientMutation = useCreateClient();
+  const updateClientMutation = useUpdateClient();
+  const deleteClientMutation = useDeleteClient();
+
+  // Estados locales para el formulario y UI
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -42,36 +50,21 @@ const ClientList = () => {
   const [showMap, setShowMap] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
 
-  // Cargar clientes al montar el componente
-  useEffect(() => {
-    loadClients();
-  }, []);
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
-  const loadClients = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const clients = await clientApi.getAll();
-      
-      // clientApi.getAll() ya devuelve directamente el array de clientes
-      setClients(Array.isArray(clients) ? clients : []);
-      
-    } catch (error) {
-      console.error('Error cargando clientes:', error);
-      setError(handleApiError(error));
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Combinar errores de React Query con errores locales
+  const combinedError = queryError || error;
 
-  // Manejar cambios en el formulario
-  const handleInputChange = (e) => {
+  // Manejar cambios en el formulario - Optimizado con useCallback
+  const handleInputChange = useCallback((e) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: type === 'number' ? parseFloat(value) || 0 : value
     }));
-  };
+  }, []);
 
   // Manejar envío del formulario
   const handleSubmit = async (e) => {
@@ -88,34 +81,27 @@ const ClientList = () => {
     }
 
     try {
-      setLoading(true);
       setError('');
+      setSuccess('');
       
-      let response;
       if (editingClient) {
-        response = await clientApi.update({ ...formData, id: editingClient.id });
+        await updateClientMutation.mutateAsync({ ...formData, id: editingClient.id });
         setSuccess('Cliente actualizado exitosamente');
       } else {
-        response = await clientApi.create(formData);
+        await createClientMutation.mutateAsync(formData);
         setSuccess('Cliente creado exitosamente');
       }
 
-      if (response.success) {
-        resetForm();
-        await loadClients();
-      } else {
-        throw new Error(response.error || 'Error en la operación');
-      }
+      resetForm();
+      
     } catch (error) {
       console.error('Error:', error);
       setError(handleApiError(error));
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Resetear formulario
-  const resetForm = () => {
+  // Resetear formulario - Optimizado con useCallback
+  const resetForm = useCallback(() => {
     setFormData({
       Codigo: '',
       Razon: '',
@@ -129,10 +115,10 @@ const ClientList = () => {
     });
     setEditingClient(null);
     setShowForm(false);
-  };
+  }, []);
 
-  // Editar cliente
-  const handleEdit = (client) => {
+  // Editar cliente - Optimizado con useCallback
+  const handleEdit = useCallback((client) => {
     setFormData({
       Codigo: client.Codigo || '',
       Razon: client.Razon || '',
@@ -146,43 +132,43 @@ const ClientList = () => {
     });
     setEditingClient(client);
     setShowForm(true);
-  };
+  }, []);
 
-  // Eliminar cliente
-  const handleDelete = async (id, nombre) => {
+  // Eliminar cliente - Optimizado con useCallback
+  const handleDelete = useCallback(async (id, nombre) => {
     if (!window.confirm(`¿Está seguro de eliminar el cliente "${nombre}"?`)) {
       return;
     }
 
     try {
-      setLoading(true);
       setError('');
+      setSuccess('');
       
-      const response = await clientApi.delete(id);
+      await deleteClientMutation.mutateAsync(id);
+      setSuccess('Cliente eliminado exitosamente');
       
-      if (response.success) {
-        setSuccess('Cliente eliminado exitosamente');
-        await loadClients();
-      } else {
-        throw new Error(response.error || 'Error eliminando cliente');
-      }
     } catch (error) {
       console.error('Error:', error);
       setError(handleApiError(error));
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [deleteClientMutation]);
 
-  // Filtrar y ordenar clientes
-  const getFilteredAndSortedClients = () => {
-    let filtered = clients.filter(client => 
-      (client.Nombre && client.Nombre.toLowerCase().includes(filterText.toLowerCase())) ||
-      (client.Razon && client.Razon.toLowerCase().includes(filterText.toLowerCase())) ||
-      (client.Ruc && client.Ruc.toLowerCase().includes(filterText.toLowerCase())) ||
-      (client.Codigo && client.Codigo.toLowerCase().includes(filterText.toLowerCase()))
-    );
+  // Filtrar y ordenar clientes - Optimizado con useMemo
+  const filteredAndSortedClients = useMemo(() => {
+    if (!clients || clients.length === 0) return [];
+    
+    // Primero filtrar
+    let filtered = clients.filter(client => {
+      const searchText = filterText.toLowerCase();
+      return (
+        (client.Nombre && client.Nombre.toLowerCase().includes(searchText)) ||
+        (client.Razon && client.Razon.toLowerCase().includes(searchText)) ||
+        (client.Ruc && client.Ruc.toLowerCase().includes(searchText)) ||
+        (client.Codigo && client.Codigo.toLowerCase().includes(searchText))
+      );
+    });
 
+    // Luego ordenar
     filtered.sort((a, b) => {
       let aValue = a[sortField] || '';
       let bValue = b[sortField] || '';
@@ -200,27 +186,39 @@ const ClientList = () => {
     });
 
     return filtered;
-  };
+  }, [clients, filterText, sortField, sortDirection]);
 
-  // Manejar ordenamiento
-  const handleSort = (field) => {
+  // Calcular datos de paginación
+  const totalPages = Math.ceil(filteredAndSortedClients.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentClients = filteredAndSortedClients.slice(startIndex, endIndex);
+
+  // Resetear página al cambiar filtro
+  const handleFilterChange = useCallback((e) => {
+    setFilterText(e.target.value);
+    setCurrentPage(1); // Resetear a la primera página
+  }, []);
+
+  // Manejar ordenamiento - Optimizado con useCallback
+  const handleSort = useCallback((field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
       setSortDirection('asc');
     }
-  };
+  }, [sortField, sortDirection]);
 
-  const handleShowMap = (client) => {
+  const handleShowMap = useCallback((client) => {
     setSelectedClient(client);
     setShowMap(true);
-  };
+  }, []);
 
-  const handleCloseMap = () => {
+  const handleCloseMap = useCallback(() => {
     setShowMap(false);
     setSelectedClient(null);
-  };
+  }, []);
 
   const handleLocationChange = (coordinates) => {
     setFormData(prev => ({
@@ -230,7 +228,22 @@ const ClientList = () => {
     }));
   };
 
-  const filteredClients = getFilteredAndSortedClients();
+  // Usar los clientes filtrados y ordenados con paginación
+  const filteredClients = currentClients;
+
+  // Mostrar loading inicial
+  if (isLoading) {
+    return (
+      <Container fluid className="py-4">
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
+          <div className="text-center">
+            <Spinner animation="border" variant="primary" className="mb-3" />
+            <p className="text-muted">Cargando clientes...</p>
+          </div>
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <Container fluid className="py-4">
@@ -249,7 +262,7 @@ const ClientList = () => {
                   <Button 
                     variant={showForm ? 'outline-secondary' : 'primary'}
                     onClick={() => setShowForm(!showForm)}
-                    disabled={loading}
+                    disabled={isLoading || createClientMutation.isPending || updateClientMutation.isPending}
                   >
                     <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
                     {showForm ? 'Cancelar' : 'Agregar Cliente'}
@@ -260,10 +273,10 @@ const ClientList = () => {
 
             <Card.Body>
               {/* Mensajes */}
-              {error && (
+              {combinedError && (
                 <div className="alert alert-danger alert-dismissible fade show" role="alert">
                   <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                  {error}
+                  {typeof combinedError === 'string' ? combinedError : handleApiError(combinedError)}
                   <button type="button" className="btn-close" onClick={() => setError('')}></button>
                 </div>
               )}
@@ -416,8 +429,19 @@ const ClientList = () => {
                       </div>
 
                       <div className="d-flex gap-2">
-                        <button type="submit" className="btn btn-primary" disabled={loading}>
-                          {loading ? 'Procesando...' : editingClient ? 'Actualizar' : 'Crear'}
+                        <button 
+                          type="submit" 
+                          className="btn btn-primary" 
+                          disabled={createClientMutation.isPending || updateClientMutation.isPending}
+                        >
+                          {(createClientMutation.isPending || updateClientMutation.isPending) ? (
+                            <>
+                              <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                              {editingClient ? 'Actualizando...' : 'Creando...'}
+                            </>
+                          ) : (
+                            editingClient ? 'Actualizar' : 'Crear'
+                          )}
                         </button>
                         <button type="button" className="btn btn-secondary" onClick={resetForm}>
                           Cancelar
@@ -436,26 +460,26 @@ const ClientList = () => {
                     className="form-control"
                     placeholder="Buscar por nombre, razón social, RUT o código..."
                     value={filterText}
-                    onChange={(e) => setFilterText(e.target.value)}
+                    onChange={handleFilterChange}
                   />
                 </div>
                 <div className="col-md-6 text-end">
                   <small className="text-muted">
-                    Mostrando {filteredClients.length} de {clients.length} clientes
+                    Mostrando {startIndex + 1}-{Math.min(endIndex, filteredAndSortedClients.length)} de {filteredAndSortedClients.length} clientes filtrados ({clients.length} total)
                   </small>
                 </div>
               </div>
 
               {/* Tabla de Clientes */}
               <div className="table-responsive">
-                <table className="table table-hover table-striped">
+                <table className="table table-hover table-striped w-100">
                   <thead className="table-light">
                     <tr>
                       <th 
                         scope="col" 
                         className="cursor-pointer" 
                         onClick={() => handleSort('id')}
-                        style={{cursor: 'pointer'}}
+                        style={{cursor: 'pointer', width: '4%', minWidth: '45px'}}
                       >
                         ID {sortField === 'id' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
@@ -463,7 +487,7 @@ const ClientList = () => {
                         scope="col" 
                         className="cursor-pointer" 
                         onClick={() => handleSort('Codigo')}
-                        style={{cursor: 'pointer'}}
+                        style={{cursor: 'pointer', width: '8%', minWidth: '75px'}}
                       >
                         Código {sortField === 'Codigo' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
@@ -471,7 +495,7 @@ const ClientList = () => {
                         scope="col" 
                         className="cursor-pointer" 
                         onClick={() => handleSort('Nombre')}
-                        style={{cursor: 'pointer'}}
+                        style={{cursor: 'pointer', width: '17%', minWidth: '130px'}}
                       >
                         Nombre {sortField === 'Nombre' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
@@ -479,16 +503,16 @@ const ClientList = () => {
                         scope="col" 
                         className="cursor-pointer" 
                         onClick={() => handleSort('Razon')}
-                        style={{cursor: 'pointer'}}
+                        style={{cursor: 'pointer', width: '17%', minWidth: '130px'}}
                       >
                         Razón Social {sortField === 'Razon' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
-                      <th scope="col">Dirección</th>
-                      <th scope="col">Teléfono</th>
-                      <th scope="col">RUT</th>
-                      <th scope="col">Estado</th>
-                      <th scope="col">Ubicación</th>
-                      <th scope="col">Acciones</th>
+                      <th scope="col" style={{width: '22%', minWidth: '150px'}}>Dirección</th>
+                      <th scope="col" style={{width: '11%', minWidth: '95px'}}>Teléfono</th>
+                      <th scope="col" style={{width: '12%', minWidth: '105px'}}>RUT</th>
+                      <th scope="col" style={{width: '6%', minWidth: '65px'}}>Estado</th>
+                      <th scope="col" style={{width: '4%', minWidth: '65px'}}>Ubicación</th>
+                      <th scope="col" style={{width: '9%', minWidth: '105px'}}>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -509,23 +533,23 @@ const ClientList = () => {
                         </td>
                       </tr>
                     ) : (
-                      filteredClients.map((client) => (
-                        <tr key={client.id}>
-                          <td><span className="badge bg-secondary">{client.id}</span></td>
-                          <td>{client.Codigo || '-'}</td>
-                          <td><strong>{client.Nombre}</strong></td>
-                          <td>{client.Razon || '-'}</td>
-                          <td className="text-truncate" style={{maxWidth: '200px'}} title={client.Direccion}>
+                      filteredClients.map((client, index) => (
+                        <tr key={`client-${client.id || index}-${client.Nombre?.slice(0, 10) || 'unknown'}`}>
+                          <td style={{width: '4%', minWidth: '45px'}}><span className="badge bg-secondary">{client.id || 'N/A'}</span></td>
+                          <td style={{width: '8%', minWidth: '75px'}}><small>{client.Codigo || '-'}</small></td>
+                          <td style={{width: '17%', minWidth: '130px'}}><strong>{client.Nombre || 'Sin nombre'}</strong></td>
+                          <td style={{width: '17%', minWidth: '130px'}}>{client.Razon || '-'}</td>
+                          <td className="text-truncate" style={{width: '22%', minWidth: '150px'}} title={client.Direccion}>
                             {client.Direccion || '-'}
                           </td>
-                          <td>{client.Telefono1 || '-'}</td>
-                          <td>{client.Ruc || '-'}</td>
-                          <td>
+                          <td style={{width: '11%', minWidth: '95px'}}><small>{client.Telefono1 || '-'}</small></td>
+                          <td style={{width: '12%', minWidth: '105px'}}><small>{client.Ruc || '-'}</small></td>
+                          <td style={{width: '6%', minWidth: '65px'}}>
                             <span className={`badge ${client.Activo ? 'bg-success' : 'bg-danger'}`}>
                               {client.Activo ? 'Activo' : 'Inactivo'}
                             </span>
                           </td>
-                          <td className="text-center">
+                          <td className="text-center" style={{width: '4%', minWidth: '65px'}}>
                             {client.Coordenada_x && client.Coordenada_y ? (
                               <Button
                                 variant="success"
@@ -550,7 +574,7 @@ const ClientList = () => {
                               </Button>
                             )}
                           </td>
-                          <td>
+                          <td style={{width: '9%', minWidth: '105px'}}>
                             <ButtonGroup>
                               <OverlayTrigger
                                 placement="top"
@@ -560,7 +584,7 @@ const ClientList = () => {
                                   onClick={() => handleEdit(client)}
                                   variant="outline-primary"
                                   size="sm"
-                                  disabled={loading}
+                                  disabled={isLoading || createClientMutation.isPending || updateClientMutation.isPending}
                                 >
                                   <i className="bi bi-pencil"></i>
                                 </Button>
@@ -573,9 +597,13 @@ const ClientList = () => {
                                   onClick={() => handleDelete(client.id, client.Nombre)}
                                   variant="outline-danger"
                                   size="sm"
-                                  disabled={loading}
+                                  disabled={deleteClientMutation.isPending}
                                 >
-                                  <i className="bi bi-trash"></i>
+                                  {deleteClientMutation.isPending && deleteClientMutation.variables === client.id ? (
+                                    <div className="spinner-border spinner-border-sm" role="status"></div>
+                                  ) : (
+                                    <i className="bi bi-trash"></i>
+                                  )}
                                 </Button>
                               </OverlayTrigger>
                             </ButtonGroup>
@@ -586,6 +614,60 @@ const ClientList = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Paginación */}
+              {totalPages > 1 && (
+                <div className="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                  <div className="pagination-info">
+                    <small className="text-muted">
+                      Página {currentPage} de {totalPages} • Total: {filteredAndSortedClients.length} clientes
+                    </small>
+                  </div>
+                  <Pagination className="mb-0">
+                    <Pagination.First 
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                    />
+                    <Pagination.Prev 
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    />
+                    
+                    {/* Páginas numéricas */}
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <Pagination.Item
+                          key={pageNum}
+                          active={pageNum === currentPage}
+                          onClick={() => setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </Pagination.Item>
+                      );
+                    })}
+                    
+                    <Pagination.Next 
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    />
+                    <Pagination.Last 
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                    />
+                  </Pagination>
+                </div>
+              )}
             </Card.Body>
           </Card>
         </Col>
