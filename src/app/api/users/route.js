@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import DatabaseAdapter from '../../../lib/database/adapter.js';
+import { prisma } from '../../../lib/prisma.js';
 import { requireAuth } from '../../../lib/apiAuth.js';
 
 // GET - Obtener todos los usuarios
@@ -9,15 +9,22 @@ export async function GET(request) {
   if (authError) return authError;
 
   try {
-    const db = new DatabaseAdapter();
-    const dbInfo = db.getDatabaseInfo();
-    const users = await db.getAllUsers();
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        usuario: true,
+        created_at: true,
+        updated_at: true
+      },
+      orderBy: {
+        created_at: 'desc'
+      }
+    });
 
     return NextResponse.json({
       success: true,
       users,
-      total: users.length,
-      database: dbInfo
+      total: users.length
     });
   } catch (error) {
     console.error('Error obteniendo usuarios:', error);
@@ -91,21 +98,23 @@ export async function POST(request) {
       );
     }
 
-    const db = new DatabaseAdapter();
-    
     try {
-      const newUser = await db.createUser(userData);
+      const newUser = await prisma.user.create({
+        data: userData,
+        select: {
+          id: true,
+          usuario: true,
+          created_at: true
+        }
+      });
+      
       return NextResponse.json({
         success: true,
-        user: {
-          id: newUser.id,
-          usuario: newUser.usuario,
-          created_at: newUser.created_at
-        },
+        user: newUser,
         message: 'Usuario creado exitosamente'
       });
     } catch (dbError) {
-      if (dbError.message && dbError.message.includes('UNIQUE constraint failed')) {
+      if (dbError.code === 'P2002') {
         return NextResponse.json(
           { success: false, error: 'El usuario ya existe' },
           { status: 409 }
@@ -164,27 +173,30 @@ export async function PUT(request) {
     if (data.usuario) updateData.usuario = data.usuario.toLowerCase().trim();
     if (data.password) updateData.password = data.password;
 
-    const db = new DatabaseAdapter();
-    
     try {
-      const updatedUser = await db.updateUser(data.id, updateData);
+      const updatedUser = await prisma.user.update({
+        where: { id: parseInt(data.id) },
+        data: updateData,
+        select: {
+          id: true,
+          usuario: true,
+          updated_at: true
+        }
+      });
+      
       return NextResponse.json({
         success: true,
-        user: {
-          id: updatedUser.id,
-          usuario: updatedUser.usuario,
-          updated_at: updatedUser.updated_at
-        },
+        user: updatedUser,
         message: 'Usuario actualizado exitosamente'
       });
     } catch (dbError) {
-      if (dbError.message && dbError.message.includes('UNIQUE constraint failed')) {
+      if (dbError.code === 'P2002') {
         return NextResponse.json(
           { success: false, error: 'El usuario ya existe' },
           { status: 409 }
         );
       }
-      if (dbError.message && dbError.message.includes('not found')) {
+      if (dbError.code === 'P2025') {
         return NextResponse.json(
           { success: false, error: 'Usuario no encontrado' },
           { status: 404 }
@@ -218,16 +230,17 @@ export async function DELETE(request) {
       );
     }
 
-    const db = new DatabaseAdapter();
-    
     try {
-      await db.deleteUser(id);
+      await prisma.user.delete({
+        where: { id: parseInt(id) }
+      });
+      
       return NextResponse.json({
         success: true,
         message: 'Usuario eliminado exitosamente'
       });
     } catch (dbError) {
-      if (dbError.message && dbError.message.includes('not found')) {
+      if (dbError.code === 'P2025') {
         return NextResponse.json(
           { success: false, error: 'Usuario no encontrado' },
           { status: 404 }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import DatabaseAdapter from '../../../lib/database/adapter.js';
+import { prisma } from '../../../lib/prisma.js';
 
 // GET - Obtener todos los camiones
 export async function GET(request) {
@@ -9,66 +9,23 @@ export async function GET(request) {
   if (authError) return authError;
 
   try {
-    const db = new DatabaseAdapter();
-    
-    // Intentar obtener camiones
-    try {
-      const trucks = await db.getAllTrucks();
-      
-      // Si no hay camiones, retornar array vacío
-      // (comentado para evitar auto-generación de datos)
-      /*
-      if (trucks.length === 0) {
-        await db.seedInitialTrucks();
-        const newTrucks = await db.getAllTrucks();
-        return NextResponse.json({
-          success: true,
-          trucks: newTrucks,
-          total: newTrucks.length,
-          source: process.env.NODE_ENV === 'production' ? 'turso' : 'sqlite'
-        });
+    const trucks = await prisma.truck.findMany({
+      orderBy: {
+        created_at: 'desc'
       }
-      */
-      
-      return NextResponse.json({
-        success: true,
-        trucks,
-        total: trucks.length,
-        source: process.env.NODE_ENV === 'production' ? 'turso' : 'sqlite'
-      });
-    } catch (dbError) {
-      console.error('Error con la base de datos, usando fallback:', dbError);
-      
-      // Fallback a datos por defecto si SQLite falla
-      const fallbackTrucks = [
-        {
-          id: 1,
-          description: 'Camión de carga básico',
-          brand: 'Ford',
-          model: 'Cargo',
-          year: 2020,
-          license_plate: 'ABC-123',
-          capacity: '15 toneladas',
-          status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ];
-      
-      return NextResponse.json({
-        success: true,
-        trucks: fallbackTrucks,
-        total: fallbackTrucks.length,
-        source: 'fallback',
-        warning: 'Base de datos no disponible, usando datos de fallback'
-      });
-    }
+    });
+    
+    return NextResponse.json({
+      success: true,
+      trucks,
+      total: trucks.length
+    });
   } catch (error) {
-    console.error('Error al obtener camiones:', error);
-    return NextResponse.json(
-      { success: false, error: 'Error al obtener camiones', details: error.message },
-      { status: 500 }
-    );
+    console.error('Error obteniendo camiones:', error);
+    return NextResponse.json({
+      success: false,
+      error: error.message
+    }, { status: 500 });
   }
 }
 
@@ -108,28 +65,27 @@ export async function POST(request) {
       }
     }
 
-    const db = new DatabaseAdapter();
-    
     try {
-      const newTruck = await db.createTruck(truckData);
+      const newTruck = await prisma.truck.create({
+        data: truckData
+      });
+      
       return NextResponse.json({
         success: true,
         truck: newTruck,
         message: 'Camión creado exitosamente'
       });
     } catch (dbError) {
-      console.error('Error con la base de datos al crear camión:', dbError);
-      
-      // Si hay error de placa duplicada
-      if (dbError.message && dbError.message.includes('UNIQUE constraint failed')) {
+      if (dbError.code === 'P2002' && dbError.meta?.target?.includes('license_plate')) {
         return NextResponse.json(
           { success: false, error: 'Ya existe un camión con esa placa' },
           { status: 409 }
         );
       }
       
+      console.error('Error creando camión:', dbError);
       return NextResponse.json(
-        { success: false, error: 'Error al crear camión en la base de datos' },
+        { success: false, error: 'Error al crear camión' },
         { status: 500 }
       );
     }
@@ -176,17 +132,11 @@ export async function PUT(request) {
       }
     }
 
-    const db = new DatabaseAdapter();
-    
     try {
-      const updatedTruck = await db.updateTruck(truckData.id, truckData);
-      
-      if (!updatedTruck) {
-        return NextResponse.json(
-          { success: false, error: 'Camión no encontrado' },
-          { status: 404 }
-        );
-      }
+      const updatedTruck = await prisma.truck.update({
+        where: { id: parseInt(truckData.id) },
+        data: truckData
+      });
 
       return NextResponse.json({
         success: true,
@@ -194,12 +144,16 @@ export async function PUT(request) {
         message: 'Camión actualizado exitosamente'
       });
     } catch (dbError) {
-      console.error('Error con la base de datos al actualizar camión:', dbError);
-      
-      if (dbError.message && dbError.message.includes('UNIQUE constraint failed')) {
+      if (dbError.code === 'P2002' && dbError.meta?.target?.includes('license_plate')) {
         return NextResponse.json(
           { success: false, error: 'Ya existe un camión con esa placa' },
           { status: 409 }
+        );
+      }
+      if (dbError.code === 'P2025') {
+        return NextResponse.json(
+          { success: false, error: 'Camión no encontrado' },
+          { status: 404 }
         );
       }
       
@@ -236,25 +190,26 @@ export async function DELETE(request) {
       );
     }
 
-    const db = new DatabaseAdapter();
-    
     try {
-      const deleted = await db.deleteTruck(id);
-      
-      if (!deleted) {
-        return NextResponse.json(
-          { success: false, error: 'Camión no encontrado' },
-          { status: 404 }
-        );
-      }
+      await prisma.truck.delete({
+        where: { id: parseInt(id) }
+      });
 
       return NextResponse.json({
         success: true,
         message: 'Camión eliminado exitosamente'
       });
     } catch (dbError) {
+      if (dbError.code === 'P2025') {
+        return NextResponse.json(
+          { success: false, error: 'Camión no encontrado' },
+          { status: 404 }
+        );
+      }
+      
+      console.error('Error eliminando camión:', dbError);
       return NextResponse.json(
-        { success: false, error: 'Error al eliminar camión de la base de datos', details: dbError.message },
+        { success: false, error: 'Error al eliminar camión' },
         { status: 500 }
       );
     }

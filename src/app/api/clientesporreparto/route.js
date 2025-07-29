@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import DatabaseAdapter from '../../../lib/database/adapter.js';
+import { prisma } from '../../../lib/prisma.js';
 import { validateCreateClienteporRepartoData } from '../../../types/index.js';
 
 // GET - Obtener todos los clientes por reparto
@@ -14,73 +14,56 @@ export async function GET(request) {
     const reparto = searchParams.get('reparto');
     const cliente = searchParams.get('cliente');
 
-    try {
-      const db = new DatabaseAdapter();
-      let clientesporReparto;
-
-      if (reparto) {
-        // Obtener clientes por reparto específico
-        clientesporReparto = await db.getClientesporRepartoByReparto(parseInt(reparto));
-      } else if (cliente) {
-        // Obtener repartos por cliente específico
-        clientesporReparto = await db.getClientesporRepartoByCliente(parseInt(cliente));
-      } else {
-        // Obtener todas las asignaciones
-        clientesporReparto = await db.getAllClientesporReparto();
-      }
-
-      // Si no hay asignaciones, retornar array vacío
-      // (comentado para evitar auto-generación de datos)
-      /*
-      if (clientesporReparto.length === 0 && !reparto && !cliente) {
-        await db.seedInitialClientesporReparto();
-        const newClientesporReparto = await db.getAllClientesporReparto();
-        
-        return NextResponse.json({
-          success: true,
-          clientesporReparto: newClientesporReparto,
-          total: newClientesporReparto.length,
-          source: 'SQLite (initialized)'
-        });
-      }
-      */
-
-      return NextResponse.json({
-        success: true,
-        clientesporReparto,
-        total: clientesporReparto.length,
-        source: 'SQLite'
-      });
-    } catch (sqliteError) {
-      console.error('Error con SQLite, usando fallback:', sqliteError);
-      
-      // Fallback a datos estáticos si SQLite falla
-      const fallbackClientesporReparto = [
-        {
-          id: 1,
-          reparto_id: 1,
-          cliente_id: 1,
-          dia_descripcion: 'Lunes',
-          camion_descripcion: 'Camión de Reparto Principal',
-          cliente_nombre: 'Supermercados Central'
-        },
-        {
-          id: 2,
-          reparto_id: 1,
-          cliente_id: 2,
-          dia_descripcion: 'Lunes',
-          camion_descripcion: 'Camión de Reparto Principal',
-          cliente_nombre: 'Distribuidora Norte'
-        }
-      ];
-
-      return NextResponse.json({
-        success: true,
-        clientesporReparto: fallbackClientesporReparto,
-        total: fallbackClientesporReparto.length,
-        source: 'fallback'
-      });
+    let whereClause = {};
+    
+    if (reparto) {
+      whereClause.reparto_id = parseInt(reparto);
     }
+    if (cliente) {
+      whereClause.cliente_id = parseInt(cliente);
+    }
+
+    const clientesporReparto = await prisma.clienteporReparto.findMany({
+      where: whereClause,
+      include: {
+        reparto: {
+          include: {
+            diasEntrega: {
+              select: {
+                descripcion: true
+              }
+            },
+            truck: {
+              select: {
+                description: true
+              }
+            }
+          }
+        },
+        client: {
+          select: {
+            nombre: true
+          }
+        }
+      },
+      orderBy: {
+        id: 'asc'
+      }
+    });
+
+    // Transformar datos para mantener compatibilidad
+    const formattedClientesporReparto = clientesporReparto.map(item => ({
+      ...item,
+      dia_descripcion: item.reparto?.diasEntrega?.descripcion,
+      camion_descripcion: item.reparto?.truck?.description,
+      cliente_nombre: item.client?.nombre
+    }));
+
+    return NextResponse.json({
+      success: true,
+      clientesporReparto: formattedClientesporReparto,
+      total: formattedClientesporReparto.length
+    });
   } catch (error) {
     console.error('Error obteniendo clientes por reparto:', error);
     return NextResponse.json({
@@ -108,25 +91,50 @@ export async function POST(request) {
     }
 
     try {
-      const db = new DatabaseAdapter();
-      const newClienteporReparto = await db.createClienteporReparto(clienteRepartoData);
+      const newClienteporReparto = await prisma.clienteporReparto.create({
+        data: clienteRepartoData,
+        include: {
+          reparto: {
+            include: {
+              diasEntrega: {
+                select: {
+                  descripcion: true
+                }
+              },
+              truck: {
+                select: {
+                  description: true
+                }
+              }
+            }
+          },
+          client: {
+            select: {
+              nombre: true
+            }
+          }
+        }
+      });
       
       return NextResponse.json({
         success: true,
-        clienteporReparto: newClienteporReparto,
+        clienteporReparto: {
+          ...newClienteporReparto,
+          dia_descripcion: newClienteporReparto.reparto?.diasEntrega?.descripcion,
+          camion_descripcion: newClienteporReparto.reparto?.truck?.description,
+          cliente_nombre: newClienteporReparto.client?.nombre
+        },
         message: 'Cliente asignado al reparto exitosamente'
       }, { status: 201 });
-    } catch (sqliteError) {
-      console.error('Error con SQLite:', sqliteError);
-      
-      // Verificar si es un error de duplicado
-      if (sqliteError.message.includes('UNIQUE constraint failed')) {
+    } catch (dbError) {
+      if (dbError.code === 'P2002') {
         return NextResponse.json({
           success: false,
           error: 'Este cliente ya está asignado a este reparto'
         }, { status: 409 });
       }
       
+      console.error('Error creando asignación:', dbError);
       return NextResponse.json({
         success: false,
         error: 'Error interno del servidor'
@@ -158,32 +166,57 @@ export async function PUT(request) {
     }
 
     try {
-      const db = new DatabaseAdapter();
-      const updatedClienteporReparto = await db.updateClienteporReparto(id, clienteRepartoData);
+      const updatedClienteporReparto = await prisma.clienteporReparto.update({
+        where: { id: parseInt(id) },
+        data: clienteRepartoData,
+        include: {
+          reparto: {
+            include: {
+              diasEntrega: {
+                select: {
+                  descripcion: true
+                }
+              },
+              truck: {
+                select: {
+                  description: true
+                }
+              }
+            }
+          },
+          client: {
+            select: {
+              nombre: true
+            }
+          }
+        }
+      });
       
-      if (!updatedClienteporReparto) {
+      return NextResponse.json({
+        success: true,
+        clienteporReparto: {
+          ...updatedClienteporReparto,
+          dia_descripcion: updatedClienteporReparto.reparto?.diasEntrega?.descripcion,
+          camion_descripcion: updatedClienteporReparto.reparto?.truck?.description,
+          cliente_nombre: updatedClienteporReparto.client?.nombre
+        },
+        message: 'Asignación actualizada exitosamente'
+      });
+    } catch (dbError) {
+      if (dbError.code === 'P2002') {
+        return NextResponse.json({
+          success: false,
+          error: 'Este cliente ya está asignado a este reparto'
+        }, { status: 409 });
+      }
+      if (dbError.code === 'P2025') {
         return NextResponse.json({
           success: false,
           error: 'Asignación no encontrada'
         }, { status: 404 });
       }
       
-      return NextResponse.json({
-        success: true,
-        clienteporReparto: updatedClienteporReparto,
-        message: 'Asignación actualizada exitosamente'
-      });
-    } catch (sqliteError) {
-      console.error('Error con SQLite:', sqliteError);
-      
-      // Verificar si es un error de duplicado
-      if (sqliteError.message.includes('UNIQUE constraint failed')) {
-        return NextResponse.json({
-          success: false,
-          error: 'Este cliente ya está asignado a este reparto'
-        }, { status: 409 });
-      }
-      
+      console.error('Error actualizando asignación:', dbError);
       return NextResponse.json({
         success: false,
         error: 'Error interno del servidor'
@@ -216,22 +249,23 @@ export async function DELETE(request) {
     }
 
     try {
-      const db = new DatabaseAdapter();
-      const deleted = await db.deleteClienteporReparto(parseInt(id));
+      await prisma.clienteporReparto.delete({
+        where: { id: parseInt(id) }
+      });
       
-      if (!deleted) {
+      return NextResponse.json({
+        success: true,
+        message: 'Asignación eliminada exitosamente'
+      });
+    } catch (dbError) {
+      if (dbError.code === 'P2025') {
         return NextResponse.json({
           success: false,
           error: 'Asignación no encontrada'
         }, { status: 404 });
       }
       
-      return NextResponse.json({
-        success: true,
-        message: 'Asignación eliminada exitosamente'
-      });
-    } catch (sqliteError) {
-      console.error('Error con SQLite:', sqliteError);
+      console.error('Error eliminando asignación:', dbError);
       return NextResponse.json({
         success: false,
         error: 'Error interno del servidor'

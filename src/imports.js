@@ -2,8 +2,7 @@
 // Este archivo centraliza todas las importaciones comunes para evitar errores de rutas
 
 // Database
-export { default as DatabaseAdapter } from './lib/database/adapter.js';
-export { getDatabase } from './lib/database/adapter.js';
+export { prisma } from './lib/prisma.js';
 
 // Authentication
 export { requireAuth } from './lib/apiAuth.js';

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import DatabaseAdapter from '../../../../lib/database/adapter.js';
+import { prisma } from '../../../../lib/prisma.js';
 import { verifyPassword, generateToken } from '../../../../lib/auth.js';
 
 // Configurar runtime para compatibilidad con bcrypt y otras dependencias
@@ -17,11 +17,11 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    const db = new DatabaseAdapter();
-    
     try {
       // Buscar usuario por nombre de usuario
-      const user = await db.getUserByUsername(usuario);
+      const user = await prisma.user.findUnique({
+        where: { usuario }
+      });
       
       if (!user) {
         return NextResponse.json({

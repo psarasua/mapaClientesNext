@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import DatabaseAdapter from '../../../lib/database/adapter.js';
+import { prisma } from '../../../lib/prisma.js';
 import { validateCreateClientData } from '../../../types/index.js';
 
 // GET - Obtener todos los clientes
@@ -10,14 +10,14 @@ export async function GET(request) {
   if (authError) return authError;
 
   try {
-    const db = new DatabaseAdapter();
-    const clients = await db.getAllClients();
+    const clients = await prisma.client.findMany({
+      orderBy: { created_at: 'desc' }
+    });
 
     return NextResponse.json({
       success: true,
       clients,
-      total: clients.length,
-      database: db.getDatabaseInfo()
+      total: clients.length
     });
   } catch (error) {
     console.error('Error obteniendo clientes:', error);
@@ -45,22 +45,16 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    try {
-      const db = new DatabaseAdapter();
-      const newClient = await db.createClient(clientData);
-      
-      return NextResponse.json({
-        success: true,
-        client: newClient,
-        message: 'Cliente creado exitosamente'
-      }, { status: 201 });
-    } catch (sqliteError) {
-      console.error('Error con SQLite:', sqliteError);
-      return NextResponse.json({
-        success: false,
-        error: 'Error interno del servidor'
-      }, { status: 500 });
-    }
+    const newClient = await prisma.client.create({
+      data: clientData
+    });
+    
+    return NextResponse.json({
+      success: true,
+      client: newClient,
+      message: 'Cliente creado exitosamente'
+    }, { status: 201 });
+
   } catch (error) {
     console.error('Error creando cliente:', error);
     return NextResponse.json({
@@ -86,30 +80,25 @@ export async function PUT(request) {
       }, { status: 400 });
     }
 
-    try {
-      const db = new DatabaseAdapter();
-      const updatedClient = await db.updateClient(id, clientData);
-      
-      if (!updatedClient) {
-        return NextResponse.json({
-          success: false,
-          error: 'Cliente no encontrado'
-        }, { status: 404 });
-      }
-      
-      return NextResponse.json({
-        success: true,
-        client: updatedClient,
-        message: 'Cliente actualizado exitosamente'
-      });
-    } catch (sqliteError) {
-      console.error('Error con SQLite:', sqliteError);
+    const updatedClient = await prisma.client.update({
+      where: { id: parseInt(id) },
+      data: clientData
+    });
+    
+    return NextResponse.json({
+      success: true,
+      client: updatedClient,
+      message: 'Cliente actualizado exitosamente'
+    });
+
+  } catch (error) {
+    if (error.code === 'P2025') {
       return NextResponse.json({
         success: false,
-        error: 'Error interno del servidor'
-      }, { status: 500 });
+        error: 'Cliente no encontrado'
+      }, { status: 404 });
     }
-  } catch (error) {
+    
     console.error('Error actualizando cliente:', error);
     return NextResponse.json({
       success: false,
@@ -135,29 +124,23 @@ export async function DELETE(request) {
       }, { status: 400 });
     }
 
-    try {
-      const db = new DatabaseAdapter();
-      const deleted = await db.deleteClient(parseInt(id));
-      
-      if (!deleted) {
-        return NextResponse.json({
-          success: false,
-          error: 'Cliente no encontrado'
-        }, { status: 404 });
-      }
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Cliente eliminado exitosamente'
-      });
-    } catch (sqliteError) {
-      console.error('Error con SQLite:', sqliteError);
+    await prisma.client.delete({
+      where: { id: parseInt(id) }
+    });
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Cliente eliminado exitosamente'
+    });
+
+  } catch (error) {
+    if (error.code === 'P2025') {
       return NextResponse.json({
         success: false,
-        error: 'Error interno del servidor'
-      }, { status: 500 });
+        error: 'Cliente no encontrado'
+      }, { status: 404 });
     }
-  } catch (error) {
+    
     console.error('Error eliminando cliente:', error);
     return NextResponse.json({
       success: false,

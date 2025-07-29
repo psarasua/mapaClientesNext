@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import DatabaseAdapter from '../../../lib/database/adapter.js';
+import { prisma } from '../../../lib/prisma.js';
 
 // POST - Limpiar todos los datos de las tablas
 export async function POST(request) {
@@ -18,7 +18,6 @@ export async function POST(request) {
       );
     }
 
-    const db = new DatabaseAdapter();
     const results = {};
 
     // Lista de tablas por defecto si no se especifica
@@ -29,22 +28,22 @@ export async function POST(request) {
         let result;
         switch (table) {
           case 'users':
-            result = await db.clearAllUsers();
+            result = await prisma.user.deleteMany({});
             break;
           case 'clients':
-            result = await db.clearAllClients();
+            result = await prisma.client.deleteMany({});
             break;
           case 'trucks':
-            result = await db.clearAllTrucks();
+            result = await prisma.truck.deleteMany({});
             break;
           case 'repartos':
-            result = await db.clearAllRepartos();
+            result = await prisma.reparto.deleteMany({});
             break;
           case 'diasEntrega':
-            result = await db.clearAllDiasEntrega();
+            result = await prisma.diaEntrega.deleteMany({});
             break;
           case 'clientesporReparto':
-            result = await db.clearAllClientesporReparto();
+            result = await prisma.clienteporReparto.deleteMany({});
             break;
           default:
             results[table] = { success: false, message: `Tabla ${table} no reconocida` };
@@ -54,7 +53,7 @@ export async function POST(request) {
         results[table] = { 
           success: true, 
           message: `Tabla ${table} limpiada exitosamente`,
-          deletedCount: result?.deletedCount || 0
+          deletedCount: result.count
         };
       } catch (error) {
         results[table] = { 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
 import * as XLSX from 'xlsx';
-import DatabaseAdapter from '../../../lib/database/adapter.js';
+import { prisma } from '../../../lib/prisma.js';
 
 // Configurar runtime para compatibilidad
 export const runtime = 'nodejs';
@@ -51,32 +51,24 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    // Conectar a la base de datos
-    const db = new DatabaseAdapter();
-    await db.init();
-
-    let importedCount = 0;
-    let updatedCount = 0;
-    let errors = [];
-
     // Procesar según el tipo de tabla
     switch (tableType) {
       case 'clients':
-        const clientResults = await importClients(db, jsonData, replaceData);
+        const clientResults = await importClients(jsonData, replaceData);
         importedCount = clientResults.imported;
         updatedCount = clientResults.updated;
         errors = clientResults.errors;
         break;
         
       case 'trucks':
-        const truckResults = await importTrucks(db, jsonData, replaceData);
+        const truckResults = await importTrucks(jsonData, replaceData);
         importedCount = truckResults.imported;
         updatedCount = truckResults.updated || 0;
         errors = truckResults.errors;
         break;
         
       case 'repartos':
-        const repartoResults = await importRepartos(db, jsonData, replaceData);
+        const repartoResults = await importRepartos(jsonData, replaceData);
         importedCount = repartoResults.imported;
         updatedCount = repartoResults.updated || 0;
         errors = repartoResults.errors;
@@ -112,7 +104,7 @@ export async function POST(request) {
 }
 
 // Función para importar clientes
-async function importClients(db, data, replaceData = false) {
+async function importClients(data, replaceData = false) {
   let imported = 0;
   let updated = 0;
   const errors = [];
@@ -121,7 +113,7 @@ async function importClients(db, data, replaceData = false) {
   if (replaceData) {
     try {
       console.log('🗑️ [IMPORT] Eliminando todos los clientes existentes...');
-      await db.clearAllClients();
+      await prisma.client.deleteMany({});
       console.log('✅ [IMPORT] Clientes existentes eliminados');
     } catch (error) {
       console.error('❌ [IMPORT] Error eliminando clientes:', error);
@@ -177,19 +169,24 @@ async function importClients(db, data, replaceData = false) {
       }
 
       // Verificar si el cliente ya existe por código
-      const existingClient = await db.getClientByCode(client.Codigo);
+      const existingClient = await prisma.client.findUnique({
+        where: { Codigo: client.Codigo }
+      });
       
       if (existingClient) {
         // Si el cliente existe, actualizar en lugar de crear
         try {
-          await db.updateClient(existingClient.id, client);
+          await prisma.client.update({
+            where: { id: existingClient.id },
+            data: client
+          });
           updated++;
         } catch (updateError) {
           errors.push(`Fila ${i + 2}: Error actualizando cliente existente - ${updateError.message}`);
         }
       } else {
         // Si no existe, crear nuevo cliente
-        await db.createClient(client);
+        await prisma.client.create({ data: client });
         imported++;
       }
     } catch (error) {
@@ -201,7 +198,7 @@ async function importClients(db, data, replaceData = false) {
 }
 
 // Función para importar camiones
-async function importTrucks(db, data, replaceData = false) {
+async function importTrucks(data, replaceData = false) {
   let imported = 0;
   let updated = 0;
   const errors = [];
@@ -210,7 +207,7 @@ async function importTrucks(db, data, replaceData = false) {
   if (replaceData) {
     try {
       console.log('🗑️ [IMPORT] Eliminando todos los camiones existentes...');
-      await db.clearAllTrucks(); // Necesitaremos implementar esta función
+      await prisma.truck.deleteMany({});
       console.log('✅ [IMPORT] Camiones existentes eliminados');
     } catch (error) {
       console.error('❌ [IMPORT] Error eliminando camiones:', error);
@@ -231,7 +228,7 @@ async function importTrucks(db, data, replaceData = false) {
         continue;
       }
 
-      await db.createTruck(truck);
+      await prisma.truck.create({ data: truck });
       imported++;
     } catch (error) {
       errors.push(`Fila ${i + 2}: ${error.message}`);
@@ -242,7 +239,7 @@ async function importTrucks(db, data, replaceData = false) {
 }
 
 // Función para importar repartos
-async function importRepartos(db, data, replaceData = false) {
+async function importRepartos(data, replaceData = false) {
   let imported = 0;
   let updated = 0;
   const errors = [];
@@ -251,7 +248,7 @@ async function importRepartos(db, data, replaceData = false) {
   if (replaceData) {
     try {
       console.log('🗑️ [IMPORT] Eliminando todos los repartos existentes...');
-      await db.clearAllRepartos(); // Necesitaremos implementar esta función
+      await prisma.reparto.deleteMany({});
       console.log('✅ [IMPORT] Repartos existentes eliminados');
     } catch (error) {
       console.error('❌ [IMPORT] Error eliminando repartos:', error);
@@ -273,7 +270,7 @@ async function importRepartos(db, data, replaceData = false) {
         continue;
       }
 
-      await db.createReparto(reparto);
+      await prisma.reparto.create({ data: reparto });
       imported++;
     } catch (error) {
       errors.push(`Fila ${i + 2}: ${error.message}`);

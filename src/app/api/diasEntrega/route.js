@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import DatabaseAdapter from '../../../lib/database/adapter.js';
+import { prisma } from '../../../lib/prisma.js';
 import { validateCreateDiaEntregaData } from '../../../types/index.js';
 
 // GET - Obtener todos los días de entrega
@@ -10,67 +10,17 @@ export async function GET(request) {
   if (authError) return authError;
 
   try {
-    // Intentar obtener días de entrega de SQLite
-    try {
-      const db = new DatabaseAdapter();
-      const diasEntrega = await db.getAllDiasEntrega();
-
-      // Si no hay días de entrega, retornar array vacío
-      // (comentado para evitar auto-generación de datos)
-      /*
-      if (diasEntrega.length === 0) {
-        await db.seedInitialDiasEntrega();
-        const newDiasEntrega = await db.getAllDiasEntrega();
-        
-        return NextResponse.json({
-          success: true,
-          diasEntrega: newDiasEntrega,
-          total: newDiasEntrega.length,
-          source: 'SQLite (initialized)'
-        });
+    const diasEntrega = await prisma.diaEntrega.findMany({
+      orderBy: {
+        id: 'asc'
       }
-      */
+    });
 
-      return NextResponse.json({
-        success: true,
-        diasEntrega,
-        total: diasEntrega.length,
-        source: 'SQLite'
-      });
-    } catch (sqliteError) {
-      console.error('Error con SQLite, usando fallback:', sqliteError);
-      
-      // Fallback a datos estáticos si SQLite falla
-      const fallbackDiasEntrega = [
-        {
-          id: 1,
-          descripcion: 'Lunes'
-        },
-        {
-          id: 2,
-          descripcion: 'Martes'
-        },
-        {
-          id: 3,
-          descripcion: 'Miércoles'
-        },
-        {
-          id: 4,
-          descripcion: 'Jueves'
-        },
-        {
-          id: 5,
-          descripcion: 'Viernes'
-        }
-      ];
-
-      return NextResponse.json({
-        success: true,
-        diasEntrega: fallbackDiasEntrega,
-        total: fallbackDiasEntrega.length,
-        source: 'fallback'
-      });
-    }
+    return NextResponse.json({
+      success: true,
+      diasEntrega,
+      total: diasEntrega.length
+    });
   } catch (error) {
     console.error('Error obteniendo días de entrega:', error);
     return NextResponse.json({
@@ -98,16 +48,17 @@ export async function POST(request) {
     }
 
     try {
-      const db = new DatabaseAdapter();
-      const newDiaEntrega = await db.createDiaEntrega(diaEntregaData);
+      const newDiaEntrega = await prisma.diaEntrega.create({
+        data: diaEntregaData
+      });
       
       return NextResponse.json({
         success: true,
         diaEntrega: newDiaEntrega,
         message: 'Día de entrega creado exitosamente'
       }, { status: 201 });
-    } catch (sqliteError) {
-      console.error('Error con SQLite:', sqliteError);
+    } catch (dbError) {
+      console.error('Error creando día de entrega:', dbError);
       return NextResponse.json({
         success: false,
         error: 'Error interno del servidor'
@@ -139,23 +90,25 @@ export async function PUT(request) {
     }
 
     try {
-      const db = new DatabaseAdapter();
-      const updatedDiaEntrega = await db.updateDiaEntrega(id, diaEntregaData);
-      
-      if (!updatedDiaEntrega) {
-        return NextResponse.json({
-          success: false,
-          error: 'Día de entrega no encontrado'
-        }, { status: 404 });
-      }
+      const updatedDiaEntrega = await prisma.diaEntrega.update({
+        where: { id: parseInt(id) },
+        data: diaEntregaData
+      });
       
       return NextResponse.json({
         success: true,
         diaEntrega: updatedDiaEntrega,
         message: 'Día de entrega actualizado exitosamente'
       });
-    } catch (sqliteError) {
-      console.error('Error con SQLite:', sqliteError);
+    } catch (dbError) {
+      if (dbError.code === 'P2025') {
+        return NextResponse.json({
+          success: false,
+          error: 'Día de entrega no encontrado'
+        }, { status: 404 });
+      }
+      
+      console.error('Error actualizando día de entrega:', dbError);
       return NextResponse.json({
         success: false,
         error: 'Error interno del servidor'
@@ -188,22 +141,23 @@ export async function DELETE(request) {
     }
 
     try {
-      const db = new DatabaseAdapter();
-      const deleted = await db.deleteDiaEntrega(parseInt(id));
+      await prisma.diaEntrega.delete({
+        where: { id: parseInt(id) }
+      });
       
-      if (!deleted) {
+      return NextResponse.json({
+        success: true,
+        message: 'Día de entrega eliminado exitosamente'
+      });
+    } catch (dbError) {
+      if (dbError.code === 'P2025') {
         return NextResponse.json({
           success: false,
           error: 'Día de entrega no encontrado'
         }, { status: 404 });
       }
       
-      return NextResponse.json({
-        success: true,
-        message: 'Día de entrega eliminado exitosamente'
-      });
-    } catch (sqliteError) {
-      console.error('Error con SQLite:', sqliteError);
+      console.error('Error eliminando día de entrega:', dbError);
       return NextResponse.json({
         success: false,
         error: 'Error interno del servidor'
