@@ -14,6 +14,7 @@ class DatabaseAdapter {
       if (process.env.NODE_ENV === 'production' && process.env.TURSO_DATABASE_URL) {
         console.log('🟡 Inicializando Turso Database (Producción)...');
         this.database = new TursoDatabase();
+        await this.database.init(); // Inicializar la conexión de Turso
       } else {
         console.log('🟢 Inicializando Prisma Adapter (Desarrollo)...');
         this.database = new PrismaAdapter();
