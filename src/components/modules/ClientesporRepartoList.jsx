@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { useClientesporReparto, useCreateClienteReparto, useUpdateClienteReparto, useDeleteClienteReparto } from '../../hooks/useClientesporReparto';
 import { useClients } from '../../hooks/useClients';
 import { useRepartos } from '../../hooks/useRepartos';
