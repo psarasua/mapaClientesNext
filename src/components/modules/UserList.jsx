@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Modal, Form, Alert, Spinner } from 'react-bootstrap';
 import { handleApiError, localStorageApi } from '../../lib/api';
 import { validateCreateUserData } from '../../types';
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from '../../hooks/useUsers';
+import AdvancedUserTable from './AdvancedUserTable.jsx';
 
 export default function UserList() {
   // React Query hooks
@@ -238,73 +239,16 @@ export default function UserList() {
             </Card>
           )}
 
-          {/* Tabla de usuarios */}
-          <div className="table-responsive">
-            <Table hover className="align-middle">
-              <thead className="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>Usuario</th>
-                  <th>Password</th>
-                  <th scope="col">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {processedUsers.map((user, index) => (
-                  <tr key={`user-${user.id || index}-${user.usuario?.slice(0, 10) || 'unknown'}`}>
-                    <td>
-                      <Badge bg="light" text="dark">{user.id || 'N/A'}</Badge>
-                    </td>
-                    <td className="fw-medium">{user.usuario || 'Sin usuario'}</td>
-                    <td>
-                      <span className="text-muted">••••••••</span>
-                    </td>
-                    <td>
-                      <ButtonGroup size="sm">
-                        <OverlayTrigger
-                          placement="top"
-                          overlay={<Tooltip>Editar usuario</Tooltip>}
-                        >
-                          <Button
-                            onClick={() => handleEdit(user)}
-                            variant="outline-primary"
-                          >
-                            <i className="bi bi-pencil"></i>
-                          </Button>
-                        </OverlayTrigger>
-                        <OverlayTrigger
-                          placement="top"
-                          overlay={<Tooltip>Eliminar usuario</Tooltip>}
-                        >
-                          <Button
-                            onClick={() => handleDeleteClick(user)}
-                            variant="outline-danger"
-                            disabled={deleteUserMutation.isPending}
-                          >
-                            {deleteUserMutation.isPending && deleteUserMutation.variables === user.id ? (
-                              <Spinner animation="border" size="sm" />
-                            ) : (
-                              <i className="bi bi-trash"></i>
-                            )}
-                          </Button>
-                        </OverlayTrigger>
-                      </ButtonGroup>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            
-            {processedUsers.length === 0 && (
-              <div className="text-center py-5">
-                <div className="text-muted">
-                  <i className="bi bi-person-x display-1 mb-3"></i>
-                  <h5>No hay usuarios registrados</h5>
-                  <p>Haz clic en "Nuevo Usuario" para agregar el primero.</p>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Tabla avanzada de usuarios */}
+          <AdvancedUserTable
+            users={processedUsers || []}
+            onEdit={handleEdit}
+            onDelete={handleDeleteClick}
+            isLoading={isLoading}
+            createMutationPending={createUserMutation.isPending}
+            updateMutationPending={updateUserMutation.isPending}
+            deleteMutationPending={deleteUserMutation.isPending}
+          />
 
       {/* Modal de confirmación para eliminar */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>

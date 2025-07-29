@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { handleApiError } from '../../lib/api.js';
 import { useDiasEntrega, useCreateDiaEntrega, useUpdateDiaEntrega, useDeleteDiaEntrega } from '../../hooks/useDiasEntrega';
+import AdvancedDiaEntregaTable from './AdvancedDiaEntregaTable.jsx';
 
 const DiaEntregaList = () => {
   // React Query hooks
@@ -111,6 +112,11 @@ const DiaEntregaList = () => {
       console.error('Error:', error);
       setError(handleApiError(error));
     }
+  };
+
+  // Función para manejar eliminación desde la tabla avanzada
+  const handleDeleteClick = (diaEntrega) => {
+    handleDelete(diaEntrega.id, diaEntrega.descripcion);
   };
 
   // Filtrar y ordenar días de entrega
@@ -267,91 +273,13 @@ const DiaEntregaList = () => {
               </div>
 
               {/* Tabla de Días de Entrega */}
-              <div className="table-responsive">
-                <table className="table table-hover table-striped">
-                  <thead className="table-light">
-                    <tr>
-                      <th scope="col" className="text-center">ID</th>
-                      <th 
-                        scope="col" 
-                        className="cursor-pointer" 
-                        onClick={handleSort}
-                        style={{cursor: 'pointer'}}
-                      >
-                        Descripción {sortDirection === 'asc' ? '↑' : '↓'}
-                      </th>
-                      <th scope="col" className="text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredDiasEntrega.length === 0 ? (
-                      <tr>
-                        <td colSpan="3" className="text-center text-muted py-4">
-                          {loading ? (
-                            <>
-                              <div className="spinner-border spinner-border-sm me-2" role="status"></div>
-                              Cargando días de entrega...
-                            </>
-                          ) : (
-                            <>
-                              <i className="bi bi-calendar-x fs-3 d-block mb-2"></i>
-                              {diasEntrega.length === 0 ? 'No hay días de entrega registrados' : 'No se encontraron días de entrega'}
-                            </>
-                          )}
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredDiasEntrega.map((diaEntrega, index) => (
-                        <tr key={`dia-${diaEntrega.id || index}-${diaEntrega.descripcion?.slice(0, 10) || 'unknown'}`}>
-                          <td className="text-center">
-                            <span className="badge bg-secondary">{diaEntrega.id || 'N/A'}</span>
-                          </td>
-                          <td>
-                            <div className="d-flex align-items-center">
-                              <i className="bi bi-calendar-day me-2 text-success"></i>
-                              <strong>{diaEntrega.descripcion || 'Sin descripción'}</strong>
-                            </div>
-                          </td>
-                          <td className="text-center">
-                            <ButtonGroup>
-                              <OverlayTrigger
-                                placement="top"
-                                overlay={<Tooltip>Editar día de entrega</Tooltip>}
-                              >
-                                <Button
-                                  onClick={() => handleEdit(diaEntrega)}
-                                  variant="outline-primary"
-                                  size="sm"
-                                  disabled={updateDiaEntregaMutation.isPending || deleteDiaEntregaMutation.isPending}
-                                >
-                                  <i className="bi bi-pencil"></i>
-                                </Button>
-                              </OverlayTrigger>
-                              <OverlayTrigger
-                                placement="top"
-                                overlay={<Tooltip>Eliminar día de entrega</Tooltip>}
-                              >
-                                <Button
-                                  onClick={() => handleDelete(diaEntrega.id, diaEntrega.descripcion)}
-                                  variant="outline-danger"
-                                  size="sm"
-                                  disabled={updateDiaEntregaMutation.isPending || deleteDiaEntregaMutation.isPending}
-                                >
-                                  {deleteDiaEntregaMutation.isPending && deleteDiaEntregaMutation.variables === diaEntrega.id ? (
-                                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                  ) : (
-                                    <i className="bi bi-trash"></i>
-                                  )}
-                                </Button>
-                              </OverlayTrigger>
-                            </ButtonGroup>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              <AdvancedDiaEntregaTable 
+                data={filteredDiasEntrega}
+                onEdit={handleEdit}
+                onDelete={handleDeleteClick}
+                isLoading={updateDiaEntregaMutation.isPending || deleteDiaEntregaMutation.isPending}
+                deletingId={deleteDiaEntregaMutation.isPending ? deleteDiaEntregaMutation.variables : null}
+              />
 
               {/* Información adicional */}
               {filteredDiasEntrega.length > 0 && (

@@ -5,6 +5,7 @@ import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, 
 import { useClientesporReparto, useCreateClienteReparto, useUpdateClienteReparto, useDeleteClienteReparto } from '../../hooks/useClientesporReparto';
 import { useClients } from '../../hooks/useClients';
 import { useRepartos } from '../../hooks/useRepartos';
+import AdvancedClientesporRepartoTable from './AdvancedClientesporRepartoTable.jsx';
 
 export default function ClientesporRepartoList() {
   // React Query hooks
@@ -266,81 +267,13 @@ export default function ClientesporRepartoList() {
 
           {/* Vista Tabla */}
           {viewMode === 'table' && (
-            <div className="table-responsive">
-              <table className="table table-striped table-hover">
-                <thead className="table-light">
-                  <tr>
-                    <th>ID</th>
-                    <th>Día de Entrega</th>
-                    <th>Camión</th>
-                    <th>Cliente</th>
-                    <th>Razón Social</th>
-                    <th>Dirección</th>
-                    <th>Teléfono</th>
-                    <th>RUT</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clientesporReparto.length === 0 ? (
-                    <tr>
-                      <td colSpan="9" className="text-center py-4">
-                        No hay asignaciones registradas
-                      </td>
-                    </tr>
-                  ) : (
-                    clientesporReparto.map((item, index) => (
-                      <tr key={`asignacion-${item.id || index}-${item.cliente_id || ''}-${item.reparto_id || ''}`}>
-                        <td>{item.id || 'N/A'}</td>
-                        <td>
-                          <span className="badge bg-info">{item.dia_descripcion}</span>
-                        </td>
-                        <td>
-                          <span className="badge bg-success">{item.camion_descripcion}</span>
-                        </td>
-                        <td>{item.cliente_nombre}</td>
-                        <td>{item.cliente_razonsocial}</td>
-                        <td>{item.cliente_direccion}</td>
-                        <td>{item.cliente_telefono}</td>
-                        <td>{item.cliente_rut}</td>
-                        <td>
-                          <ButtonGroup size="sm">
-                            <OverlayTrigger
-                              placement="top"
-                              overlay={<Tooltip>Editar asignación</Tooltip>}
-                            >
-                              <Button
-                                variant="outline-warning"
-                                onClick={() => handleEdit(item)}
-                                disabled={updateClienteRepartoMutation.isPending || deleteClienteRepartoMutation.isPending}
-                              >
-                                <i className="bi bi-pencil"></i>
-                              </Button>
-                            </OverlayTrigger>
-                            <OverlayTrigger
-                              placement="top"
-                              overlay={<Tooltip>Eliminar asignación</Tooltip>}
-                            >
-                              <Button
-                                variant="outline-danger"
-                                onClick={() => handleDelete(item.id)}
-                                disabled={updateClienteRepartoMutation.isPending || deleteClienteRepartoMutation.isPending}
-                              >
-                                {deleteClienteRepartoMutation.isPending && deleteClienteRepartoMutation.variables === item.id ? (
-                                  <Spinner animation="border" size="sm" />
-                                ) : (
-                                  <i className="bi bi-trash"></i>
-                                )}
-                              </Button>
-                            </OverlayTrigger>
-                          </ButtonGroup>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <AdvancedClientesporRepartoTable 
+              data={clientesporReparto}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              isLoading={updateClienteRepartoMutation.isPending || deleteClienteRepartoMutation.isPending}
+              deletingId={deleteClienteRepartoMutation.isPending ? deleteClienteRepartoMutation.variables : null}
+            />
           )}
 
           {/* Vista Agrupada */}

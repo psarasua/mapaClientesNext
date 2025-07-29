@@ -4,33 +4,11 @@ import { useState } from 'react';
 import { Container, Row, Col, Card, Alert, Button, ButtonGroup } from 'react-bootstrap';
 import { FaTruck, FaUsers, FaMapMarkedAlt, FaBoxes, FaChartLine } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import dynamic from 'next/dynamic';
 import StatsCard from './StatsCard';
 import { useDashboardStats, useDashboardPolling } from '../../hooks/useDashboard';
 import { useClients } from '../../hooks/useClients';
 import { useTrucks } from '../../hooks/useTrucks';
-
-// Importar MapComponent dinámicamente para evitar problemas de SSR
-const MapComponent = dynamic(() => import('./MapComponent'), {
-  ssr: false,
-  loading: () => (
-    <div style={{ 
-      height: '400px', 
-      width: '100%',
-      backgroundColor: '#f8f9fa',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <div className="text-center">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Cargando mapa...</span>
-        </div>
-        <p className="text-muted mt-2 small">Cargando mapa...</p>
-      </div>
-    </div>
-  )
-});
+import MapComponent from './MapComponent';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 

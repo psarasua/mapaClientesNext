@@ -11,22 +11,27 @@ import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point'
-import { Style, Circle, Fill, Stroke } from 'ol/style'
+import { Style, Icon, Circle, Fill, Stroke } from 'ol/style'
 
-const ClientMapComponent = ({ client, onLocationSelect }) => {
+const OpenLayersMap = ({ 
+  clients = [], 
+  onLocationSelect, 
+  selectedLocation,
+  height = '400px',
+  width = '100%'
+}) => {
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
+  const vectorLayerRef = useRef(null)
   const [isLoaded, setIsLoaded] = useState(false)
 
   // Coordenadas por defecto: Santa Rosa, Canelones, Uruguay
   const defaultCenter = [-56.0417, -34.5617]
-  const clientCenter = client?.lat && client?.lng ? 
-    [parseFloat(client.lng), parseFloat(client.lat)] : defaultCenter
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
 
-    console.log('🗺️ Inicializando mapa OpenLayers del cliente:', client?.nombre)
+    console.log('🗺️ Inicializando OpenLayers...')
 
     // Dar tiempo para que el DOM se renderice
     const timer = setTimeout(() => {
@@ -41,12 +46,14 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
           source: vectorSource,
           style: new Style({
             image: new Circle({
-              radius: 10,
-              fill: new Fill({ color: '#ff4444' }),
-              stroke: new Stroke({ color: '#ffffff', width: 3 })
+              radius: 8,
+              fill: new Fill({ color: '#ff0000' }),
+              stroke: new Stroke({ color: '#ffffff', width: 2 })
             })
           })
         })
+
+        vectorLayerRef.current = vectorLayer
 
         // Crear mapa
         const map = new Map({
@@ -55,14 +62,15 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
             new TileLayer({
               source: new OSM({
                 url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                crossOrigin: 'anonymous'
+                crossOrigin: 'anonymous',
+                attributions: '© OpenStreetMap contributors'
               })
             }),
             vectorLayer
           ],
           view: new View({
-            center: fromLonLat(clientCenter),
-            zoom: client?.lat && client?.lng ? 15 : 13,
+            center: fromLonLat(defaultCenter),
+            zoom: 13,
             projection: 'EPSG:3857'
           }),
           controls: defaultControls({
@@ -78,24 +86,13 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
         setTimeout(() => {
           map.updateSize()
           map.renderSync()
-          console.log('🔄 Mapa renderizado y redimensionado')
+          console.log('🔄 Mapa principal renderizado y redimensionado')
         }, 100)
 
-        // Agregar marcador del cliente si tiene coordenadas
-        if (client?.lat && client?.lng) {
-          const coordinate = fromLonLat([parseFloat(client.lng), parseFloat(client.lat)])
-          const feature = new Feature({
-            geometry: new Point(coordinate),
-            client: client
-          })
-          vectorSource.addFeature(feature)
-          console.log('📍 Marcador OpenLayers agregado para:', client.nombre)
-        }
-
-        // Evento de click
+        // Agregar evento de click
         map.on('click', (event) => {
           const coordinate = toLonLat(event.coordinate)
-          console.log('🎯 Click en mapa OpenLayers:', coordinate)
+          console.log('🎯 Click en mapa:', coordinate)
           
           if (onLocationSelect) {
             onLocationSelect({
@@ -105,11 +102,17 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
           }
         })
 
+        // Agregar clientes como marcadores
+        if (clients && clients.length > 0) {
+          console.log('📍 Agregando marcadores:', clients.length)
+          addClientMarkers(clients, vectorSource)
+        }
+
         setIsLoaded(true)
-        console.log('✅ Mapa OpenLayers del cliente inicializado')
+        console.log('✅ OpenLayers inicializado correctamente')
 
       } catch (error) {
-        console.error('❌ Error inicializando mapa OpenLayers del cliente:', error)
+        console.error('❌ Error inicializando OpenLayers:', error)
       }
     }, 200)
 
@@ -123,22 +126,48 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
     }
   }, [])
 
-  // Actualizar centro cuando cambia el cliente
+  // Función para agregar marcadores de clientes
+  const addClientMarkers = (clientList, vectorSource) => {
+    clientList.forEach((client, index) => {
+      if (client.lat && client.lng) {
+        const coordinate = fromLonLat([parseFloat(client.lng), parseFloat(client.lat)])
+        
+        const feature = new Feature({
+          geometry: new Point(coordinate),
+          client: client
+        })
+
+        vectorSource.addFeature(feature)
+        console.log(`📍 Marcador agregado: ${client.nombre}`)
+      }
+    })
+  }
+
+  // Actualizar marcadores cuando cambian los clientes
   useEffect(() => {
-    if (mapInstanceRef.current && client?.lat && client?.lng) {
+    if (mapInstanceRef.current && vectorLayerRef.current && clients) {
+      const vectorSource = vectorLayerRef.current.getSource()
+      vectorSource.clear()
+      addClientMarkers(clients, vectorSource)
+    }
+  }, [clients])
+
+  // Actualizar ubicación seleccionada
+  useEffect(() => {
+    if (mapInstanceRef.current && selectedLocation) {
       const view = mapInstanceRef.current.getView()
-      const coordinate = fromLonLat([parseFloat(client.lng), parseFloat(client.lat)])
+      const coordinate = fromLonLat([selectedLocation.lng, selectedLocation.lat])
       view.setCenter(coordinate)
       view.setZoom(15)
     }
-  }, [client])
+  }, [selectedLocation])
 
   const resetMap = () => {
+    console.log('🔄 Reiniciando mapa...')
     if (mapInstanceRef.current) {
-      console.log('🔄 Reiniciando mapa OpenLayers del cliente')
       const view = mapInstanceRef.current.getView()
-      view.setCenter(fromLonLat(clientCenter))
-      view.setZoom(client?.lat && client?.lng ? 15 : 13)
+      view.setCenter(fromLonLat(defaultCenter))
+      view.setZoom(13)
       mapInstanceRef.current.updateSize()
     }
   }
@@ -148,9 +177,9 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
       <div 
         ref={mapRef}
         className="map-container"
-        style={{
-          width: '100%',
-          height: '400px',
+        style={{ 
+          height: height,
+          width: width,
           minHeight: '400px',
           border: '1px solid #ccc',
           borderRadius: '8px'
@@ -160,8 +189,8 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
       {!isLoaded && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
-            <p className="text-sm text-gray-600">Cargando mapa OpenLayers...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+            <p className="text-gray-600">Cargando mapa...</p>
           </div>
         </div>
       )}
@@ -169,20 +198,20 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
       <div className="absolute top-2 right-2 z-10">
         <button
           onClick={resetMap}
-          className="bg-white hover:bg-gray-50 text-gray-700 px-2 py-1 rounded shadow text-xs"
-          title="Reiniciar mapa"
+          className="bg-white hover:bg-gray-50 text-gray-700 px-3 py-1 rounded shadow-md text-sm border"
+          title="Reiniciar vista del mapa"
         >
-          🔄
+          🔄 Reset
         </button>
       </div>
 
       {isLoaded && (
-        <div className="absolute bottom-2 left-2 bg-white px-2 py-1 rounded shadow text-xs text-green-600">
-          ✅ OpenLayers
+        <div className="absolute bottom-2 left-2 bg-white px-2 py-1 rounded shadow text-xs text-gray-600">
+          ✅ OpenLayers activo
         </div>
       )}
     </div>
   )
 }
 
-export default ClientMapComponent
+export default OpenLayersMap

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Container, Row, Col, Card, Table, Button, Modal, Form, Alert, Spinner, Badge, ButtonGroup, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Modal, Form, Alert, Spinner } from 'react-bootstrap';
 import { handleApiError } from '../../lib/api';
 import { validateCreateTruckData } from '../../types';
 import { useTrucks, useCreateTruck, useUpdateTruck, useDeleteTruck } from '../../hooks/useTrucks';
+import AdvancedTruckTable from './AdvancedTruckTable.jsx';
 
 export default function TruckList() {
   // React Query hooks
@@ -217,71 +218,13 @@ export default function TruckList() {
 
           {/* Tabla de camiones */}
           <div className="table-responsive">
-            <Table hover className="align-middle">
-              <thead className="table-light">
-                <tr>
-                  <th width="10%">ID</th>
-                  <th width="70%">Descripción</th>
-                  <th width="20%">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {trucks.map((truck, index) => (
-                  <tr key={`truck-${truck.id || index}-${truck.description?.slice(0, 10) || 'unknown'}`}>
-                    <td>
-                      <Badge bg="primary">{truck.id || 'N/A'}</Badge>
-                    </td>
-                    <td className="fw-medium">
-                      <div title={truck.description || 'Sin descripción'}>
-                        {truck.description || 'Sin descripción'}
-                      </div>
-                    </td>
-                    <td>
-                      <ButtonGroup size="sm">
-                        <OverlayTrigger
-                          placement="top"
-                          overlay={<Tooltip>Editar camión</Tooltip>}
-                        >
-                          <Button
-                            onClick={() => handleEdit(truck)}
-                            variant="outline-primary"
-                            disabled={updateTruckMutation.isPending || deleteTruckMutation.isPending}
-                          >
-                            <i className="bi bi-pencil"></i>
-                          </Button>
-                        </OverlayTrigger>
-                        <OverlayTrigger
-                          placement="top"
-                          overlay={<Tooltip>Eliminar camión</Tooltip>}
-                        >
-                          <Button
-                            onClick={() => handleDeleteClick(truck)}
-                            variant="outline-danger"
-                            disabled={updateTruckMutation.isPending || deleteTruckMutation.isPending}
-                          >
-                            {deleteTruckMutation.isPending && deleteTruckMutation.variables === truck.id ? (
-                              <Spinner animation="border" size="sm" />
-                            ) : (
-                              <i className="bi bi-trash"></i>
-                            )}
-                          </Button>
-                        </OverlayTrigger>
-                      </ButtonGroup>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            
-            {trucks.length === 0 && (
-              <div className="text-center py-5">
-                <div className="text-muted">
-                  <i className="bi bi-truck display-1 mb-3"></i>
-                  <h5>No hay camiones registrados</h5>
-                  <p>Haz clic en &quot;Nuevo Camión&quot; para agregar el primero.</p>
-                </div>
-              </div>
-            )}
+            <AdvancedTruckTable 
+              data={trucks}
+              onEdit={handleEdit}
+              onDelete={handleDeleteClick}
+              isLoading={updateTruckMutation.isPending || deleteTruckMutation.isPending}
+              deletingId={deleteTruckMutation.isPending ? deleteTruckMutation.variables : null}
+            />
           </div>
         </Card.Body>
       </Card>
