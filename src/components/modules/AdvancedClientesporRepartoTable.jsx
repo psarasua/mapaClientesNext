@@ -49,7 +49,7 @@ const AdvancedClientesporRepartoTable = ({
         header: ({ table }) => (
           <Form.Check
             checked={table.getIsAllRowsSelected()}
-            indeterminate={table.getIsSomeRowsSelected()}
+            indeterminate={table.getIsSomeRowsSelected() ? true : undefined}
             onChange={table.getToggleAllRowsSelectedHandler()}
           />
         ),
@@ -57,7 +57,7 @@ const AdvancedClientesporRepartoTable = ({
           <Form.Check
             checked={row.getIsSelected()}
             disabled={!row.getCanSelect()}
-            indeterminate={row.getIsSomeSelected()}
+            indeterminate={row.getIsSomeSelected() ? true : undefined}
             onChange={row.getToggleSelectedHandler()}
           />
         ),

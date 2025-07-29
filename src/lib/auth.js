@@ -73,7 +73,7 @@ export function generateResetToken() {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
-export default {
+const authUtils = {
   hashPassword,
   verifyPassword,
   generateToken,
@@ -82,3 +82,5 @@ export default {
   isValidPassword,
   generateResetToken
 };
+
+export default authUtils;
