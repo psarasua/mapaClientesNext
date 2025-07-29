@@ -47,12 +47,28 @@ cd mapaClientesNext
 npm install
 ```
 
-### **3. Iniciar el servidor**
+### **3. Configurar variables de entorno**
+```bash
+# Copiar el archivo de ejemplo
+cp .env.example .env.local
+
+# Editar las variables según tu configuración
+# Para desarrollo: mantén DATABASE_URL con SQLite
+# Para producción: configura TURSO_DATABASE_URL y TURSO_AUTH_TOKEN
+```
+
+#### **Variables principales:**
+- `DATABASE_URL`: Base de datos SQLite local (desarrollo)
+- `TURSO_DATABASE_URL`: Base de datos Turso (producción)
+- `TURSO_AUTH_TOKEN`: Token de autenticación de Turso
+- `NEXT_PUBLIC_APP_URL`: URL base de la aplicación
+
+### **4. Iniciar el servidor**
 ```bash
 npm run dev
 ```
 
-### **4. Abrir en el navegador**
+### **5. Abrir en el navegador**
 ```
 http://localhost:3000
 ```
