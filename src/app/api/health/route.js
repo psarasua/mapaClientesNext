@@ -26,7 +26,7 @@ export async function GET() {
       status: 'ok',
       message: 'API está funcionando correctamente',
       timestamp: new Date().toISOString(),
-      version: '2.1.0',
+      version: '2.2.0',
       environment: process.env.NODE_ENV || 'development',
       database: {
         status: dbStatus,
