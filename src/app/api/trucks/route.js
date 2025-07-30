@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import { prisma } from '../../../lib/prisma.js';
+import { truckService } from '../../../lib/dbServices.js';
 
 // GET - Obtener todos los camiones
 export async function GET(request) {
@@ -9,11 +9,7 @@ export async function GET(request) {
   if (authError) return authError;
 
   try {
-    const trucks = await prisma.truck.findMany({
-      orderBy: {
-        created_at: 'desc'
-      }
-    });
+    const trucks = await truckService.getAll();
     
     return NextResponse.json({
       success: true,

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import { prisma } from '../../../lib/prisma.js';
+import { diaEntregaService } from '../../../lib/dbServices.js';
 import { validateCreateDiaEntregaData } from '../../../types/index.js';
 
 // GET - Obtener todos los días de entrega
@@ -10,11 +10,7 @@ export async function GET(request) {
   if (authError) return authError;
 
   try {
-    const diasEntrega = await prisma.diaEntrega.findMany({
-      orderBy: {
-        id: 'asc'
-      }
-    });
+    const diasEntrega = await diaEntregaService.getAll();
 
     return NextResponse.json({
       success: true,

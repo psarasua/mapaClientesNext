@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../lib/prisma.js';
+import { userService, truckService } from '../../../lib/dbServices.js';
 
 // Configurar runtime para compatibilidad
 export const runtime = 'nodejs';
@@ -9,13 +9,14 @@ export async function GET() {
     // Verificar conexión a la base de datos
     let dbStatus = 'ok';
     let dbMessage = 'Base de datos conectada correctamente';
-    let dbType = process.env.NODE_ENV === 'production' ? 'Turso (cloud)' : 'SQLite (local)';
+    let dbType = 'Turso (libSQL)';
     
     try {
       // Intentar hacer consultas simples para verificar conectividad
-      const users = await prisma.user.count();
-      const trucks = await prisma.truck.count();
-      dbMessage = `Base de datos conectada correctamente. ${users} usuarios y ${trucks} camiones registrados.`;
+      const users = await userService.count();
+      const trucks = await truckService.getAll();
+      const truckCount = trucks.length;
+      dbMessage = `Base de datos conectada correctamente. ${users} usuarios y ${truckCount} camiones registrados.`;
     } catch (error) {
       dbStatus = 'error';
       dbMessage = `Error de conexión a base de datos: ${error.message}`;
@@ -35,8 +36,9 @@ export async function GET() {
       features: [
         'CRUD de usuarios',
         'CRUD de camiones',
-        'Base de datos SQLite',
-        'Fallback a localStorage',
+        'CRUD de clientes',
+        'CRUD de repartos',
+        'Base de datos Turso',
         'Validación de datos',
         'Manejo de errores',
         'Interfaz con pestañas'

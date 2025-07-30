@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../lib/prisma.js';
+import { userService } from '../../../lib/dbServices.js';
 import { requireAuth } from '../../../lib/apiAuth.js';
 
 // GET - Obtener todos los usuarios
@@ -9,17 +9,7 @@ export async function GET(request) {
   if (authError) return authError;
 
   try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        usuario: true,
-        created_at: true,
-        updated_at: true
-      },
-      orderBy: {
-        created_at: 'desc'
-      }
-    });
+    const users = await userService.getAll();
 
     return NextResponse.json({
       success: true,

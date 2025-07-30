@@ -1,9 +1,6 @@
 // Central imports configuration
 // Este archivo centraliza todas las importaciones comunes para evitar errores de rutas
 
-// Database
-export { prisma } from './lib/prisma.js';
-
 // Authentication
 export { requireAuth } from './lib/apiAuth.js';
 export { verifyPassword, generateToken, verifyToken } from './lib/auth.js';

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import { prisma } from '../../../lib/prisma.js';
+import { clientService } from '../../../lib/dbServices.js';
 import { validateCreateClientData } from '../../../types/index.js';
 
 // GET - Obtener todos los clientes
@@ -10,9 +10,7 @@ export async function GET(request) {
   if (authError) return authError;
 
   try {
-    const clients = await prisma.client.findMany({
-      orderBy: { created_at: 'desc' }
-    });
+    const clients = await clientService.getAll();
 
     return NextResponse.json({
       success: true,
