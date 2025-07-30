@@ -1,11 +1,25 @@
 import { PrismaClient } from '@prisma/client';
 
-// Configuración simple de Prisma que funciona con SQLite local y Turso
+// Configuración que funciona tanto en desarrollo como producción
 const globalForPrisma = globalThis;
 
-export const prisma = globalForPrisma.prisma || new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-});
+function createPrismaClient() {
+  console.log(`🔗 NODE_ENV: ${process.env.NODE_ENV}`);
+  console.log(`🔗 DATABASE_URL: ${process.env.DATABASE_URL?.substring(0, 50)}...`);
+  
+  const client = new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL
+      }
+    }
+  });
+
+  return client;
+}
+
+export const prisma = globalForPrisma.prisma || createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;

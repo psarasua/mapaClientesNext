@@ -2,13 +2,15 @@
   "build": {
     "env": {
       "PRISMA_GENERATE_DATAPROXY": "false",
-      "SKIP_ENV_VALIDATION": "true"
+      "SKIP_ENV_VALIDATION": "true",
+      "NODE_ENV": "production"
     }
   },
   "env": {
     "DATABASE_URL": "@database-url",
     "TURSO_DATABASE_URL": "@turso-database-url", 
     "TURSO_AUTH_TOKEN": "@turso-auth-token",
-    "PRISMA_GENERATE_DATAPROXY": "false"
+    "PRISMA_GENERATE_DATAPROXY": "false",
+    "NODE_ENV": "production"
   }
 }
