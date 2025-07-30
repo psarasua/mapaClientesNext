@@ -28,19 +28,19 @@ export async function GET(request) {
       include: {
         reparto: {
           include: {
-            diasEntrega: {
+            diaEntrega: {
               select: {
                 descripcion: true
               }
             },
-            truck: {
+            camion: {
               select: {
                 description: true
               }
             }
           }
         },
-        client: {
+        cliente: {
           select: {
             nombre: true
           }
@@ -54,9 +54,9 @@ export async function GET(request) {
     // Transformar datos para mantener compatibilidad
     const formattedClientesporReparto = clientesporReparto.map(item => ({
       ...item,
-      dia_descripcion: item.reparto?.diasEntrega?.descripcion,
-      camion_descripcion: item.reparto?.truck?.description,
-      cliente_nombre: item.client?.nombre
+      dia_descripcion: item.reparto?.diaEntrega?.descripcion,
+      camion_descripcion: item.reparto?.camion?.description,
+      cliente_nombre: item.cliente?.nombre
     }));
 
     return NextResponse.json({
@@ -96,19 +96,19 @@ export async function POST(request) {
         include: {
           reparto: {
             include: {
-              diasEntrega: {
+              diaEntrega: {
                 select: {
                   descripcion: true
                 }
               },
-              truck: {
+              camion: {
                 select: {
                   description: true
                 }
               }
             }
           },
-          client: {
+          cliente: {
             select: {
               nombre: true
             }
@@ -120,9 +120,9 @@ export async function POST(request) {
         success: true,
         clienteporReparto: {
           ...newClienteporReparto,
-          dia_descripcion: newClienteporReparto.reparto?.diasEntrega?.descripcion,
-          camion_descripcion: newClienteporReparto.reparto?.truck?.description,
-          cliente_nombre: newClienteporReparto.client?.nombre
+          dia_descripcion: newClienteporReparto.reparto?.diaEntrega?.descripcion,
+          camion_descripcion: newClienteporReparto.reparto?.camion?.description,
+          cliente_nombre: newClienteporReparto.cliente?.nombre
         },
         message: 'Cliente asignado al reparto exitosamente'
       }, { status: 201 });
@@ -172,19 +172,19 @@ export async function PUT(request) {
         include: {
           reparto: {
             include: {
-              diasEntrega: {
+              diaEntrega: {
                 select: {
                   descripcion: true
                 }
               },
-              truck: {
+              camion: {
                 select: {
                   description: true
                 }
               }
             }
           },
-          client: {
+          cliente: {
             select: {
               nombre: true
             }
@@ -196,9 +196,9 @@ export async function PUT(request) {
         success: true,
         clienteporReparto: {
           ...updatedClienteporReparto,
-          dia_descripcion: updatedClienteporReparto.reparto?.diasEntrega?.descripcion,
-          camion_descripcion: updatedClienteporReparto.reparto?.truck?.description,
-          cliente_nombre: updatedClienteporReparto.client?.nombre
+          dia_descripcion: updatedClienteporReparto.reparto?.diaEntrega?.descripcion,
+          camion_descripcion: updatedClienteporReparto.reparto?.camion?.description,
+          cliente_nombre: updatedClienteporReparto.cliente?.nombre
         },
         message: 'Asignación actualizada exitosamente'
       });

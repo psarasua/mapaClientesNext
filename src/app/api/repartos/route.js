@@ -26,12 +26,12 @@ export async function GET(request) {
     const repartos = await prisma.reparto.findMany({
       where: whereClause,
       include: {
-        diasEntrega: {
+        diaEntrega: {
           select: {
             descripcion: true
           }
         },
-        truck: {
+        camion: {
           select: {
             description: true
           }
@@ -45,8 +45,8 @@ export async function GET(request) {
     // Transformar los datos para mantener compatibilidad
     const formattedRepartos = repartos.map(reparto => ({
       ...reparto,
-      dia_descripcion: reparto.diasEntrega?.descripcion,
-      camion_descripcion: reparto.truck?.description
+      dia_descripcion: reparto.diaEntrega?.descripcion,
+      camion_descripcion: reparto.camion?.description
     }));
 
     return NextResponse.json({
@@ -84,12 +84,12 @@ export async function POST(request) {
       const newReparto = await prisma.reparto.create({
         data: repartoData,
         include: {
-          diasEntrega: {
+          diaEntrega: {
             select: {
               descripcion: true
             }
           },
-          truck: {
+          camion: {
             select: {
               description: true
             }
@@ -101,8 +101,8 @@ export async function POST(request) {
         success: true,
         reparto: {
           ...newReparto,
-          dia_descripcion: newReparto.diasEntrega?.descripcion,
-          camion_descripcion: newReparto.truck?.description
+          dia_descripcion: newReparto.diaEntrega?.descripcion,
+          camion_descripcion: newReparto.camion?.description
         },
         message: 'Reparto creado exitosamente'
       }, { status: 201 });
@@ -150,12 +150,12 @@ export async function PUT(request) {
         where: { id: parseInt(id) },
         data: repartoData,
         include: {
-          diasEntrega: {
+          diaEntrega: {
             select: {
               descripcion: true
             }
           },
-          truck: {
+          camion: {
             select: {
               description: true
             }
@@ -167,8 +167,8 @@ export async function PUT(request) {
         success: true,
         reparto: {
           ...updatedReparto,
-          dia_descripcion: updatedReparto.diasEntrega?.descripcion,
-          camion_descripcion: updatedReparto.truck?.description
+          dia_descripcion: updatedReparto.diaEntrega?.descripcion,
+          camion_descripcion: updatedReparto.camion?.description
         },
         message: 'Reparto actualizado exitosamente'
       });
