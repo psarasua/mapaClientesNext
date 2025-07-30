@@ -1,11 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 
-// Configuración que funciona tanto en desarrollo como producción
+// Configuración que funciona tanto en desarrollo como producción - v2.0
 const globalForPrisma = globalThis;
 
 function createPrismaClient() {
   console.log(`🔗 NODE_ENV: ${process.env.NODE_ENV}`);
   console.log(`🔗 DATABASE_URL: ${process.env.DATABASE_URL?.substring(0, 50)}...`);
+  console.log(`🔗 PRISMA_GENERATE_DATAPROXY: ${process.env.PRISMA_GENERATE_DATAPROXY}`);
   
   const client = new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
