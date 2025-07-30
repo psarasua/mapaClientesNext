@@ -1,9 +1,4 @@
 {
-  "build": {
-    "env": {
-      "PRISMA_GENERATE_DATAPROXY": "true"
-    }
-  },
   "env": {
     "DATABASE_URL": "@database-url",
     "TURSO_DATABASE_URL": "@turso-database-url", 
