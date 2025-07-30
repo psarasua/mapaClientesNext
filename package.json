@@ -5,15 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "setup": "node scripts/setup-env.bat",
-    "setup:linux": "bash scripts/setup-env.sh",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio",
-    "db:migrate": "node scripts/migrate-to-prisma.js"
+    "setup:linux": "bash scripts/setup-env.sh"
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",
