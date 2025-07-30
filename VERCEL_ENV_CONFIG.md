@@ -7,7 +7,7 @@ Para que la aplicación funcione en producción, debes configurar las siguientes
 ### 📋 Variables requeridas:
 
 1. **DATABASE_URL**
-   - Value: `prisma://aws-us-east-2.prisma-data.net/?api_key=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NTM4MTUxNTgsImlkIjoiZWM4YmQxZDMtZjhiNS00ZTA0LTkzZmEtYjYwZmJiMjk2MjFkIiwicmlkIjoiYzZlZTViNWYtMzU2Yy00ZDJjLWE5ODYtN2NlYzJhY2I1N2VhIn0.KOFFQYcqA1x7ctz1Og8F03PwGhLPKiACOFI1CM2Q_knLi8C-Jee45xSVGsr9v7E__eE26woeHR_ayLfzs_QjBQ`
+   - Value: `libsql://mapa-clientes-psarasua.aws-us-east-2.turso.io?authToken=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NTM4MTUxNTgsImlkIjoiZWM4YmQxZDMtZjhiNS00ZTA0LTkzZmEtYjYwZmJiMjk2MjFkIiwicmlkIjoiYzZlZTViNWYtMzU2Yy00ZDJjLWE5ODYtN2NlYzJhY2I1N2VhIn0.KOFFQYcqA1x7ctz1Og8F03PwGhLPKiACOFI1CM2Q_knLi8C-Jee45xSVGsr9v7E__eE26woeHR_ayLfzs_QjBQ`
    - Environment: `Production, Preview`
 
 2. **TURSO_DATABASE_URL** 

@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-// Configuración simple de Prisma que funciona con SQLite local y remoto
+// Configuración simple de Prisma que funciona con SQLite local y Turso
 const globalForPrisma = globalThis;
 
 export const prisma = globalForPrisma.prisma || new PrismaClient({
