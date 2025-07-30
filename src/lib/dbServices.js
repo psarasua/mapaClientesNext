@@ -61,6 +61,11 @@ export const userService = {
   async count() {
     const result = await db.execute('SELECT COUNT(*) as count FROM users');
     return result.rows[0].count;
+  },
+
+  async deleteAll() {
+    const result = await db.execute('DELETE FROM users');
+    return result.rowsAffected;
   }
 };
 
@@ -105,6 +110,11 @@ export const truckService = {
     });
     
     return result.rows[0];
+  },
+
+  async deleteAll() {
+    const result = await db.execute('DELETE FROM trucks');
+    return result.rowsAffected;
   }
 };
 
@@ -113,6 +123,14 @@ export const clientService = {
   async getAll() {
     const result = await db.execute('SELECT * FROM clients ORDER BY nombre');
     return result.rows;
+  },
+
+  async getById(id) {
+    const result = await db.execute({
+      sql: 'SELECT * FROM clients WHERE id = ?',
+      args: [id]
+    });
+    return result.rows[0] || null;
   },
 
   async create(clientData) {
@@ -149,6 +167,11 @@ export const clientService = {
     });
     
     return result.rows[0];
+  },
+
+  async deleteAll() {
+    const result = await db.execute('DELETE FROM clients');
+    return result.rowsAffected;
   }
 };
 
@@ -157,6 +180,14 @@ export const repartoService = {
   async getAll() {
     const result = await db.execute('SELECT * FROM repartos ORDER BY created_at DESC');
     return result.rows;
+  },
+
+  async getById(id) {
+    const result = await db.execute({
+      sql: 'SELECT * FROM repartos WHERE id = ?',
+      args: [id]
+    });
+    return result.rows[0] || null;
   },
 
   async create(repartoData) {
@@ -192,6 +223,11 @@ export const repartoService = {
     });
     
     return result.rows[0];
+  },
+
+  async deleteAll() {
+    const result = await db.execute('DELETE FROM repartos');
+    return result.rowsAffected;
   }
 };
 
@@ -228,6 +264,19 @@ export const diaEntregaService = {
     return result.rows[0];
   },
 
+  async update(id, diaData) {
+    const { nombre, descripcion } = diaData;
+    const now = new Date().toISOString();
+    
+    const result = await db.execute({
+      sql: `UPDATE diasEntrega SET nombre = ?, descripcion = ?, updated_at = ? 
+            WHERE id = ? RETURNING *`,
+      args: [nombre, descripcion, now, id]
+    });
+    
+    return result.rows[0];
+  },
+
   async delete(id) {
     const result = await db.execute({
       sql: 'DELETE FROM diasEntrega WHERE id = ? RETURNING *',
@@ -235,5 +284,58 @@ export const diaEntregaService = {
     });
     
     return result.rows[0];
+  },
+
+  async deleteAll() {
+    const result = await db.execute('DELETE FROM diasEntrega');
+    return result.rowsAffected;
+  }
+};
+
+// Funciones para clientesporReparto
+export const clienteporRepartoService = {
+  async getAll() {
+    const result = await db.execute('SELECT * FROM clientesporReparto ORDER BY created_at DESC');
+    return result.rows;
+  },
+
+  async create(clienteporRepartoData) {
+    const { clientId, repartoId } = clienteporRepartoData;
+    const now = new Date().toISOString();
+    
+    const result = await db.execute({
+      sql: `INSERT INTO clientesporReparto (clientId, repartoId, created_at, updated_at) 
+            VALUES (?, ?, ?, ?) RETURNING *`,
+      args: [clientId, repartoId, now, now]
+    });
+    
+    return result.rows[0];
+  },
+
+  async update(id, clienteporRepartoData) {
+    const { clientId, repartoId } = clienteporRepartoData;
+    const now = new Date().toISOString();
+    
+    const result = await db.execute({
+      sql: `UPDATE clientesporReparto SET clientId = ?, repartoId = ?, updated_at = ? 
+            WHERE id = ? RETURNING *`,
+      args: [clientId, repartoId, now, id]
+    });
+    
+    return result.rows[0];
+  },
+
+  async delete(id) {
+    const result = await db.execute({
+      sql: 'DELETE FROM clientesporReparto WHERE id = ? RETURNING *',
+      args: [id]
+    });
+    
+    return result.rows[0];
+  },
+
+  async deleteAll() {
+    const result = await db.execute('DELETE FROM clientesporReparto');
+    return result.rowsAffected;
   }
 };

@@ -89,18 +89,15 @@ export async function POST(request) {
     }
 
     try {
-      const newUser = await prisma.user.create({
-        data: userData,
-        select: {
-          id: true,
-          usuario: true,
-          created_at: true
-        }
-      });
+      const newUser = await userService.create(userData);
       
       return NextResponse.json({
         success: true,
-        user: newUser,
+        user: {
+          id: newUser.id,
+          usuario: newUser.usuario,
+          created_at: newUser.created_at
+        },
         message: 'Usuario creado exitosamente'
       });
     } catch (dbError) {
@@ -164,18 +161,15 @@ export async function PUT(request) {
     if (data.password) updateData.password = data.password;
 
     try {
-      const updatedUser = await prisma.user.update({
-        where: { id: parseInt(data.id) },
-        data: updateData,
-        select: {
-          id: true,
-          usuario: true,
-          updated_at: true
-        }
-      });
+      const updatedUser = await userService.update(parseInt(data.id), updateData);
       
       return NextResponse.json({
         success: true,
+        user: {
+          id: updatedUser.id,
+          usuario: updatedUser.usuario,
+          updated_at: updatedUser.updated_at
+        },
         user: updatedUser,
         message: 'Usuario actualizado exitosamente'
       });
@@ -221,22 +215,17 @@ export async function DELETE(request) {
     }
 
     try {
-      await prisma.user.delete({
-        where: { id: parseInt(id) }
-      });
+      await userService.delete(parseInt(id));
       
       return NextResponse.json({
         success: true,
         message: 'Usuario eliminado exitosamente'
       });
     } catch (dbError) {
-      if (dbError.code === 'P2025') {
-        return NextResponse.json(
-          { success: false, error: 'Usuario no encontrado' },
-          { status: 404 }
-        );
-      }
-      throw dbError;
+      return NextResponse.json(
+        { success: false, error: 'Error eliminando usuario' },
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error('Error eliminando usuario:', error);

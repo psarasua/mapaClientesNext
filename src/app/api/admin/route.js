@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import { prisma } from '../../../lib/prisma.js';
+import { 
+  userService, 
+  clientService, 
+  truckService, 
+  repartoService, 
+  diaEntregaService, 
+  clienteporRepartoService 
+} from '../../../lib/dbServices.js';
 
 // POST - Limpiar todos los datos de las tablas
 export async function POST(request) {
@@ -28,22 +35,22 @@ export async function POST(request) {
         let result;
         switch (table) {
           case 'users':
-            result = await prisma.user.deleteMany({});
+            result = await userService.deleteAll();
             break;
           case 'clients':
-            result = await prisma.client.deleteMany({});
+            result = await clientService.deleteAll();
             break;
           case 'trucks':
-            result = await prisma.truck.deleteMany({});
+            result = await truckService.deleteAll();
             break;
           case 'repartos':
-            result = await prisma.reparto.deleteMany({});
+            result = await repartoService.deleteAll();
             break;
           case 'diasEntrega':
-            result = await prisma.diaEntrega.deleteMany({});
+            result = await diaEntregaService.deleteAll();
             break;
           case 'clientesporReparto':
-            result = await prisma.clienteporReparto.deleteMany({});
+            result = await clienteporRepartoService.deleteAll();
             break;
           default:
             results[table] = { success: false, message: `Tabla ${table} no reconocida` };
@@ -53,7 +60,7 @@ export async function POST(request) {
         results[table] = { 
           success: true, 
           message: `Tabla ${table} limpiada exitosamente`,
-          deletedCount: result.count
+          deletedCount: result || 0
         };
       } catch (error) {
         results[table] = { 
@@ -100,7 +107,6 @@ export async function GET(request) {
   if (authError) return authError;
 
   try {
-    const db = new DatabaseAdapter();
     const status = {};
 
     const tables = ['users', 'clients', 'trucks', 'repartos', 'diasEntrega', 'clientesporReparto'];
@@ -110,22 +116,22 @@ export async function GET(request) {
         let data;
         switch (table) {
           case 'users':
-            data = await db.getAllUsers();
+            data = await userService.getAll();
             break;
           case 'clients':
-            data = await db.getAllClients();
+            data = await clientService.getAll();
             break;
           case 'trucks':
-            data = await db.getAllTrucks();
+            data = await truckService.getAll();
             break;
           case 'repartos':
-            data = await db.getAllRepartos();
+            data = await repartoService.getAll();
             break;
           case 'diasEntrega':
-            data = await db.getAllDiasEntrega();
+            data = await diaEntregaService.getAll();
             break;
           case 'clientesporReparto':
-            data = await db.getAllClientesporReparto();
+            data = await clienteporRepartoService.getAll();
             break;
         }
         

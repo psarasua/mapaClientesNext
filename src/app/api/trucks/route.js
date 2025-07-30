@@ -62,9 +62,7 @@ export async function POST(request) {
     }
 
     try {
-      const newTruck = await prisma.truck.create({
-        data: truckData
-      });
+      const newTruck = await truckService.create(truckData);
       
       return NextResponse.json({
         success: true,
@@ -129,10 +127,7 @@ export async function PUT(request) {
     }
 
     try {
-      const updatedTruck = await prisma.truck.update({
-        where: { id: parseInt(truckData.id) },
-        data: truckData
-      });
+      const updatedTruck = await truckService.update(parseInt(truckData.id), truckData);
 
       return NextResponse.json({
         success: true,
@@ -187,21 +182,17 @@ export async function DELETE(request) {
     }
 
     try {
-      await prisma.truck.delete({
-        where: { id: parseInt(id) }
-      });
+      await truckService.delete(parseInt(id));
 
       return NextResponse.json({
         success: true,
         message: 'Camión eliminado exitosamente'
       });
     } catch (dbError) {
-      if (dbError.code === 'P2025') {
-        return NextResponse.json(
-          { success: false, error: 'Camión no encontrado' },
-          { status: 404 }
-        );
-      }
+      return NextResponse.json(
+        { success: false, error: 'Error eliminando camión' },
+        { status: 500 }
+      );
       
       console.error('Error eliminando camión:', dbError);
       return NextResponse.json(

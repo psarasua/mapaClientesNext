@@ -32,7 +32,6 @@ const nextConfig = {
       config.externals.push({
         '@libsql/client': 'commonjs @libsql/client',
         '@libsql/isomorphic-ws': 'commonjs @libsql/isomorphic-ws',
-        '@prisma/adapter-libsql': 'commonjs @prisma/adapter-libsql',
       });
     }
     

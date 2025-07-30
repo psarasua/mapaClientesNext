@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma.js';
+import { userService } from '../../../../lib/dbServices.js';
 import { verifyPassword, generateToken } from '../../../../lib/auth.js';
 
 // Configurar runtime para compatibilidad con bcrypt y otras dependencias
@@ -19,9 +19,7 @@ export async function POST(request) {
 
     try {
       // Buscar usuario por nombre de usuario
-      const user = await prisma.user.findUnique({
-        where: { usuario }
-      });
+      const user = await userService.getByUsuario(usuario);
       
       if (!user) {
         return NextResponse.json({

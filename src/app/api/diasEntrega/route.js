@@ -44,9 +44,7 @@ export async function POST(request) {
     }
 
     try {
-      const newDiaEntrega = await prisma.diaEntrega.create({
-        data: diaEntregaData
-      });
+      const newDiaEntrega = await diaEntregaService.create(diaEntregaData);
       
       return NextResponse.json({
         success: true,
@@ -86,10 +84,7 @@ export async function PUT(request) {
     }
 
     try {
-      const updatedDiaEntrega = await prisma.diaEntrega.update({
-        where: { id: parseInt(id) },
-        data: diaEntregaData
-      });
+      const updatedDiaEntrega = await diaEntregaService.update(parseInt(id), diaEntregaData);
       
       return NextResponse.json({
         success: true,
@@ -137,9 +132,7 @@ export async function DELETE(request) {
     }
 
     try {
-      await prisma.diaEntrega.delete({
-        where: { id: parseInt(id) }
-      });
+      await diaEntregaService.delete(parseInt(id));
       
       return NextResponse.json({
         success: true,

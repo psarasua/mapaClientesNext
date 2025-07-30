@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import { prisma } from '../../../lib/prisma.js';
+import { clienteporRepartoService, repartoService, clientService } from '../../../lib/dbServices.js';
 import { validateCreateClienteporRepartoData } from '../../../types/index.js';
 
 // GET - Obtener todos los clientes por reparto
@@ -14,50 +14,33 @@ export async function GET(request) {
     const reparto = searchParams.get('reparto');
     const cliente = searchParams.get('cliente');
 
-    let whereClause = {};
+    // Obtener todas las asignaciones
+    const clientesporReparto = await clienteporRepartoService.getAll();
     
+    // Filtrar si se especifican parámetros
+    let filteredData = clientesporReparto;
     if (reparto) {
-      whereClause.reparto_id = parseInt(reparto);
+      filteredData = filteredData.filter(item => item.repartoId === parseInt(reparto));
     }
     if (cliente) {
-      whereClause.cliente_id = parseInt(cliente);
+      filteredData = filteredData.filter(item => item.clientId === parseInt(cliente));
     }
 
-    const clientesporReparto = await prisma.clienteporReparto.findMany({
-      where: whereClause,
-      include: {
-        reparto: {
-          include: {
-            diaEntrega: {
-              select: {
-                descripcion: true
-              }
-            },
-            camion: {
-              select: {
-                description: true
-              }
-            }
-          }
-        },
-        cliente: {
-          select: {
-            nombre: true
-          }
-        }
-      },
-      orderBy: {
-        id: 'asc'
-      }
-    });
-
-    // Transformar datos para mantener compatibilidad
-    const formattedClientesporReparto = clientesporReparto.map(item => ({
-      ...item,
-      dia_descripcion: item.reparto?.diaEntrega?.descripcion,
-      camion_descripcion: item.reparto?.camion?.description,
-      cliente_nombre: item.cliente?.nombre
-    }));
+    // Para cada item, obtener los datos relacionados
+    const formattedClientesporReparto = await Promise.all(
+      filteredData.map(async (item) => {
+        const reparto = await repartoService.getById(item.repartoId);
+        const cliente = await clientService.getById(item.clientId);
+        
+        return {
+          ...item,
+          reparto: reparto,
+          cliente: cliente,
+          dia_descripcion: reparto?.descripcion,
+          cliente_nombre: cliente?.nombre
+        };
+      })
+    );
 
     return NextResponse.json({
       success: true,
@@ -91,49 +74,38 @@ export async function POST(request) {
     }
 
     try {
-      const newClienteporReparto = await prisma.clienteporReparto.create({
-        data: clienteRepartoData,
-        include: {
-          reparto: {
-            include: {
-              diaEntrega: {
-                select: {
-                  descripcion: true
-                }
-              },
-              camion: {
-                select: {
-                  description: true
-                }
-              }
-            }
-          },
-          cliente: {
-            select: {
-              nombre: true
-            }
-          }
-        }
-      });
-      
-      return NextResponse.json({
-        success: true,
-        clienteporReparto: {
-          ...newClienteporReparto,
-          dia_descripcion: newClienteporReparto.reparto?.diaEntrega?.descripcion,
-          camion_descripcion: newClienteporReparto.reparto?.camion?.description,
-          cliente_nombre: newClienteporReparto.cliente?.nombre
-        },
-        message: 'Cliente asignado al reparto exitosamente'
-      }, { status: 201 });
-    } catch (dbError) {
-      if (dbError.code === 'P2002') {
+      // Verificar si ya existe la asignación
+      const existingAssignments = await clienteporRepartoService.getAll();
+      const duplicateExists = existingAssignments.some(item => 
+        item.clientId === clienteRepartoData.clientId && 
+        item.repartoId === clienteRepartoData.repartoId
+      );
+
+      if (duplicateExists) {
         return NextResponse.json({
           success: false,
           error: 'Este cliente ya está asignado a este reparto'
         }, { status: 409 });
       }
+
+      const newClienteporReparto = await clienteporRepartoService.create(clienteRepartoData);
       
+      // Obtener los datos relacionados para la respuesta
+      const reparto = await repartoService.getById(newClienteporReparto.repartoId);
+      const cliente = await clientService.getById(newClienteporReparto.clientId);
+      
+      return NextResponse.json({
+        success: true,
+        clienteporReparto: {
+          ...newClienteporReparto,
+          reparto: reparto,
+          cliente: cliente,
+          dia_descripcion: reparto?.descripcion,
+          cliente_nombre: cliente?.nombre
+        },
+        message: 'Cliente asignado al reparto exitosamente'
+      }, { status: 201 });
+    } catch (dbError) {
       console.error('Error creando asignación:', dbError);
       return NextResponse.json({
         success: false,
@@ -166,39 +138,20 @@ export async function PUT(request) {
     }
 
     try {
-      const updatedClienteporReparto = await prisma.clienteporReparto.update({
-        where: { id: parseInt(id) },
-        data: clienteRepartoData,
-        include: {
-          reparto: {
-            include: {
-              diaEntrega: {
-                select: {
-                  descripcion: true
-                }
-              },
-              camion: {
-                select: {
-                  description: true
-                }
-              }
-            }
-          },
-          cliente: {
-            select: {
-              nombre: true
-            }
-          }
-        }
-      });
+      const updatedClienteporReparto = await clienteporRepartoService.update(parseInt(id), clienteRepartoData);
+      
+      // Obtener los datos relacionados
+      const reparto = await repartoService.getById(updatedClienteporReparto.repartoId);
+      const cliente = await clientService.getById(updatedClienteporReparto.clientId);
       
       return NextResponse.json({
         success: true,
         clienteporReparto: {
           ...updatedClienteporReparto,
-          dia_descripcion: updatedClienteporReparto.reparto?.diaEntrega?.descripcion,
-          camion_descripcion: updatedClienteporReparto.reparto?.camion?.description,
-          cliente_nombre: updatedClienteporReparto.cliente?.nombre
+          reparto: reparto,
+          cliente: cliente,
+          dia_descripcion: reparto?.descripcion,
+          cliente_nombre: cliente?.nombre
         },
         message: 'Asignación actualizada exitosamente'
       });
@@ -249,22 +202,13 @@ export async function DELETE(request) {
     }
 
     try {
-      await prisma.clienteporReparto.delete({
-        where: { id: parseInt(id) }
-      });
+      await clienteporRepartoService.delete(parseInt(id));
       
       return NextResponse.json({
         success: true,
         message: 'Asignación eliminada exitosamente'
       });
     } catch (dbError) {
-      if (dbError.code === 'P2025') {
-        return NextResponse.json({
-          success: false,
-          error: 'Asignación no encontrada'
-        }, { status: 404 });
-      }
-      
       console.error('Error eliminando asignación:', dbError);
       return NextResponse.json({
         success: false,

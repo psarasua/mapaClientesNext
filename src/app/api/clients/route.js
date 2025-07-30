@@ -43,9 +43,7 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    const newClient = await prisma.client.create({
-      data: clientData
-    });
+    const newClient = await clientService.create(clientData);
     
     return NextResponse.json({
       success: true,
@@ -78,10 +76,7 @@ export async function PUT(request) {
       }, { status: 400 });
     }
 
-    const updatedClient = await prisma.client.update({
-      where: { id: parseInt(id) },
-      data: clientData
-    });
+    const updatedClient = await clientService.update(parseInt(id), clientData);
     
     return NextResponse.json({
       success: true,
@@ -122,9 +117,7 @@ export async function DELETE(request) {
       }, { status: 400 });
     }
 
-    await prisma.client.delete({
-      where: { id: parseInt(id) }
-    });
+    await clientService.delete(parseInt(id));
     
     return NextResponse.json({
       success: true,
@@ -132,13 +125,6 @@ export async function DELETE(request) {
     });
 
   } catch (error) {
-    if (error.code === 'P2025') {
-      return NextResponse.json({
-        success: false,
-        error: 'Cliente no encontrado'
-      }, { status: 404 });
-    }
-    
     console.error('Error eliminando cliente:', error);
     return NextResponse.json({
       success: false,
