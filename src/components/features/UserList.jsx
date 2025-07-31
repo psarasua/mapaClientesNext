@@ -69,7 +69,7 @@ export default function UserList() {
       resetForm();
       
       // Mostrar mensaje de éxito (podrías usar un toast aquí)
-      console.log(`Usuario ${editingUser ? 'actualizado' : 'creado'} exitosamente`);
+              // Usuario actualizado/creado exitosamente
       
     } catch (err) {
       setError(handleApiError(err));
@@ -98,7 +98,7 @@ export default function UserList() {
       await deleteUserMutation.mutateAsync(userToDelete.id);
       setShowDeleteModal(false);
       setUserToDelete(null);
-      console.log('Usuario eliminado exitosamente');
+              // Usuario eliminado exitosamente
     } catch (err) {
       setError(handleApiError(err));
       setShowDeleteModal(false);

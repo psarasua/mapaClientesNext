@@ -1,313 +1,200 @@
-# 🚚 MapaClientesNext - Sistema de Gestión Logística
+# 🗺️ MapaClientes - Sistema de Gestión de Clientes y Repartos
 
-Sistema completo de gestión logística desarrollado con **Next.js 15**, **React 19**, **SQLite** y **Bootstrap 5**. Permite administrar flotas de camiones, clientes, rutas de entrega y asignación de clientes por reparto con interfaz moderna y responsive.
+Una aplicación web fullstack moderna para la gestión de clientes, repartos y rutas de entrega con mapas interactivos.
 
-## 🎯 **Características Principales**
+## 🚀 Características
 
-- ✅ **Gestión Completa**: Usuarios, Camiones, Clientes, Días de Entrega y Repartos
-- ✅ **Asignación Inteligente**: Sistema de asignación de clientes por reparto
-- ✅ **Vista Dual**: Tabla detallada y vista agrupada por camión/día
-- ✅ **CRUD Completo**: Crear, leer, actualizar y eliminar en todas las entidades
-- ✅ **Base de Datos SQLite**: Persistencia local con relaciones complejas
-- ✅ **Interfaz Moderna**: Design responsive con Bootstrap 5
-- ✅ **APIs RESTful**: Endpoints completos con validación
-- ✅ **Datos de Ejemplo**: Sistema precargado con datos realistas
+- **🗺️ Mapas Interactivos**: Visualización de clientes y rutas con OpenLayers
+- **👥 Gestión de Clientes**: CRUD completo con geolocalización
+- **🚚 Gestión de Repartos**: Organización de rutas de entrega
+- **📅 Días de Entrega**: Configuración de horarios de reparto
+- **🚛 Gestión de Camiones**: Control de flota vehicular
+- **👤 Sistema de Usuarios**: Autenticación JWT con roles
+- **📊 Dashboard**: Estadísticas y métricas en tiempo real
+- **📱 Responsive**: Diseño adaptativo para móviles y tablets
 
-## 🏗️ **Arquitectura del Sistema**
+## 🛠️ Tecnologías
 
-### **Frontend**
-- **Next.js 15** con App Router y Turbopack
-- **React 19** con hooks y componentes funcionales
-- **Bootstrap 5** para diseño responsive
-- **6 Módulos principales** con navegación por pestañas
+- **Frontend**: Next.js 15, React 19, Bootstrap 5
+- **Backend**: Next.js API Routes
+- **Base de Datos**: SQLite con Turso
+- **Mapas**: OpenLayers
+- **Autenticación**: JWT con bcryptjs
+- **Estilos**: Bootstrap 5 + CSS personalizado
 
-### **Backend**
-- **Next.js API Routes** como servidor Node.js
-- **SQLite** con better-sqlite3 para base de datos
-- **Validación de datos** con sistema de tipos robusto
-- **Manejo de errores** comprehensive
+## 📋 Requisitos
 
-### **Base de Datos**
-```sql
-Usuarios (5) → Camiones (5) → Clientes (10) 
-    ↓             ↓              ↓
-DiasEntrega (5) → Repartos (25) → ClientesporReparto (76)
-```
+- Node.js 18+ 
+- npm o yarn
+- Cuenta en Turso (para base de datos)
 
-## 🚀 **Instalación Rápida**
+## ⚙️ Instalación
 
-### **1. Clonar el repositorio**
+1. **Clonar el repositorio**
 ```bash
-git clone https://github.com/psarasua/mapaClientesNext.git
+git clone https://github.com/tu-usuario/mapaClientesNext.git
 cd mapaClientesNext
 ```
 
-### **2. Instalar dependencias**
+2. **Instalar dependencias**
 ```bash
 npm install
 ```
 
-### **3. Configurar variables de entorno**
+3. **Configurar variables de entorno**
 ```bash
-# Copiar el archivo de ejemplo
-cp .env.example .env.local
-
-# Editar las variables según tu configuración
-# Para desarrollo: mantén DATABASE_URL con SQLite
-# Para producción: configura TURSO_DATABASE_URL y TURSO_AUTH_TOKEN
+cp .env.example .env
 ```
 
-#### **Variables principales:**
-- `DATABASE_URL`: Base de datos SQLite local (desarrollo)
-- `TURSO_DATABASE_URL`: Base de datos Turso (producción)
-- `TURSO_AUTH_TOKEN`: Token de autenticación de Turso
-- `NEXT_PUBLIC_APP_URL`: URL base de la aplicación
+Editar `.env` con tus credenciales:
+```env
+# JWT Secret (cambiar en producción)
+JWT_SECRET=tu-super-secret-jwt-key-cambiar-en-produccion
 
-### **4. Iniciar el servidor**
+# Base de datos Turso
+TURSO_DATABASE_URL=@libsql://tu-db.turso.io
+TURSO_AUTH_TOKEN=tu-auth-token
+
+# Configuración de la aplicación
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+NODE_ENV=development
+```
+
+4. **Ejecutar el proyecto**
 ```bash
 npm run dev
 ```
 
-### **5. Abrir en el navegador**
+5. **Acceder a la aplicación**
 ```
 http://localhost:3000
 ```
 
-> 💡 **Nota**: Si el puerto 3000 está ocupado, Next.js automáticamente usará el siguiente disponible (3001, 3002, etc.)
+## 👤 Credenciales por Defecto
 
-## 📊 **Módulos del Sistema**
+- **Usuario**: admin
+- **Contraseña**: admin123
 
-### **1. 👥 Usuarios**
-- Gestión de personal de la empresa
-- CRUD completo con validaciones
-- Campos: nombre, email, teléfono, cargo
-
-### **2. 🚚 Camiones**
-- Administración de flota vehicular
-- Control de patentes y descripciones
-- Estados y disponibilidad
-
-### **3. 🏢 Clientes**
-- Base de datos de clientes
-- Información completa: razón social, dirección, RUT
-- Códigos alternativos y contactos
-
-### **4. 📅 Días de Entrega**
-- Configuración de días laborables
-- Horarios y rutas específicas
-- Planificación semanal
-
-### **5. 🚛 Repartos**
-- Combinación día + camión
-- 25 repartos automáticos (5 días × 5 camiones)
-- Vista matriz para planificación
-
-### **6. 👨‍💼 Clientes por Reparto** ⭐
-- **Funcionalidad Principal**: Asignación de clientes a repartos
-- **Vista Agrupada**: Organizada por camión y día
-- **Vista Tabla**: Lista detallada con filtros
-- **Gestión Completa**: Agregar/quitar clientes fácilmente
-
-## 🎮 **Cómo Usar el Sistema**
-
-### **Navegación Principal**
-1. **Pestañas superiores**: Cambia entre los 6 módulos
-2. **Botones de acción**: Crear, editar, eliminar registros
-3. **Filtros**: Buscar por criterios específicos
-4. **Vistas alternativas**: Tabla vs. vista agrupada
-
-### **Gestión de Clientes por Reparto**
-1. Ve a la pestaña **"Clientes por Reparto"**
-2. **Vista Agrupada**: Ver clientes por camión/día
-3. **Agregar**: Botón "Agregar Asignación" → seleccionar reparto + cliente
-4. **Eliminar**: Botón 🗑️ junto a cada cliente
-5. **Filtrar**: Por reparto específico o cliente específico
-
-### **Flujo de Trabajo Típico**
-1. **Configurar usuarios** y camiones disponibles
-2. **Registrar clientes** con información completa
-3. **Configurar días de entrega** operativos
-4. **Los repartos se generan automáticamente** (día × camión)
-5. **Asignar clientes** a cada reparto según rutas
-6. **Visualizar planificación** en vista agrupada
-
-## 📁 **Estructura del Proyecto**
+## 📁 Estructura del Proyecto
 
 ```
-📁 mapaClientesNext/
-├── 📁 src/
-│   ├── 📁 app/
-│   │   ├── 📁 api/                 # Endpoints REST
-│   │   │   ├── 📁 users/          # CRUD usuarios
-│   │   │   ├── 📁 trucks/         # CRUD camiones
-│   │   │   ├── 📁 clients/        # CRUD clientes
-│   │   │   ├── 📁 diasEntrega/    # CRUD días entrega
-│   │   │   ├── 📁 repartos/       # CRUD repartos
-│   │   │   ├── 📁 clientesporreparto/ # CRUD asignaciones
-│   │   │   └── 📁 health/         # Health check
-│   │   ├── layout.js              # Layout principal
-│   │   └── page.js                # Página principal
-│   ├── 📁 components/
-│   │   ├── UserList.jsx           # Gestión usuarios
-│   │   ├── TruckList.jsx          # Gestión camiones
-│   │   ├── ClientList.jsx         # Gestión clientes
-│   │   ├── DiaEntregaList.jsx     # Gestión días
-│   │   ├── RepartoList.jsx        # Gestión repartos
-│   │   ├── ClientesporRepartoList.jsx # ⭐ Asignaciones
-│   │   └── ApiStatus.jsx          # Estado del sistema
-│   ├── 📁 lib/
-│   │   ├── 📁 database/
-│   │   │   └── sqlite.js          # Motor de base de datos
-│   │   └── api.js                 # Cliente API
-│   └── 📁 types/
-│       └── index.js               # Validaciones y tipos
-├── 📁 data/
-│   └── users.db                   # Base de datos SQLite
-├── 📁 .github/
-│   └── copilot-instructions.md    # Instrucciones desarrollo
-└── 📄 Archivos configuración (package.json, next.config.js, etc.)
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes
+│   ├── globals.css        # Estilos globales
+│   └── layout.js          # Layout principal
+├── components/            # Componentes React
+│   ├── features/          # Componentes de funcionalidad
+│   ├── layout/            # Componentes de layout
+│   ├── maps/              # Componentes de mapas
+│   └── ui/                # Componentes de UI
+├── config/                # Configuraciones
+├── contexts/              # Contextos React
+├── hooks/                 # Custom hooks
+├── lib/                   # Utilidades y servicios
+│   └── services/          # Servicios de base de datos
+└── styles/                # Estilos adicionales
 ```
 
-## 🛠️ **APIs Disponibles**
+## 🗄️ Base de Datos
 
-### **Endpoints REST**
-```
-GET/POST/PUT/DELETE /api/users              # Usuarios
-GET/POST/PUT/DELETE /api/trucks             # Camiones  
-GET/POST/PUT/DELETE /api/clients            # Clientes
-GET/POST/PUT/DELETE /api/diasEntrega        # Días entrega
-GET/POST/PUT/DELETE /api/repartos           # Repartos
-GET/POST/PUT/DELETE /api/clientesporreparto # Asignaciones
-GET                 /api/health             # Estado sistema
-```
+### Tablas Principales
 
-### **Filtros Especiales**
-```
-GET /api/clientesporreparto?reparto=1       # Por reparto
-GET /api/clientesporreparto?cliente=5       # Por cliente
-GET /api/repartos?dia=1&camion=2           # Por día y camión
-```
+- **users**: Usuarios del sistema
+- **clients**: Clientes con geolocalización
+- **repartos**: Rutas de reparto
+- **trucks**: Flota vehicular
+- **diasEntrega**: Horarios de entrega
+- **clientesporReparto**: Relación clientes-repartos
 
-## 💾 **Base de Datos**
-
-### **Tablas y Relaciones**
-- **Users**: Gestión de personal
-- **Trucks**: Flota de vehículos  
-- **Clients**: Base de clientes
-- **DiasEntrega**: Días operativos
-- **Repartos**: día_id + camion_id (25 combinaciones)
-- **ClientesporReparto**: reparto_id + cliente_id (76 asignaciones)
-
-### **Datos de Ejemplo Incluidos**
-- 5 usuarios con diferentes cargos
-- 5 camiones con patentes realistas
-- 10 clientes con datos completos
-- 5 días de entrega (Lunes a Viernes)
-- 25 repartos automáticos
-- 76 asignaciones de clientes distribuidas aleatoriamente
-
-## 🔧 **Comandos Disponibles**
+## 🔧 Scripts Disponibles
 
 ```bash
-npm run dev          # Servidor desarrollo (puerto 3000)
-npm run build        # Build producción
-npm run start        # Servidor producción
-npm run lint         # Linting código
+# Desarrollo
+npm run dev          # Servidor de desarrollo
+npm run build        # Build de producción
+npm run start        # Servidor de producción
+
+# Linting
+npm run lint         # Verificar código
+npm run lint:fix     # Corregir errores automáticamente
+
+# Validación
+npm run validate     # Validar configuración
 ```
 
-## 📚 **Documentación Completa**
+## 🚀 Despliegue
 
-Toda la documentación técnica está organizada en la carpeta **`docs/`**:
+### Vercel (Recomendado)
 
-### **📋 Guías de Desarrollo**
-- **[📁 docs/IMPORT_GUIDE.md](./docs/IMPORT_GUIDE.md)** - Solución de errores de importación y rutas
+1. Conectar repositorio a Vercel
+2. Configurar variables de entorno
+3. Desplegar automáticamente
 
-### **🚀 Configuración de Producción**
-- **[✅ docs/PRODUCTION_VALIDATION.md](./docs/PRODUCTION_VALIDATION.md)** - Validación para producción  
-- **[☁️ docs/VERCEL_CONFIG.md](./docs/VERCEL_CONFIG.md)** - Despliegue en Vercel
-- **[🗃️ docs/TURSO_SETUP.md](./docs/TURSO_SETUP.md)** - Base de datos Turso
+### Otros Proveedores
 
-### **📖 Índice Completo**
-👉 **Documentación técnica disponible en carpeta `/docs/`**
+- **Netlify**: Configurar build command `npm run build`
+- **Railway**: Despliegue directo desde GitHub
+- **Heroku**: Configurar Procfile
 
-## 🔒 **Seguridad y Autenticación**
+## 🔒 Seguridad
 
-- **🛡️ Middleware de protección** en todas las rutas principales
-- **🔐 JWT Authentication** con bcrypt para passwords
-- **🚫 Rutas protegidas:** `/`, `/dashboard`, `/configuracion`, `/import`, `/api/*`
-- **✅ Rutas públicas:** `/login`, `/api/auth/login`, `/api/health`
-- **👤 Usuario por defecto:** `admin` / `admin123`
+- Autenticación JWT
+- Validación de roles
+- Middleware de protección de rutas
+- Variables de entorno seguras
+- Sanitización de datos
 
-## 🌟 **Características Técnicas**
+## 📊 Funcionalidades
 
-### **Tecnologías**
-- **Next.js 15.4.2** con Turbopack
-- **React 19** con Concurrent Features
-- **SQLite** con better-sqlite3
-- **Bootstrap 5.3** para UI
-- **JavaScript ES6+** con modules
+### Dashboard
+- Estadísticas en tiempo real
+- Gráficos de rendimiento
+- Resumen de actividades
 
-### **Funcionalidades Avanzadas**
-- **Relaciones complejas** entre entidades
-- **Validación robusta** de datos
-- **Manejo de errores** comprehensive  
-- **Interfaz responsive** mobile-first
-- **Carga automática** de datos ejemplo
-- **APIs con filtros** y búsquedas
-- **Estado persistente** con SQLite
+### Gestión de Clientes
+- CRUD completo
+- Geolocalización automática
+- Búsqueda y filtros
+- Exportación de datos
 
-## 📝 **Desarrollo y Contribución**
+### Mapas Interactivos
+- Visualización de clientes
+- Rutas de reparto
+- Selección de ubicaciones
+- Zoom y navegación
 
-### **Estructura de Commits**
-```bash
-git add .
-git commit -m "feat: descripción de nueva funcionalidad"
-git push origin main
-```
+### Repartos
+- Creación de rutas
+- Asignación de clientes
+- Optimización de recorridos
+- Seguimiento en tiempo real
 
-### **Extensiones Recomendadas**
-- ES7+ React/Redux/React-Native snippets
-- Better SQLite3 VSCode
-- Bootstrap 5 & Font Awesome snippets
+## 🤝 Contribuir
 
-## 🎯 **Casos de Uso**
+1. Fork el proyecto
+2. Crear rama feature (`git checkout -b feature/AmazingFeature`)
+3. Commit cambios (`git commit -m 'Add AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abrir Pull Request
 
-### **Empresas de Logística**
-- Planificación de rutas diarias
-- Asignación eficiente de clientes
-- Control de flota vehicular
-- Seguimiento de entregas
+## 📝 Licencia
 
-### **Distribuidoras**
-- Gestión de clientes por zona
-- Optimización de repartos
-- Control de días operativos
-- Administración de recursos
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
 
-### **Pequeñas y Medianas Empresas**
-- Sistema completo sin costos de licencia
-- Fácil implementación local
-- Datos seguros en SQLite
-- Interface intuitiva
+## 📞 Soporte
 
-## 📞 **Soporte**
+- **Issues**: [GitHub Issues](https://github.com/tu-usuario/mapaClientesNext/issues)
+- **Email**: soporte@mapaclientes.com
+- **Documentación**: [Wiki del proyecto](https://github.com/tu-usuario/mapaClientesNext/wiki)
 
-- **Repositorio**: https://github.com/psarasua/mapaClientesNext
-- **Issues**: Reportar bugs y solicitar features
-- **Documentación**: README.md actualizado
-- **Código**: Completamente comentado
+## 🙏 Agradecimientos
+
+- Next.js por el framework
+- OpenLayers por los mapas
+- Bootstrap por el diseño
+- Turso por la base de datos
 
 ---
 
-## 🏆 **¡Sistema Listo para Producción!**
-
-El proyecto incluye **todo lo necesario** para un sistema de gestión logística completo:
-- ✅ Base de datos funcional con datos ejemplo
-- ✅ APIs REST completas y documentadas  
-- ✅ Interface moderna y responsive
-- ✅ CRUD completo en todas las entidades
-- ✅ Sistema de asignaciones avanzado
-- ✅ Validaciones y manejo de errores
-- ✅ Documentación completa
-
-**¡Simplemente instala y ejecuta!** 🚀
+**Desarrollado con ❤️ para optimizar la gestión de clientes y repartos**

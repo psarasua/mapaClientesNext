@@ -1,24 +1,22 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
 import * as XLSX from 'xlsx';
-import { 
-  userService, 
-  clientService, 
-  truckService, 
-  repartoService, 
-  diaEntregaService 
-} from '../../../lib/dbServices.js';
+import { userService } from '../../../lib/services/userService.js';
+import { clientService } from '../../../lib/services/clientService.js';
+import { truckService } from '../../../lib/services/truckService.js';
+import { repartoService } from '../../../lib/services/repartoService.js';
+import { diaEntregaService } from '../../../lib/services/diaEntregaService.js';
 
 // Configurar runtime para compatibilidad
 export const runtime = 'nodejs';
 
 export async function POST(request) {
-  // Verificar autenticación
+  // Verificar autenticaciÃ³n
   const authError = requireAuth(request);
   if (authError) return authError;
 
   try {
-    console.log('🔍 [IMPORT] Iniciando importación de Excel...');
+    logger.info('ðŸ” [IMPORT] Iniciando importaciÃ³n de Excel...');
     
     const formData = await request.formData();
     const file = formData.get('file');
@@ -28,7 +26,7 @@ export async function POST(request) {
     if (!file) {
       return NextResponse.json({
         success: false,
-        error: 'No se ha seleccionado ningún archivo'
+        error: 'No se ha seleccionado ningÃºn archivo'
       }, { status: 400 });
     }
     
@@ -39,7 +37,7 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    console.log(`🔍 [IMPORT] Archivo: ${file.name}, Tabla: ${tableType}`);
+    logger.info(`ðŸ” [IMPORT] Archivo: ${file.name}, Tabla: ${tableType}`);
 
     // Leer el archivo Excel
     const arrayBuffer = await file.arrayBuffer();
@@ -48,16 +46,16 @@ export async function POST(request) {
     const worksheet = workbook.Sheets[sheetName];
     const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-    console.log(`🔍 [IMPORT] ${jsonData.length} filas encontradas`);
+    logger.info(`ðŸ” [IMPORT] ${jsonData.length} filas encontradas`);
 
     if (jsonData.length === 0) {
       return NextResponse.json({
         success: false,
-        error: 'El archivo Excel está vacío o no tiene datos válidos'
+        error: 'El archivo Excel estÃ¡ vacÃ­o o no tiene datos vÃ¡lidos'
       }, { status: 400 });
     }
 
-    // Procesar según el tipo de tabla
+    // Procesar segÃºn el tipo de tabla
     switch (tableType) {
       case 'clients':
         const clientResults = await importClients(jsonData, replaceData);
@@ -87,11 +85,11 @@ export async function POST(request) {
         }, { status: 400 });
     }
 
-    console.log(`🔍 [IMPORT] Importación completada: ${importedCount} nuevos registros, ${updatedCount} actualizados`);
+    logger.info(`ðŸ” [IMPORT] ImportaciÃ³n completada: ${importedCount} nuevos registros, ${updatedCount} actualizados`);
 
     return NextResponse.json({
       success: true,
-      message: `Importación completada exitosamente`,
+      message: `ImportaciÃ³n completada exitosamente`,
       imported: importedCount,
       updated: updatedCount,
       total: jsonData.length,
@@ -100,7 +98,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('🔍 [IMPORT] Error:', error);
+    console.error('ðŸ” [IMPORT] Error:', error);
     return NextResponse.json({
       success: false,
       error: 'Error procesando el archivo',
@@ -109,7 +107,7 @@ export async function POST(request) {
   }
 }
 
-// Función para importar clientes
+// FunciÃ³n para importar clientes
 async function importClients(data, replaceData = false) {
   let imported = 0;
   let updated = 0;
@@ -118,11 +116,11 @@ async function importClients(data, replaceData = false) {
   // Si se debe reemplazar, limpiar datos existentes
   if (replaceData) {
     try {
-      console.log('🗑️ [IMPORT] Eliminando todos los clientes existentes...');
+      logger.info('ðŸ—‘ï¸ [IMPORT] Eliminando todos los clientes existentes...');
       await clientService.deleteAll();
-      console.log('✅ [IMPORT] Clientes existentes eliminados');
+      logger.info('âœ… [IMPORT] Clientes existentes eliminados');
     } catch (error) {
-      console.error('❌ [IMPORT] Error eliminando clientes:', error);
+      console.error('âŒ [IMPORT] Error eliminando clientes:', error);
       errors.push(`Error eliminando datos existentes: ${error.message}`);
     }
   }
@@ -156,7 +154,7 @@ async function importClients(data, replaceData = false) {
 
       // Validar campos requeridos
       if (!client.Codigo || client.Codigo.length === 0) {
-        errors.push(`Fila ${i + 2}: Código es requerido`);
+        errors.push(`Fila ${i + 2}: CÃ³digo es requerido`);
         continue;
       }
       if (!client.Nombre || client.Nombre.length === 0) {
@@ -166,11 +164,11 @@ async function importClients(data, replaceData = false) {
 
       // Validar longitud de campos
       if (client.Codigo.length > 50) {
-        errors.push(`Fila ${i + 2}: Código demasiado largo (máximo 50 caracteres)`);
+        errors.push(`Fila ${i + 2}: CÃ³digo demasiado largo (mÃ¡ximo 50 caracteres)`);
         continue;
       }
       if (client.Nombre.length > 255) {
-        errors.push(`Fila ${i + 2}: Nombre demasiado largo (máximo 255 caracteres)`);
+        errors.push(`Fila ${i + 2}: Nombre demasiado largo (mÃ¡ximo 255 caracteres)`);
         continue;
       }
 
@@ -189,7 +187,7 @@ async function importClients(data, replaceData = false) {
   return { imported, updated, errors };
 }
 
-// Función para importar camiones
+// FunciÃ³n para importar camiones
 async function importTrucks(data, replaceData = false) {
   let imported = 0;
   let updated = 0;
@@ -198,11 +196,11 @@ async function importTrucks(data, replaceData = false) {
   // Si se debe reemplazar, limpiar datos existentes
   if (replaceData) {
     try {
-      console.log('🗑️ [IMPORT] Eliminando todos los camiones existentes...');
+      logger.info('ðŸ—‘ï¸ [IMPORT] Eliminando todos los camiones existentes...');
       await truckService.deleteAll();
-      console.log('✅ [IMPORT] Camiones existentes eliminados');
+      logger.info('âœ… [IMPORT] Camiones existentes eliminados');
     } catch (error) {
-      console.error('❌ [IMPORT] Error eliminando camiones:', error);
+      console.error('âŒ [IMPORT] Error eliminando camiones:', error);
       errors.push(`Error eliminando datos existentes: ${error.message}`);
     }
   }
@@ -211,12 +209,12 @@ async function importTrucks(data, replaceData = false) {
     const row = data[i];
     try {
       const truck = {
-        description: row['descripcion'] || row['Descripción'] || row['DESCRIPCION'] || 
+        description: row['descripcion'] || row['DescripciÃ³n'] || row['DESCRIPCION'] || 
                     row['Nombre'] || row['nombre'] || row['NOMBRE'] || ''
       };
 
       if (!truck.description.trim()) {
-        errors.push(`Fila ${i + 2}: Descripción es requerida`);
+        errors.push(`Fila ${i + 2}: DescripciÃ³n es requerida`);
         continue;
       }
 
@@ -230,7 +228,7 @@ async function importTrucks(data, replaceData = false) {
   return { imported, updated, errors };
 }
 
-// Función para importar repartos
+// FunciÃ³n para importar repartos
 async function importRepartos(data, replaceData = false) {
   let imported = 0;
   let updated = 0;
@@ -239,11 +237,11 @@ async function importRepartos(data, replaceData = false) {
   // Si se debe reemplazar, limpiar datos existentes
   if (replaceData) {
     try {
-      console.log('🗑️ [IMPORT] Eliminando todos los repartos existentes...');
+      logger.info('ðŸ—‘ï¸ [IMPORT] Eliminando todos los repartos existentes...');
       await repartoService.deleteAll();
-      console.log('✅ [IMPORT] Repartos existentes eliminados');
+      logger.info('âœ… [IMPORT] Repartos existentes eliminados');
     } catch (error) {
-      console.error('❌ [IMPORT] Error eliminando repartos:', error);
+      console.error('âŒ [IMPORT] Error eliminando repartos:', error);
       errors.push(`Error eliminando datos existentes: ${error.message}`);
     }
   }
@@ -253,7 +251,7 @@ async function importRepartos(data, replaceData = false) {
     try {
       const reparto = {
         nombre: row['nombre'] || row['Nombre'] || row['NOMBRE'] || '',
-        descripcion: row['descripcion'] || row['Descripción'] || row['DESCRIPCION'] || '',
+        descripcion: row['descripcion'] || row['DescripciÃ³n'] || row['DESCRIPCION'] || '',
         color: row['color'] || row['Color'] || row['COLOR'] || '#007bff'
       };
 
@@ -273,32 +271,33 @@ async function importRepartos(data, replaceData = false) {
 }
 
 export async function GET(request) {
-  // Verificar autenticación
+  // Verificar autenticaciÃ³n
   const authError = requireAuth(request);
   if (authError) return authError;
 
   return NextResponse.json({
-    message: 'Endpoint de importación de Excel',
+    message: 'Endpoint de importaciÃ³n de Excel',
     supportedTables: ['clients', 'trucks', 'repartos'],
     expectedColumns: {
       clients: [
-        'Código (opcional)',
-        'Razón Social',
-        'Dirección',
-        'Teléfono',
+        'CÃ³digo (opcional)',
+        'RazÃ³n Social',
+        'DirecciÃ³n',
+        'TelÃ©fono',
         'Email',
         'Latitud (opcional)',
         'Longitud (opcional)',
         'Observaciones (opcional)'
       ],
       trucks: [
-        'Descripción'
+        'DescripciÃ³n'
       ],
       repartos: [
         'Nombre',
-        'Descripción (opcional)',
+        'DescripciÃ³n (opcional)',
         'Color (opcional, formato hex)'
       ]
     }
   });
 }
+

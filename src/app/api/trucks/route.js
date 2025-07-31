@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import { truckService } from '../../../lib/dbServices.js';
+import { truckService } from '../../../lib/services/truckService.js';
 
 // GET - Obtener todos los camiones
 export async function GET(request) {

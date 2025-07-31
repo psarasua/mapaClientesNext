@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import { userService } from '../../../../lib/dbServices.js';
+import { userService } from '../../../../lib/services/userService.js';
 import { verifyPassword, generateToken } from '../../../../lib/auth.js';
+import { validateObject, validationSchemas } from '../../../../lib/validation.js';
+import { logger } from '../../../../lib/logger.js';
 
 // Configurar runtime para compatibilidad con bcrypt y otras dependencias
 export const runtime = 'nodejs';
@@ -9,11 +11,13 @@ export async function POST(request) {
   try {
     const { usuario, password } = await request.json();
     
-    // Validar datos de entrada
-    if (!usuario || !password) {
+    // Validar datos de entrada usando esquemas
+    const validation = validateObject({ usuario, password }, validationSchemas.user);
+    if (!validation.isValid) {
+      logger.warning('Login fallido - validación:', validation.errors);
       return NextResponse.json({
         success: false,
-        error: 'Usuario y contraseña son requeridos'
+        error: Object.values(validation.errors)[0] || 'Datos de entrada inválidos'
       }, { status: 400 });
     }
 

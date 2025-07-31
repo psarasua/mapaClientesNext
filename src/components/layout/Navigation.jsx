@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Navbar, Nav, Container, Offcanvas, Badge, Dropdown, Button } from 'react-bootstrap';
 import { FaUser, FaSignOutAlt } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
-import { LogoSmall } from './Logo';
+import { LogoSmall } from '../ui/Logo';
 
 // Iconos SVG con colores originales
 const IconHome = () => (

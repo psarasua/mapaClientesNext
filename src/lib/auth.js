@@ -1,8 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { config } from './config.js';
 
-// Configuración
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production';
 const SALT_ROUNDS = 12;
 
 // Hashear contraseña
@@ -22,15 +21,15 @@ export function generateToken(user) {
     usuario: user.usuario
   };
 
-  return jwt.sign(payload, JWT_SECRET, { 
-    expiresIn: '24h' 
+  return jwt.sign(payload, config.jwt.secret, { 
+    expiresIn: config.jwt.expiresIn 
   });
 }
 
 // Verificar JWT token
 export function verifyToken(token) {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, config.jwt.secret);
     return { valid: true, data: decoded };
   } catch (error) {
     return { valid: false, error: error.message };

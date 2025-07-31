@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import 'bootswatch/dist/flatly/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import "./globals.css";
+import "../styles/globals.css";
 import { AuthProvider } from '../contexts/AuthContext';
 import { QueryProvider } from '../components/providers/QueryProvider';
 

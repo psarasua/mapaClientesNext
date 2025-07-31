@@ -4,7 +4,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { Button, Form, Alert, Spinner } from 'react-bootstrap';
 import { handleApiError } from '../../lib/api.js';
 import { useClients, useCreateClient, useUpdateClient, useDeleteClient } from '../../hooks/useClients';
-import LocationPickerMap from './LocationPickerMap.jsx';
+import LocationPickerMap from '../maps/LocationPickerMap.jsx';
 import AdvancedClientTable from './AdvancedClientTable.jsx';
 
 const ClientList = () => {

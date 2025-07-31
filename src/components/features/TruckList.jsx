@@ -65,7 +65,7 @@ export default function TruckList() {
       resetForm();
       
       // Mostrar mensaje de éxito
-      console.log(`Camión ${editingTruck ? 'actualizado' : 'creado'} exitosamente`);
+              // Camión actualizado/creado exitosamente
       
     } catch (err) {
       setError(handleApiError(err));

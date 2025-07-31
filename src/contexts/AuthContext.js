@@ -59,11 +59,11 @@ export function AuthProvider({ children }) {
   };
 
   const isAdmin = () => {
-    return true; // Todos los usuarios tienen permisos de admin
+    return user?.role === 'admin' || user?.usuario === 'admin';
   };
 
   const isSupervisor = () => {
-    return true; // Todos los usuarios tienen permisos de supervisor
+    return user?.role === 'supervisor' || user?.role === 'admin' || user?.usuario === 'admin';
   };
 
   const value = {

@@ -1,17 +1,27 @@
 import { createClient } from '@libsql/client';
+import { validateEnvironment, config } from './config.js';
+import { logger } from './logger.js';
 
 const globalForDb = globalThis;
 
 let db;
 
 if (typeof window === 'undefined') {
+  // Validar variables de entorno en el servidor
+  try {
+    validateEnvironment();
+  } catch (error) {
+    logger.error('Error de configuración:', error.message);
+    throw error;
+  }
+
   // Solo en el servidor
   db = globalForDb.db || createClient({
-    url: process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL,
-    authToken: process.env.TURSO_AUTH_TOKEN,
+    url: config.database.url,
+    authToken: config.database.authToken,
   });
   
-  if (process.env.NODE_ENV !== 'production') {
+  if (config.app.nodeEnv !== 'production') {
     globalForDb.db = db;
   }
 } else {

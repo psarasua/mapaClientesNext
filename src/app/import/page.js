@@ -5,7 +5,7 @@ import { Container, Row, Col, Card, Form, Button, Alert, ProgressBar, Table, Bad
 import { FaUpload, FaFileExcel, FaDownload, FaInfoCircle, FaArrowLeft } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
-import Navigation from '../../components/common/Navigation';
+import Navigation from '../../components/layout/Navigation';
 import * as XLSX from 'xlsx';
 
 export default function ImportPage() {

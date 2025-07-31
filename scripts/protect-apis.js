@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 
 import fs from 'fs';
 import path from 'path';
@@ -18,21 +18,21 @@ const apiRoutes = [
   'src/app/api/import-excel/route.js'
 ];
 
-// Rutas que deben quedar públicas
+// Rutas que deben quedar pÃºblicas
 const publicRoutes = [
   'src/app/api/auth/login/route.js',
   'src/app/api/health/route.js'
 ];
 
 function addAuthToFile(filePath) {
-  console.log(`🔒 Protegiendo: ${filePath}`);
+  logger.info(`ðŸ”’ Protegiendo: ${filePath}`);
   
   try {
     let content = fs.readFileSync(filePath, 'utf8');
     
-    // Verificar si ya tiene protección
+    // Verificar si ya tiene protecciÃ³n
     if (content.includes('requireAuth')) {
-      console.log(`  ✅ Ya está protegido: ${filePath}`);
+      logger.info(`  âœ… Ya estÃ¡ protegido: ${filePath}`);
       return;
     }
     
@@ -44,68 +44,69 @@ function addAuthToFile(filePath) {
       );
     }
     
-    // Proteger función GET
+    // Proteger funciÃ³n GET
     content = content.replace(
       /export async function GET\(\s*([^)]*)\s*\)\s*{/g,
       (match, params) => {
         const param = params.trim() || 'request';
-        return `export async function GET(${param}) {\n  // Verificar autenticación\n  const authError = requireAuth(${param});\n  if (authError) return authError;\n`;
+        return `export async function GET(${param}) {\n  // Verificar autenticaciÃ³n\n  const authError = requireAuth(${param});\n  if (authError) return authError;\n`;
       }
     );
     
-    // Proteger función POST
+    // Proteger funciÃ³n POST
     content = content.replace(
       /export async function POST\(\s*([^)]*)\s*\)\s*{/g,
       (match, params) => {
         const param = params.trim() || 'request';
-        return `export async function POST(${param}) {\n  // Verificar autenticación\n  const authError = requireAuth(${param});\n  if (authError) return authError;\n`;
+        return `export async function POST(${param}) {\n  // Verificar autenticaciÃ³n\n  const authError = requireAuth(${param});\n  if (authError) return authError;\n`;
       }
     );
     
-    // Proteger función PUT
+    // Proteger funciÃ³n PUT
     content = content.replace(
       /export async function PUT\(\s*([^)]*)\s*\)\s*{/g,
       (match, params) => {
         const param = params.trim() || 'request';
-        return `export async function PUT(${param}) {\n  // Verificar autenticación\n  const authError = requireAuth(${param});\n  if (authError) return authError;\n`;
+        return `export async function PUT(${param}) {\n  // Verificar autenticaciÃ³n\n  const authError = requireAuth(${param});\n  if (authError) return authError;\n`;
       }
     );
     
-    // Proteger función DELETE
+    // Proteger funciÃ³n DELETE
     content = content.replace(
       /export async function DELETE\(\s*([^)]*)\s*\)\s*{/g,
       (match, params) => {
         const param = params.trim() || 'request';
-        return `export async function DELETE(${param}) {\n  // Verificar autenticación\n  const authError = requireAuth(${param});\n  if (authError) return authError;\n`;
+        return `export async function DELETE(${param}) {\n  // Verificar autenticaciÃ³n\n  const authError = requireAuth(${param});\n  if (authError) return authError;\n`;
       }
     );
     
     // Guardar archivo modificado
     fs.writeFileSync(filePath, content);
-    console.log(`  ✅ Protegido exitosamente: ${filePath}`);
+    logger.info(`  âœ… Protegido exitosamente: ${filePath}`);
     
   } catch (error) {
-    console.log(`  ❌ Error protegiendo ${filePath}: ${error.message}`);
+    logger.info(`  âŒ Error protegiendo ${filePath}: ${error.message}`);
   }
 }
 
 // Proteger todas las rutas
-console.log('🛡️  Iniciando protección masiva de APIs...\n');
+logger.info('ðŸ›¡ï¸  Iniciando protecciÃ³n masiva de APIs...\n');
 
 apiRoutes.forEach(routePath => {
   const fullPath = path.resolve(__dirname, '..', routePath);
   if (fs.existsSync(fullPath)) {
     addAuthToFile(fullPath);
   } else {
-    console.log(`⚠️  Archivo no encontrado: ${routePath}`);
+    logger.info(`âš ï¸  Archivo no encontrado: ${routePath}`);
   }
 });
 
-console.log('\n🎉 Protección masiva completada!');
-console.log('\n📋 Rutas protegidas:');
-apiRoutes.forEach(route => console.log(`  ✅ ${route}`));
+logger.info('\nðŸŽ‰ ProtecciÃ³n masiva completada!');
+logger.info('\nðŸ“‹ Rutas protegidas:');
+apiRoutes.forEach(route => logger.info(`  âœ… ${route}`));
 
-console.log('\n🌍 Rutas públicas (sin cambios):');
-publicRoutes.forEach(route => console.log(`  🔓 ${route}`));
+logger.info('\nðŸŒ Rutas pÃºblicas (sin cambios):');
+publicRoutes.forEach(route => logger.info(`  ðŸ”“ ${route}`));
 
-console.log('\n⚡ Para probar: curl -X GET http://localhost:3000/api/users/');
+logger.info('\nâš¡ Para probar: curl -X GET http://localhost:3000/api/users/');
+

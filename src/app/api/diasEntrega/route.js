@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import { diaEntregaService } from '../../../lib/dbServices.js';
+import { diaEntregaService } from '../../../lib/services/diaEntregaService.js';
 import { validateCreateDiaEntregaData } from '../../../types/index.js';
 
 // GET - Obtener todos los días de entrega

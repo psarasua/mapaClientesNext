@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import { clientService } from '../../../lib/dbServices.js';
+import { clientService } from '../../../lib/services/clientService.js';
 import { validateCreateClientData } from '../../../types/index.js';
 
 // GET - Obtener todos los clientes

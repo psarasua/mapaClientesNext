@@ -19,6 +19,6 @@ export {
 export { api } from './lib/api.js';
 
 // Components
-export { Logo, LogoSmall, LogoText } from './components/common/Logo.jsx';
-export { default as Navigation } from './components/common/Navigation.jsx';
-export { default as Dashboard } from './components/common/Dashboard.jsx';
+export { Logo, LogoSmall, LogoText } from './components/ui/Logo.jsx';
+export { default as Navigation } from './components/layout/Navigation.jsx';
+export { default as Dashboard } from './components/features/Dashboard.jsx';

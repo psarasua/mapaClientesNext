@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import { 
-  userService, 
-  clientService, 
-  truckService, 
-  repartoService, 
-  diaEntregaService, 
-  clienteporRepartoService 
-} from '../../../lib/dbServices.js';
+import { userService } from '../../../lib/services/userService.js';
+import { clientService } from '../../../lib/services/clientService.js';
+import { truckService } from '../../../lib/services/truckService.js';
+import { repartoService } from '../../../lib/services/repartoService.js';
+import { diaEntregaService } from '../../../lib/services/diaEntregaService.js';
+import { clienteporRepartoService } from '../../../lib/services/clienteporRepartoService.js';
 
 // POST - Limpiar todos los datos de las tablas
 export async function POST(request) {

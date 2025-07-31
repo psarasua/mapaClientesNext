@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '../../../lib/apiAuth.js';
-import { clienteporRepartoService, repartoService, clientService } from '../../../lib/dbServices.js';
+import { clienteporRepartoService } from '../../../lib/services/clienteporRepartoService.js';
+import { repartoService } from '../../../lib/services/repartoService.js';
+import { clientService } from '../../../lib/services/clientService.js';
 import { validateCreateClienteporRepartoData } from '../../../types/index.js';
 
 // GET - Obtener todos los clientes por reparto
@@ -20,17 +22,17 @@ export async function GET(request) {
     // Filtrar si se especifican parámetros
     let filteredData = clientesporReparto;
     if (reparto) {
-      filteredData = filteredData.filter(item => item.repartoId === parseInt(reparto));
+      filteredData = filteredData.filter(item => item.reparto_id === parseInt(reparto));
     }
     if (cliente) {
-      filteredData = filteredData.filter(item => item.clientId === parseInt(cliente));
+      filteredData = filteredData.filter(item => item.cliente_id === parseInt(cliente));
     }
 
     // Para cada item, obtener los datos relacionados
     const formattedClientesporReparto = await Promise.all(
       filteredData.map(async (item) => {
-        const reparto = await repartoService.getById(item.repartoId);
-        const cliente = await clientService.getById(item.clientId);
+        const reparto = await repartoService.getById(item.reparto_id);
+        const cliente = await clientService.getById(item.cliente_id);
         
         return {
           ...item,
@@ -77,8 +79,8 @@ export async function POST(request) {
       // Verificar si ya existe la asignación
       const existingAssignments = await clienteporRepartoService.getAll();
       const duplicateExists = existingAssignments.some(item => 
-        item.clientId === clienteRepartoData.clientId && 
-        item.repartoId === clienteRepartoData.repartoId
+        item.cliente_id === clienteRepartoData.clientId && 
+        item.reparto_id === clienteRepartoData.repartoId
       );
 
       if (duplicateExists) {
@@ -91,8 +93,8 @@ export async function POST(request) {
       const newClienteporReparto = await clienteporRepartoService.create(clienteRepartoData);
       
       // Obtener los datos relacionados para la respuesta
-      const reparto = await repartoService.getById(newClienteporReparto.repartoId);
-      const cliente = await clientService.getById(newClienteporReparto.clientId);
+      const reparto = await repartoService.getById(newClienteporReparto.reparto_id);
+      const cliente = await clientService.getById(newClienteporReparto.cliente_id);
       
       return NextResponse.json({
         success: true,
@@ -141,8 +143,8 @@ export async function PUT(request) {
       const updatedClienteporReparto = await clienteporRepartoService.update(parseInt(id), clienteRepartoData);
       
       // Obtener los datos relacionados
-      const reparto = await repartoService.getById(updatedClienteporReparto.repartoId);
-      const cliente = await clientService.getById(updatedClienteporReparto.clientId);
+      const reparto = await repartoService.getById(updatedClienteporReparto.reparto_id);
+      const cliente = await clientService.getById(updatedClienteporReparto.cliente_id);
       
       return NextResponse.json({
         success: true,

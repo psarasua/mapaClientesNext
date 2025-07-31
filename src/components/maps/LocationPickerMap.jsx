@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { logger } from '../../lib/logger.js'
 import Map from 'ol/Map'
 import View from 'ol/View'
 import TileLayer from 'ol/layer/Tile'
@@ -38,7 +39,7 @@ const LocationPickerMap = ({
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
 
-    console.log('🗺️ Inicializando LocationPickerMap con OpenLayers')
+    logger.map('Inicializando LocationPickerMap con OpenLayers')
 
     try {
       // Crear fuente de vector para el marcador
@@ -92,7 +93,7 @@ const LocationPickerMap = ({
           lat: parseFloat(initialLatitude),
           lng: parseFloat(initialLongitude)
         })
-        console.log('📍 Marcador inicial agregado:', initialLatitude, initialLongitude)
+        logger.success('Marcador inicial agregado:', initialLatitude, initialLongitude)
       }
 
       // Evento de click para seleccionar ubicación
@@ -103,7 +104,7 @@ const LocationPickerMap = ({
           lng: coordinate[0]
         }
 
-        console.log('🎯 Nueva ubicación seleccionada:', location)
+        logger.debug('Nueva ubicación seleccionada:', location)
 
         // Limpiar marcadores anteriores
         vectorSource.clear()
@@ -123,7 +124,7 @@ const LocationPickerMap = ({
       })
 
       setIsLoaded(true)
-      console.log('✅ LocationPickerMap inicializado')
+              logger.success('LocationPickerMap inicializado')
 
     } catch (error) {
       console.error('❌ Error inicializando LocationPickerMap:', error)
@@ -166,7 +167,7 @@ const LocationPickerMap = ({
 
   const resetToDefault = () => {
     if (mapInstanceRef.current) {
-      console.log('🔄 Reseteando LocationPickerMap')
+      logger.debug('Reseteando LocationPickerMap')
       const view = mapInstanceRef.current.getView()
       view.setCenter(fromLonLat(DEFAULT_CENTER))
       view.setZoom(13)

@@ -13,7 +13,7 @@ import {
 import { Button, Modal, Badge, ButtonGroup, OverlayTrigger, Tooltip, Form } from 'react-bootstrap';
 import { CSVLink } from 'react-csv';
 import * as XLSX from 'xlsx';
-import ClientMapComponent from './ClientMapComponent.jsx';
+import ClientMapComponent from '../maps/ClientMapComponent.jsx';
 
 const columnHelper = createColumnHelper();
 

@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { Container, Row, Col, Card, Alert, Button, ButtonGroup } from 'react-bootstrap';
 import { FaTruck, FaUsers, FaMapMarkedAlt, FaBoxes, FaChartLine } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import StatsCard from './StatsCard';
+import StatsCard from '../ui/StatsCard';
 import { useDashboardStats, useDashboardPolling } from '../../hooks/useDashboard';
 import { useClients } from '../../hooks/useClients';
 import { useTrucks } from '../../hooks/useTrucks';
-import MapComponent from './MapComponent';
+import MapComponent from '../maps/MapComponent';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 

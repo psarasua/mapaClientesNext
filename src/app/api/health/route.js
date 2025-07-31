@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { userService, truckService } from '../../../lib/dbServices.js';
+import { userService } from '../../../lib/services/userService.js';
+import { truckService } from '../../../lib/services/truckService.js';
 import { createClient } from '@libsql/client';
 import jwt from 'jsonwebtoken';
 

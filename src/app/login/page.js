@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { Logo } from '../../components/common/Logo';
+import { Logo } from '../../components/ui/Logo';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({

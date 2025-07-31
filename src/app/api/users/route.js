@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { userService } from '../../../lib/dbServices.js';
+import { userService } from '../../../lib/services/userService.js';
 import { requireAuth } from '../../../lib/apiAuth.js';
 
 // GET - Obtener todos los usuarios

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { logger } from '../../lib/logger.js'
 import Map from 'ol/Map'
 import View from 'ol/View'
 import TileLayer from 'ol/layer/Tile'
@@ -38,12 +39,12 @@ const OpenLayersMap = ({
       return
     }
 
-    console.log('🗺️ Inicializando OpenLayers...')
+    logger.map('Inicializando OpenLayers...')
 
     // Dar tiempo para que el DOM se renderice
     const timer = setTimeout(() => {
       try {
-        console.log('📐 Dimensiones del contenedor:', mapRef.current.offsetWidth, 'x', mapRef.current.offsetHeight)
+        logger.debug('Dimensiones del contenedor:', mapRef.current.offsetWidth, 'x', mapRef.current.offsetHeight)
         
         // Crear fuente de vector para marcadores
         const vectorSource = new VectorSource()
@@ -98,7 +99,7 @@ const OpenLayersMap = ({
               if (map.getRenderer()) {
                 map.renderSync()
               }
-              console.log('🔄 Mapa principal renderizado y redimensionado')
+              logger.success('Mapa principal renderizado y redimensionado')
             } catch (renderError) {
               console.warn('⚠️ Error al renderizar mapa:', renderError)
             }
@@ -108,7 +109,7 @@ const OpenLayersMap = ({
         // Agregar evento de click
         map.on('click', (event) => {
           const coordinate = toLonLat(event.coordinate)
-          console.log('🎯 Click en mapa:', coordinate)
+          logger.debug('Click en mapa:', coordinate)
           
           if (onLocationSelect) {
             onLocationSelect({
@@ -120,12 +121,12 @@ const OpenLayersMap = ({
 
         // Agregar clientes como marcadores
         if (clients && clients.length > 0) {
-          console.log('📍 Agregando marcadores:', clients.length)
+          logger.debug('Agregando marcadores:', clients.length)
           addClientMarkers(clients, vectorSource)
         }
 
         setIsLoaded(true)
-        console.log('✅ OpenLayers inicializado correctamente')
+        logger.success('OpenLayers inicializado correctamente')
 
       } catch (error) {
         console.error('❌ Error inicializando OpenLayers:', error)
@@ -154,7 +155,7 @@ const OpenLayersMap = ({
         })
 
         vectorSource.addFeature(feature)
-        console.log(`📍 Marcador agregado: ${client.nombre}`)
+        logger.success(`Marcador agregado: ${client.nombre}`)
       }
     })
   }
@@ -179,7 +180,7 @@ const OpenLayersMap = ({
   }, [selectedLocation])
 
   const resetMap = () => {
-    console.log('🔄 Reiniciando mapa...')
+          logger.debug('Reiniciando mapa...')
     if (mapInstanceRef.current) {
       const view = mapInstanceRef.current.getView()
       view.setCenter(fromLonLat(defaultCenter))

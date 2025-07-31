@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { logger } from '../../lib/logger.js'
 import Map from 'ol/Map'
 import View from 'ol/View'
 import TileLayer from 'ol/layer/Tile'
@@ -33,12 +34,12 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
       return
     }
 
-    console.log('🗺️ Inicializando mapa OpenLayers del cliente:', client?.nombre)
+    logger.map('Inicializando mapa OpenLayers del cliente:', client?.nombre)
 
     // Dar tiempo para que el DOM se renderice
     const timer = setTimeout(() => {
       try {
-        console.log('📐 Dimensiones del contenedor:', mapRef.current.offsetWidth, 'x', mapRef.current.offsetHeight)
+        logger.debug('Dimensiones del contenedor:', mapRef.current.offsetWidth, 'x', mapRef.current.offsetHeight)
         
         // Crear fuente de vector para marcadores
         const vectorSource = new VectorSource()
@@ -90,7 +91,7 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
               if (map.getRenderer()) {
                 map.renderSync()
               }
-              console.log('🔄 Mapa renderizado y redimensionado')
+              logger.success('Mapa renderizado y redimensionado')
             } catch (renderError) {
               console.warn('⚠️ Error al renderizar mapa:', renderError)
             }
@@ -105,13 +106,13 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
             client: client
           })
           vectorSource.addFeature(feature)
-          console.log('📍 Marcador OpenLayers agregado para:', client.nombre)
+          logger.success('Marcador OpenLayers agregado para:', client.nombre)
         }
 
         // Evento de click
         map.on('click', (event) => {
           const coordinate = toLonLat(event.coordinate)
-          console.log('🎯 Click en mapa OpenLayers:', coordinate)
+          logger.debug('Click en mapa OpenLayers:', coordinate)
           
           if (onLocationSelect) {
             onLocationSelect({
@@ -122,7 +123,7 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
         })
 
         setIsLoaded(true)
-        console.log('✅ Mapa OpenLayers del cliente inicializado')
+        logger.success('Mapa OpenLayers del cliente inicializado')
 
       } catch (error) {
         console.error('❌ Error inicializando mapa OpenLayers del cliente:', error)
@@ -151,7 +152,7 @@ const ClientMapComponent = ({ client, onLocationSelect }) => {
 
   const resetMap = () => {
     if (mapInstanceRef.current) {
-      console.log('🔄 Reiniciando mapa OpenLayers del cliente')
+      logger.debug('Reiniciando mapa OpenLayers del cliente')
       const view = mapInstanceRef.current.getView()
       view.setCenter(fromLonLat(clientCenter))
       view.setZoom(client?.lat && client?.lng ? 15 : 13)
