@@ -29,7 +29,14 @@ const OpenLayersMap = ({
   const defaultCenter = [-56.0417, -34.5617]
 
   useEffect(() => {
+    // Validaciones iniciales
     if (!mapRef.current || mapInstanceRef.current) return
+    
+    // Verificar que el elemento DOM tenga dimensiones
+    if (mapRef.current.offsetWidth === 0 || mapRef.current.offsetHeight === 0) {
+      console.warn('⚠️ Contenedor del mapa sin dimensiones, esperando...')
+      return
+    }
 
     console.log('🗺️ Inicializando OpenLayers...')
 
@@ -82,11 +89,20 @@ const OpenLayersMap = ({
 
         mapInstanceRef.current = map
 
-        // Forzar renderizado
+        // Forzar renderizado con validación
         setTimeout(() => {
-          map.updateSize()
-          map.renderSync()
-          console.log('🔄 Mapa principal renderizado y redimensionado')
+          if (map && mapInstanceRef.current && mapRef.current) {
+            try {
+              map.updateSize()
+              // Verificar que el mapa tenga un renderer antes de renderizar
+              if (map.getRenderer()) {
+                map.renderSync()
+              }
+              console.log('🔄 Mapa principal renderizado y redimensionado')
+            } catch (renderError) {
+              console.warn('⚠️ Error al renderizar mapa:', renderError)
+            }
+          }
         }, 100)
 
         // Agregar evento de click
