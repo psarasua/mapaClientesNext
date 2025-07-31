@@ -1,0 +1,5 @@
+[33m8100b41[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m  SEGURIDAD: Eliminar información sensible y limpiar scripts
+[33mc58a358[m feat: proyecto completamente optimizado y listo para producción
+[33m834ddb1[m fix: corregir error 500 en login y limpiar proyecto
+[33mec69bb8[m  Forzar nuevo deployment - v2.2.0
+[33m2fba360[m  Eliminar completamente Prisma ORM - Migración completa a libSQL directo
