@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { Container, Row, Col, Card, Alert, Button, ButtonGroup } from 'react-bootstrap';
-import { FaTruck, FaUsers, FaMapMarkedAlt, FaBoxes, FaChartLine } from 'react-icons/fa';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { FaTruck, FaUsers, FaMapMarkedAlt, FaBoxes, FaChartLine, FaRoute, FaClock } from 'react-icons/fa';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import StatsCard from '../ui/StatsCard';
+
+import EnhancedLoading from '../ui/EnhancedLoading';
 import { useDashboardStats, useDashboardPolling } from '../../hooks/useDashboard';
 import { useClients } from '../../hooks/useClients';
 import { useTrucks } from '../../hooks/useTrucks';
@@ -43,89 +45,96 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <Container fluid className="py-4">
-        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
-          <div className="text-center">
-            <div className="spinner-border text-primary mb-3" role="status" style={{ width: '3rem', height: '3rem' }}>
-              <span className="visually-hidden">Cargando...</span>
-            </div>
-            <h5 className="text-muted">Cargando dashboard...</h5>
-          </div>
-        </div>
+        <EnhancedLoading 
+          message="Cargando Dashboard" 
+          size="lg"
+          showCard={true}
+        />
       </Container>
     );
   }
 
   return (
-    <Container fluid className="py-4">
-      {/* Header con controles */}
-      <Row className="mb-4">
-        <Col>
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <h2 className="mb-0">
-                <FaChartLine className="me-2 text-primary" />
-                Dashboard
-              </h2>
-              <p className="text-muted mb-0">Vista general del sistema</p>
-            </div>
-            <ButtonGroup>
-              <Button
-                variant={autoRefresh ? 'success' : 'outline-secondary'}
-                onClick={toggleAutoRefresh}
-                size="sm"
-              >
-                <i className={`bi ${autoRefresh ? 'bi-play-fill' : 'bi-pause-fill'} me-1`}></i>
-                {autoRefresh ? 'Auto-actualización' : 'Manual'}
-              </Button>
-              <Button
-                variant="outline-primary"
-                onClick={handleManualRefresh}
-                size="sm"
-              >
-                <i className="bi bi-arrow-clockwise me-1"></i>
-                Actualizar
-              </Button>
-            </ButtonGroup>
-          </div>
-        </Col>
-      </Row>
+    <>
 
-      {/* Tarjetas de estadísticas */}
-      <Row className="mb-4">
-        <Col md={6} lg={3} className="mb-3">
+      <Container fluid className="py-4">
+        {/* Header con controles mejorado */}
+        <Row className="mb-4">
+          <Col>
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+              <div className="mb-3 mb-md-0">
+                <h1 className="display-6 fw-bold mb-2 text-dark">
+                  <FaChartLine className="me-3 text-primary" />
+                  Dashboard
+                </h1>
+                <p className="text-muted fs-5 mb-0">Vista general del sistema de gestión logística</p>
+              </div>
+              <div className="d-flex gap-2">
+                <Button
+                  variant={autoRefresh ? 'success' : 'outline-secondary'}
+                  onClick={toggleAutoRefresh}
+                  size="sm"
+                >
+                  <i className={`bi ${autoRefresh ? 'bi-play-fill' : 'bi-pause-fill'} me-2`}></i>
+                  {autoRefresh ? 'Auto-actualización' : 'Manual'}
+                </Button>
+                <Button
+                  variant="outline-primary"
+                  onClick={handleManualRefresh}
+                  size="sm"
+                >
+                  <i className="bi bi-arrow-clockwise me-2"></i>
+                  Actualizar
+                </Button>
+              </div>
+            </div>
+          </Col>
+        </Row>
+
+      {/* Tarjetas de estadísticas mejoradas */}
+      <Row className="mb-4 g-3">
+        <Col xs={12} sm={6} lg={3}>
           <StatsCard
-            title="Usuarios"
+            title="Usuarios Activos"
             value={stats.totalUsers}
             icon={<FaUsers />}
             color="primary"
-            trend="+5.2%"
+            subtitle="Gestión del sistema"
+            trend="up"
+            trendValue="+12%"
           />
         </Col>
-        <Col md={6} lg={3} className="mb-3">
+        <Col xs={12} sm={6} lg={3}>
           <StatsCard
-            title="Camiones"
+            title="Flota de Camiones"
             value={stats.totalTrucks}
             icon={<FaTruck />}
             color="success"
-            trend="+2.1%"
+            subtitle="En operación"
+            trend="up"
+            trendValue="+5%"
           />
         </Col>
-        <Col md={6} lg={3} className="mb-3">
+        <Col xs={12} sm={6} lg={3}>
           <StatsCard
-            title="Clientes"
+            title="Clientes Registrados"
             value={stats.totalClients}
             icon={<FaMapMarkedAlt />}
-            color="warning"
-            trend="+8.3%"
+            color="info"
+            subtitle="Con coordenadas"
+            trend="up"
+            trendValue="+8%"
           />
         </Col>
-        <Col md={6} lg={3} className="mb-3">
+        <Col xs={12} sm={6} lg={3}>
           <StatsCard
-            title="Repartos"
+            title="Repartos Activos"
             value={stats.totalRepartos}
-            icon={<FaBoxes />}
-            color="info"
-            trend="+1.7%"
+            icon={<FaRoute />}
+            color="warning"
+            subtitle="En progreso"
+            trend="up"
+            trendValue="+15%"
           />
         </Col>
       </Row>
@@ -260,5 +269,6 @@ export default function Dashboard() {
         </Row>
       )}
     </Container>
+    </>
   );
 }

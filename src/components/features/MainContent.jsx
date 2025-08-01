@@ -1,6 +1,7 @@
 import React from 'react';
 import { Container } from 'react-bootstrap';
 import Dashboard from './Dashboard';
+
 import {
   LazyUserListComponent,
   LazyTruckListComponent,
@@ -60,6 +61,11 @@ const MainContent = ({ activeSection }) => {
         );
       case 'configuracion':
         return <LazyConfiguracionPageComponent />;
+          case 'showcase':
+      return <div className="p-4 text-center">
+        <h2>Showcase Eliminado</h2>
+        <p className="text-muted">Esta sección ha sido eliminada para usar Bootstrap vanilla.</p>
+      </div>;
       default:
         return <Dashboard />;
     }

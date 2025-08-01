@@ -1,9 +1,10 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import 'bootswatch/dist/solar/bootstrap.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import "../styles/globals.css";
 import { AuthProvider } from '../contexts/AuthContext';
 import { QueryProvider } from '../components/providers/QueryProvider';
+import { ToastProvider } from '../components/ui/ToastNotifications';
 
 // Cargar variables de entorno en el servidor
 if (typeof window === 'undefined') {
@@ -22,8 +23,8 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
-  title: "🚀 MapaClientes - Deploy Automático Confirmado",
-  description: "Sistema integral de gestión de clientes, camiones, repartos y entregas con Next.js, React Bootstrap y SQLite - Tema Solar",
+  title: "MapaClientes - Sistema de Gestión Logística",
+  description: "Sistema integral de gestión de clientes, camiones, repartos y entregas con Next.js, React Bootstrap y SQLite",
   keywords: "gestión logística, clientes, repartos, camiones, mapas, Next.js",
   authors: [{ name: "MapaClientes Team" }],
   icons: {
@@ -70,7 +71,9 @@ export default function RootLayout({ children }) {
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <QueryProvider>
           <AuthProvider>
-            {children}
+            <ToastProvider>
+              {children}
+            </ToastProvider>
           </AuthProvider>
         </QueryProvider>
       </body>
