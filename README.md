@@ -125,9 +125,9 @@ npm run validate     # Validar configuración
 
 ## 🚀 Despliegue
 
-### Vercel (Recomendado)
+### Railway (Recomendado)
 
-1. Conectar repositorio a Vercel
+1. Conectar repositorio a Railway
 2. Configurar variables de entorno
 3. Desplegar automáticamente
 

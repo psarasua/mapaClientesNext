@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "node scripts/validate-env.js && next dev",
     "build": "node scripts/validate-env.js && next build",
@@ -13,9 +16,13 @@
     "setup:linux": "bash scripts/setup-env.sh",
     "env:production": "node scripts/create-production-env.js",
     "diagnose": "node scripts/diagnose-production.js",
-    "diagnose:vercel": "node scripts/vercel-diagnose.js",
+
     "test:db": "node scripts/test-database.js",
-    "test:apis": "node scripts/test-apis.js"
+    "test:apis": "node scripts/test-apis.js",
+    "deploy:railway": "node scripts/deploy-railway.js",
+    "setup:railway": "node scripts/setup-railway-env.js",
+    "generate:secrets": "node scripts/generate-secrets.js",
+    "build:railway": "node scripts/build-with-env.js"
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",

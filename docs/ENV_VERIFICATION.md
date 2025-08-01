@@ -103,9 +103,9 @@ Si encuentras errores:
    - Evitar caracteres especiales problemáticos
 
 3. **⚠️ "Variables faltantes"**
-   - Agregar en Vercel Dashboard → Settings → Environment Variables
+   - Agregar en Railway Dashboard → Variables
    - Hacer redeploy después de agregar
 
 4. **🔄 "Cambios no reflejados"**
-   - Hacer redeploy en Vercel
+   - Hacer redeploy en Railway
    - Limpiar caché si es necesario

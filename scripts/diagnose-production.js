@@ -38,7 +38,7 @@ import path from 'path';
 const criticalFiles = [
   'package.json',
   'next.config.mjs',
-  'vercel.json',
+      'railway.json',
   'src/lib/config.js',
   'src/lib/database.js'
 ];
@@ -59,12 +59,12 @@ if (envOk) {
 } else {
   console.log('   ❌ Variables de entorno: PROBLEMAS DETECTADOS');
   console.log('\n💡 SOLUCIONES:');
-  console.log('   1. Configura las variables en Vercel Dashboard');
+      console.log('   1. Configura las variables en Railway Dashboard');
   console.log('   2. Verifica que TURSO_DATABASE_URL y TURSO_AUTH_TOKEN estén correctos');
   console.log('   3. Asegúrate de que JWT_SECRET esté configurado');
 }
 
 console.log('\n🔧 PRÓXIMOS PASOS:');
 console.log('   1. Ejecuta: node scripts/test-apis.js');
-console.log('   2. Revisa los logs en Vercel Dashboard');
+    console.log('   2. Revisa los logs en Railway Dashboard');
 console.log('   3. Verifica la conexión a Turso Database'); 

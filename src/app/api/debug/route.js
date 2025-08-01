@@ -9,8 +9,8 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       environment: {
         NODE_ENV: process.env.NODE_ENV,
-        VERCEL_ENV: process.env.VERCEL_ENV,
-        VERCEL_URL: process.env.VERCEL_URL,
+            RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+    RAILWAY_PRIVATE_DOMAIN: process.env.RAILWAY_PRIVATE_DOMAIN,
       },
       variables: {
         JWT_SECRET: process.env.JWT_SECRET ? 'CONFIGURADO' : 'NO CONFIGURADO',

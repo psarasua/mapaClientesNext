@@ -27,7 +27,6 @@ export async function GET() {
 
     // Verificación completa de variables de entorno
     const requiredEnvVars = [
-      'DATABASE_URL',
       'TURSO_DATABASE_URL', 
       'TURSO_AUTH_TOKEN',
       'JWT_SECRET',
@@ -55,34 +54,7 @@ export async function GET() {
 
       // Validaciones específicas por variable
       switch (varName) {
-        case 'DATABASE_URL':
-          if (value.startsWith('libsql://') && value.includes('turso.io')) {
-            // Probar conexión solo si la base de datos principal ya falló
-            if (dbStatus === 'error') {
-              try {
-                const client = createClient({
-                  url: value.includes('?authToken=') ? value.split('?authToken=')[0] : process.env.TURSO_DATABASE_URL,
-                  authToken: value.includes('?authToken=') ? value.split('?authToken=')[1] : process.env.TURSO_AUTH_TOKEN,
-                });
-                await client.execute('SELECT 1');
-                validation.valid = true;
-                validation.status = '✅ Válida y conectada';
-              } catch (error) {
-                validation.status = '⚠️ Configurada pero no conecta';
-                validation.error = error.message;
-              }
-            } else {
-              validation.valid = true;
-              validation.status = '✅ Válida y conectada';
-            }
-          } else if (value.startsWith('file:')) {
-            validation.valid = true;
-            validation.status = '✅ SQLite local válida';
-          } else {
-            validation.status = '❌ Formato inválido';
-          }
-          validation.preview = `${value.substring(0, 20)}...`;
-          break;
+
 
         case 'TURSO_DATABASE_URL':
           if (value.startsWith('libsql://') && value.includes('turso.io')) {
@@ -192,15 +164,15 @@ export async function GET() {
       recommendations.push('Configurar JWT_SECRET válido (mínimo 32 caracteres) para autenticación segura');
     }
     
-    if (!envStatus.DATABASE_URL?.valid && !envStatus.TURSO_DATABASE_URL?.valid) {
+    if (!envStatus.TURSO_DATABASE_URL?.valid) {
       recommendations.push('Verificar configuración de base de datos - no se puede conectar');
     }
     
-    if (!envStatus.TURSO_AUTH_TOKEN?.valid && process.env.DATABASE_URL?.includes('turso.io')) {
+    if (!envStatus.TURSO_AUTH_TOKEN?.valid) {
       recommendations.push('Token de Turso inválido - verificar que sea un JWT válido');
     }
     
-    if (process.env.NODE_ENV !== 'production' && process.env.VERCEL_ENV === 'production') {
+    if (process.env.NODE_ENV !== 'production' && process.env.RAILWAY_ENVIRONMENT === 'production') {
       recommendations.push('NODE_ENV debería ser "production" en producción');
     }
 
@@ -234,9 +206,9 @@ export async function GET() {
       recommendations: recommendations.length > 0 ? recommendations : ['✅ Configuración correcta'],
       errors: errors.length > 0 ? errors : null,
       deployment: {
-        vercelEnv: process.env.VERCEL_ENV || 'local',
-        vercelUrl: process.env.VERCEL_URL || 'localhost',
-        deploymentId: process.env.VERCEL_DEPLOYMENT_ID || 'local-dev'
+        railwayEnv: process.env.RAILWAY_ENVIRONMENT || 'local',
+        railwayUrl: process.env.RAILWAY_PRIVATE_DOMAIN || 'localhost',
+        deploymentId: process.env.RAILWAY_SERVICE_ID || 'local-dev'
       },
       features: [
         'CRUD de usuarios',
