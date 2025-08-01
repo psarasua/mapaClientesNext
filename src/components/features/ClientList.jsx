@@ -6,6 +6,7 @@ import { handleApiError } from '../../lib/api.js';
 import { useClients, useCreateClient, useUpdateClient, useDeleteClient } from '../../hooks/useClients';
 import LocationPickerMap from '../maps/LocationPickerMap.jsx';
 import AdvancedClientTable from './AdvancedClientTable.jsx';
+import AnimatedSection from '../ui/AnimatedSection';
 
 const ClientList = () => {
   // React Query hooks
@@ -153,203 +154,205 @@ const ClientList = () => {
   }
 
   return (
-    <div style={{ 
-      width: '100vw', 
-      minWidth: '100vw',
-      maxWidth: 'none', 
-      margin: 0, 
-      padding: '1rem 2rem',
-      boxSizing: 'border-box',
-      position: 'relative',
-      left: '50%',
-      transform: 'translateX(-50%)'
-    }}>
-      {/* Header sin card - diseño plano ocupando todo el ancho */}
-      <div className="mb-4" style={{ width: '100%' }}>
-        <div className="d-flex justify-content-between align-items-center">
-          <h4 className="mb-0">
-            <i className="bi bi-people-fill me-2"></i>
-            Gestión de Clientes
-          </h4>
-          <Button 
-            variant={showForm ? 'outline-secondary' : 'primary'}
-            onClick={() => setShowForm(!showForm)}
-            disabled={isLoading || createClientMutation.isPending || updateClientMutation.isPending}
-          >
-            <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
-            {showForm ? 'Cancelar' : 'Agregar Cliente'}
-          </Button>
-        </div>
-      </div>
-
-      {/* Mensajes */}
-      {combinedError && (
-        <div className="alert alert-danger alert-dismissible fade show" role="alert">
-          <i className="bi bi-exclamation-triangle-fill me-2"></i>
-          {typeof combinedError === 'string' ? combinedError : handleApiError(combinedError)}
-          <button type="button" className="btn-close" onClick={() => setError('')}></button>
-        </div>
-      )}
-
-      {success && (
-        <div className="alert alert-success alert-dismissible fade show" role="alert">
-          <i className="bi bi-check-circle-fill me-2"></i>
-          {success}
-          <button type="button" className="btn-close" onClick={() => setSuccess('')}></button>
-        </div>
-      )}
-
-      {/* Formulario */}
-      {showForm && (
-        <div className="mb-4">
-          <div className="border rounded p-4 bg-light">
-            <h5 className="mb-3">
-              <i className="bi bi-person-plus me-2"></i>
-              {editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}
-            </h5>
-            <form onSubmit={handleSubmit}>
-              <div className="row">
-                <div className="col-md-6 mb-3">
-                  <label htmlFor="Codigo" className="form-label">Código</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="Codigo"
-                    name="Codigo"
-                    value={formData.Codigo}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="col-md-6 mb-3">
-                  <label htmlFor="Nombre" className="form-label">Nombre</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="Nombre"
-                    name="Nombre"
-                    value={formData.Nombre}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-md-6 mb-3">
-                  <label htmlFor="Razon" className="form-label">Razón Social</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="Razon"
-                    name="Razon"
-                    value={formData.Razon}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="col-md-6 mb-3">
-                  <label htmlFor="Direccion" className="form-label">Dirección</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="Direccion"
-                    name="Direccion"
-                    value={formData.Direccion}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-md-6 mb-3">
-                  <label htmlFor="Telefono1" className="form-label">Teléfono</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="Telefono1"
-                    name="Telefono1"
-                    value={formData.Telefono1}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="col-md-6 mb-3">
-                  <label htmlFor="Ruc" className="form-label">RUT</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="Ruc"
-                    name="Ruc"
-                    value={formData.Ruc}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-md-6 mb-3">
-                  <label htmlFor="Activo" className="form-label">Estado</label>
-                  <select
-                    className="form-control"
-                    id="Activo"
-                    name="Activo"
-                    value={formData.Activo}
-                    onChange={handleInputChange}
-                  >
-                    <option value={1}>Activo</option>
-                    <option value={0}>Inactivo</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Mapa para seleccionar coordenadas */}
-              <div className="mb-3">
-                <label className="form-label">
-                  <strong>📍 Seleccionar Ubicación en el Mapa</strong>
-                </label>
-                <LocationPickerMap
-                  latitude={formData.Coordenada_y || -33.4489}
-                  longitude={formData.Coordenada_x || -70.6693}
-                  onLocationChange={handleLocationChange}
-                  height="350px"
-                />
-              </div>
-
-              <div className="d-flex gap-2">
-                <button 
-                  type="submit" 
-                  className="btn btn-primary" 
-                  disabled={createClientMutation.isPending || updateClientMutation.isPending}
-                >
-                  {(createClientMutation.isPending || updateClientMutation.isPending) ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                      {editingClient ? 'Actualizando...' : 'Creando...'}
-                    </>
-                  ) : (
-                    editingClient ? 'Actualizar' : 'Crear'
-                  )}
-                </button>
-                <button type="button" className="btn btn-secondary" onClick={resetForm}>
-                  Cancelar
-                </button>
-              </div>
-            </form>
+    <AnimatedSection>
+      <div style={{ 
+        width: '100vw', 
+        minWidth: '100vw',
+        maxWidth: 'none', 
+        margin: 0, 
+        padding: '1rem 2rem',
+        boxSizing: 'border-box',
+        position: 'relative',
+        left: '50%',
+        transform: 'translateX(-50%)'
+      }}>
+        {/* Header sin card - diseño plano ocupando todo el ancho */}
+        <div className="mb-4" style={{ width: '100%' }}>
+          <div className="d-flex justify-content-between align-items-center">
+            <h4 className="mb-0">
+              <i className="bi bi-people-fill me-2"></i>
+              Gestión de Clientes
+            </h4>
+            <Button 
+              variant={showForm ? 'outline-secondary' : 'primary'}
+              onClick={() => setShowForm(!showForm)}
+              disabled={isLoading || createClientMutation.isPending || updateClientMutation.isPending}
+            >
+              <i className={`bi ${showForm ? 'bi-x-lg' : 'bi-plus-lg'} me-1`}></i>
+              {showForm ? 'Cancelar' : 'Agregar Cliente'}
+            </Button>
           </div>
         </div>
-      )}
 
-      {/* Tabla Avanzada con TanStack Table */}
-      <AdvancedClientTable
-        clients={clients || []}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        isLoading={isLoading}
-        createMutationPending={createClientMutation.isPending}
-        updateMutationPending={updateClientMutation.isPending}
-        deleteMutationPending={deleteClientMutation.isPending}
-      />
-    </div>
+        {/* Mensajes */}
+        {combinedError && (
+          <div className="alert alert-danger alert-dismissible fade show" role="alert">
+            <i className="bi bi-exclamation-triangle-fill me-2"></i>
+            {typeof combinedError === 'string' ? combinedError : handleApiError(combinedError)}
+            <button type="button" className="btn-close" onClick={() => setError('')}></button>
+          </div>
+        )}
+
+        {success && (
+          <div className="alert alert-success alert-dismissible fade show" role="alert">
+            <i className="bi bi-check-circle-fill me-2"></i>
+            {success}
+            <button type="button" className="btn-close" onClick={() => setSuccess('')}></button>
+          </div>
+        )}
+
+        {/* Formulario */}
+        {showForm && (
+          <div className="mb-4">
+            <div className="border rounded p-4 bg-light">
+              <h5 className="mb-3">
+                <i className="bi bi-person-plus me-2"></i>
+                {editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}
+              </h5>
+              <form onSubmit={handleSubmit}>
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="Codigo" className="form-label">Código</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="Codigo"
+                      name="Codigo"
+                      value={formData.Codigo}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="Nombre" className="form-label">Nombre</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="Nombre"
+                      name="Nombre"
+                      value={formData.Nombre}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="Razon" className="form-label">Razón Social</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="Razon"
+                      name="Razon"
+                      value={formData.Razon}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="Direccion" className="form-label">Dirección</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="Direccion"
+                      name="Direccion"
+                      value={formData.Direccion}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="Telefono1" className="form-label">Teléfono</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="Telefono1"
+                      name="Telefono1"
+                      value={formData.Telefono1}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="Ruc" className="form-label">RUT</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="Ruc"
+                      name="Ruc"
+                      value={formData.Ruc}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="Activo" className="form-label">Estado</label>
+                    <select
+                      className="form-control"
+                      id="Activo"
+                      name="Activo"
+                      value={formData.Activo}
+                      onChange={handleInputChange}
+                    >
+                      <option value={1}>Activo</option>
+                      <option value={0}>Inactivo</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Mapa para seleccionar coordenadas */}
+                <div className="mb-3">
+                  <label className="form-label">
+                    <strong>📍 Seleccionar Ubicación en el Mapa</strong>
+                  </label>
+                  <LocationPickerMap
+                    latitude={formData.Coordenada_y || -33.4489}
+                    longitude={formData.Coordenada_x || -70.6693}
+                    onLocationChange={handleLocationChange}
+                    height="350px"
+                  />
+                </div>
+
+                <div className="d-flex gap-2">
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary" 
+                    disabled={createClientMutation.isPending || updateClientMutation.isPending}
+                  >
+                    {(createClientMutation.isPending || updateClientMutation.isPending) ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                        {editingClient ? 'Actualizando...' : 'Creando...'}
+                      </>
+                    ) : (
+                      editingClient ? 'Actualizar' : 'Crear'
+                    )}
+                  </button>
+                  <button type="button" className="btn btn-secondary" onClick={resetForm}>
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Tabla Avanzada con TanStack Table */}
+        <AdvancedClientTable
+          clients={clients || []}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          isLoading={isLoading}
+          createMutationPending={createClientMutation.isPending}
+          updateMutationPending={updateClientMutation.isPending}
+          deleteMutationPending={deleteClientMutation.isPending}
+        />
+      </div>
+    </AnimatedSection>
   );
 };
 

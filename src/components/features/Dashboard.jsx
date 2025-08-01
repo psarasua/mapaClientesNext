@@ -55,41 +55,41 @@ export default function Dashboard() {
   }
 
   return (
-    <>
-
-      <Container fluid className="py-4">
-        {/* Header con controles mejorado */}
-        <Row className="mb-4">
-          <Col>
-            <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-              <div className="mb-3 mb-md-0">
-                <h1 className="display-6 fw-bold mb-2 text-dark">
-                  <FaChartLine className="me-3 text-primary" />
-                  Dashboard
-                </h1>
-                <p className="text-muted fs-5 mb-0">Vista general del sistema de gestión logística</p>
-              </div>
-              <div className="d-flex gap-2">
-                <Button
-                  variant={autoRefresh ? 'success' : 'outline-secondary'}
-                  onClick={toggleAutoRefresh}
-                  size="sm"
-                >
-                  <i className={`bi ${autoRefresh ? 'bi-play-fill' : 'bi-pause-fill'} me-2`}></i>
-                  {autoRefresh ? 'Auto-actualización' : 'Manual'}
-                </Button>
-                <Button
-                  variant="outline-primary"
-                  onClick={handleManualRefresh}
-                  size="sm"
-                >
-                  <i className="bi bi-arrow-clockwise me-2"></i>
-                  Actualizar
-                </Button>
-              </div>
+    <Container fluid className="py-4">
+      {/* Header con controles mejorado */}
+      <Row className="mb-4">
+        <Col>
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+            <div className="mb-3 mb-md-0">
+              <h1 className="display-6 fw-bold mb-2 text-gradient">
+                <FaChartLine className="me-3" />
+                Dashboard
+              </h1>
+              <p className="text-muted fs-5 mb-0">Vista general del sistema de gestión logística</p>
             </div>
-          </Col>
-        </Row>
+            <div className="d-flex flex-column flex-sm-row gap-2">
+              <Button
+                variant={autoRefresh ? 'success' : 'outline-secondary'}
+                onClick={toggleAutoRefresh}
+                size="sm"
+                className="hover-lift"
+              >
+                <i className={`bi ${autoRefresh ? 'bi-play-fill' : 'bi-pause-fill'} me-2`}></i>
+                {autoRefresh ? 'Auto-actualización' : 'Manual'}
+              </Button>
+              <Button
+                variant="outline-primary"
+                onClick={handleManualRefresh}
+                size="sm"
+                className="hover-lift"
+              >
+                <i className="bi bi-arrow-clockwise me-2"></i>
+                Actualizar
+              </Button>
+            </div>
+          </div>
+        </Col>
+      </Row>
 
       {/* Tarjetas de estadísticas mejoradas */}
       <Row className="mb-4 g-3">
@@ -142,13 +142,13 @@ export default function Dashboard() {
       <Row>
         {/* Gráfico de barras */}
         <Col lg={6} className="mb-4">
-          <Card className="h-100 shadow-sm">
-            <Card.Header className="bg-white border-bottom">
+          <Card className="h-100 dashboard-card hover-lift">
+            <div className="dashboard-card-header">
               <Card.Title className="mb-0">
-                <FaChartLine className="me-2 text-primary" />
+                <FaChartLine className="me-2" />
                 Distribución por Categoría
               </Card.Title>
-            </Card.Header>
+            </div>
             <Card.Body>
               <div style={{ width: '100%', height: '300px' }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -167,13 +167,13 @@ export default function Dashboard() {
 
         {/* Gráfico circular */}
         <Col lg={6} className="mb-4">
-          <Card className="h-100 shadow-sm">
-            <Card.Header className="bg-white border-bottom">
+          <Card className="h-100 dashboard-card hover-lift">
+            <div className="dashboard-card-header">
               <Card.Title className="mb-0">
-                <FaChartLine className="me-2 text-success" />
+                <FaChartLine className="me-2" />
                 Distribución Porcentual
               </Card.Title>
-            </Card.Header>
+            </div>
             <Card.Body>
               <div style={{ width: '100%', height: '300px' }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -204,13 +204,13 @@ export default function Dashboard() {
       <Row>
         {/* Mapa */}
         <Col lg={8} className="mb-4">
-          <Card className="h-100 shadow-sm">
-            <Card.Header className="bg-white border-bottom">
+          <Card className="h-100 dashboard-card hover-lift">
+            <div className="dashboard-card-header">
               <Card.Title className="mb-0">
-                <FaMapMarkedAlt className="me-2 text-info" />
+                <FaMapMarkedAlt className="me-2" />
                 Mapa de Ubicaciones
               </Card.Title>
-            </Card.Header>
+            </div>
             <Card.Body className="p-0" style={{ borderRadius: '0.375rem', overflow: 'hidden' }}>
               <MapComponent clients={clients} trucks={trucks} />
             </Card.Body>
@@ -219,13 +219,13 @@ export default function Dashboard() {
 
         {/* Actividad reciente */}
         <Col lg={4} className="mb-4">
-          <Card className="h-100 shadow-sm">
-            <Card.Header className="bg-white border-bottom">
+          <Card className="h-100 dashboard-card hover-lift">
+            <div className="dashboard-card-header">
               <Card.Title className="mb-0">
-                <i className="bi bi-clock-history me-2 text-warning"></i>
+                <i className="bi bi-clock-history me-2"></i>
                 Actividad Reciente
               </Card.Title>
-            </Card.Header>
+            </div>
             <Card.Body style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {recentActivity.length === 0 ? (
                 <div className="text-center text-muted py-4">
@@ -261,7 +261,7 @@ export default function Dashboard() {
       {autoRefresh && (
         <Row>
           <Col>
-            <Alert variant="info" className="d-flex align-items-center">
+            <Alert variant="info" className="d-flex align-items-center fade-in">
               <i className="bi bi-info-circle me-2"></i>
               <span>Actualización automática activada - Los datos se actualizan cada 30 segundos</span>
             </Alert>
@@ -269,6 +269,5 @@ export default function Dashboard() {
         </Row>
       )}
     </Container>
-    </>
   );
 }

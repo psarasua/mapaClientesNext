@@ -76,8 +76,6 @@ const IconSettings = () => (
   </svg>
 );
 
-
-
 const IconImport = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
     <rect x="3" y="3" width="18" height="18" rx="2" fill="#16a085" stroke="#138d75" strokeWidth="1"/>
@@ -136,6 +134,7 @@ export default function Navigation({ activeSection, onSectionChange }) {
           <Navbar.Toggle 
             aria-controls="offcanvasNavbar" 
             onClick={handleShow}
+            className="border-0"
           />
 
           {/* Navegación principal para desktop */}
@@ -145,13 +144,13 @@ export default function Navigation({ activeSection, onSectionChange }) {
                 <Nav.Link
                   key={item.id}
                   onClick={() => handleMenuClick(item.id)}
-                  className={`d-flex align-items-center ${
+                  className={`d-flex align-items-center px-3 py-2 ${
                     activeSection === item.id ? 'active' : ''
                   }`}
                   style={{ cursor: 'pointer' }}
                 >
                   <span className="me-2">{item.icon}</span>
-                  {item.label}
+                  <span className="d-none d-md-inline">{item.label}</span>
                   {item.badge && (
                     <Badge bg="danger" className="ms-2">
                       {item.badge}
@@ -164,12 +163,12 @@ export default function Navigation({ activeSection, onSectionChange }) {
             {/* User Dropdown */}
             <Nav className="ms-auto">
               <Dropdown align="end">
-                <Dropdown.Toggle variant="outline-light" id="dropdown-user" className="d-flex align-items-center">
+                <Dropdown.Toggle variant="outline-light" id="dropdown-user" className="d-flex align-items-center hover-lift">
                   <FaUser className="me-2" />
-                  {user?.usuario || 'Usuario'}
+                  <span className="d-none d-md-inline">{user?.usuario || 'Usuario'}</span>
                 </Dropdown.Toggle>
 
-                <Dropdown.Menu>
+                <Dropdown.Menu className="shadow-lg">
                   <Dropdown.Header>
                     <div className="fw-bold">{user?.usuario}</div>
                     <small className="text-muted">{user?.email}</small>
@@ -187,27 +186,27 @@ export default function Navigation({ activeSection, onSectionChange }) {
       </Navbar>
 
       {/* Offcanvas para móvil */}
-      <Offcanvas show={show} onHide={handleClose} placement="start">
+      <Offcanvas show={show} onHide={handleClose} placement="start" className="w-75">
         <Offcanvas.Header closeButton>
           <Offcanvas.Title className="d-flex align-items-center">
             <LogoSmall size={24} className="me-2" />
-            MapaClientes
+            <span className="fw-bold">MapaClientes</span>
           </Offcanvas.Title>
         </Offcanvas.Header>
-        <Offcanvas.Body>
+        <Offcanvas.Body className="p-0">
           <Nav className="flex-column">
             {menuItems.map((item) => (
               <Nav.Link
                 key={item.id}
                 onClick={() => handleMenuClick(item.id)}
-                className={`d-flex align-items-center py-3 ${
+                className={`d-flex align-items-center py-3 px-4 ${
                   activeSection === item.id ? 'active bg-primary bg-opacity-10 rounded' : ''
                 }`}
                 style={{ cursor: 'pointer' }}
               >
                 <span className="me-3 fs-5">{item.icon}</span>
                 <div className="flex-grow-1">
-                  {item.label}
+                  <span className="fw-medium">{item.label}</span>
                   {item.badge && (
                     <Badge bg="danger" className="ms-2">
                       {item.badge}
