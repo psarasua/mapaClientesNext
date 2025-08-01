@@ -88,6 +88,7 @@ const IconImport = () => (
 export default function Navigation({ activeSection, onSectionChange }) {
   const [show, setShow] = useState(false);
   const { user, logout } = useAuth();
+  const [deployStatus] = useState('🚀 Deploy Automático Activo');
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -128,6 +129,9 @@ export default function Navigation({ activeSection, onSectionChange }) {
           <Navbar.Brand href="#" className="d-flex align-items-center">
             <LogoSmall size={28} className="me-2" />
             <span className="fw-bold text-white">MapaClientes</span>
+            <Badge bg="success" className="ms-2 fs-6">
+              {deployStatus}
+            </Badge>
           </Navbar.Brand>
           
           {/* Botón de menú para móvil */}

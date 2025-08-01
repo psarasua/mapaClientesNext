@@ -1,5 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import 'bootswatch/dist/flatly/bootstrap.min.css';
+import 'bootswatch/dist/solar/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import "../styles/globals.css";
 import { AuthProvider } from '../contexts/AuthContext';
@@ -22,8 +22,8 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
-  title: "MapaClientes - Sistema de Gestión Logística",
-  description: "Sistema integral de gestión de clientes, camiones, repartos y entregas con Next.js, React Bootstrap y SQLite",
+  title: "🚀 MapaClientes - Deploy Automático Confirmado",
+  description: "Sistema integral de gestión de clientes, camiones, repartos y entregas con Next.js, React Bootstrap y SQLite - Tema Solar",
   keywords: "gestión logística, clientes, repartos, camiones, mapas, Next.js",
   authors: [{ name: "MapaClientes Team" }],
   icons: {
@@ -64,7 +64,7 @@ export default function RootLayout({ children }) {
         <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" />
         <link rel="alternate icon" href="/favicon.svg?v=2" />
         <link rel="apple-touch-icon" href="/favicon.svg?v=2" />
-        <meta name="theme-color" content="#18bc9c" />
+        <meta name="theme-color" content="#f39c12" />
         <link rel="shortcut icon" href="/favicon.svg?v=2" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>

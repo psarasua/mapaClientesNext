@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Navigation from '../components/layout/Navigation';
 import MainContent from '../components/features/MainContent';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import DeployBanner from '../components/ui/DeployBanner';
 import { useAuth } from '../contexts/AuthContext';
 import { useAuthRedirect } from '../hooks/useAuthRedirect';
 
@@ -35,6 +36,7 @@ export default function Home() {
 
   return (
     <div className="min-vh-100 bg-light">
+      <DeployBanner />
       <Navigation 
         activeSection={activeSection} 
         onSectionChange={setActiveSection}
