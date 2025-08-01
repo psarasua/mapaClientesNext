@@ -12,17 +12,8 @@
     "start": "next start",
     "lint": "next lint",
     "validate": "node scripts/validate-env.js",
-    "setup": "node scripts/setup-env.bat",
-    "setup:linux": "bash scripts/setup-env.sh",
-    "env:production": "node scripts/create-production-env.js",
-    "diagnose": "node scripts/diagnose-production.js",
-
     "test:db": "node scripts/test-database.js",
-    "test:apis": "node scripts/test-apis.js",
-    "deploy:railway": "node scripts/deploy-railway.js",
-    "setup:railway": "node scripts/setup-railway-env.js",
-    "generate:secrets": "node scripts/generate-secrets.js",
-    "build:railway": "node scripts/build-with-env.js"
+    "deploy:railway": "node scripts/deploy-railway.js"
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",
